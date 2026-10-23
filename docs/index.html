@@ -43,20 +43,21 @@
   --font: "Brando Arabic", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --side-w: 268px;
   --top-h: 64px;
+  --logo-ink: #563331;
   --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23ceb26b' stroke-width='2.2' stroke-linejoin='round'%3E%3Cpath d='M48 30l5.3 12.7L66 48l-12.7 5.3L48 66l-5.3-12.7L30 48l12.7-5.3z'/%3E%3Crect x='38' y='38' width='20' height='20' transform='rotate(45 48 48)'/%3E%3C/g%3E%3Cg fill='%23ceb26b'%3E%3Ccircle cx='48' cy='48' r='2.6'/%3E%3Cpath d='M0 4l4-4 4 4-4 4zM88 4l4-4 4 4-4 4zM0 92l4-4 4 4-4 4zM88 92l4-4 4 4-4 4z'/%3E%3Crect x='14' y='46' width='4' height='4'/%3E%3Crect x='78' y='46' width='4' height='4'/%3E%3Crect x='46' y='14' width='4' height='4'/%3E%3Crect x='46' y='78' width='4' height='4'/%3E%3C/g%3E%3C/svg%3E");
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --brand: #d6bb76; --brand-2: #e3ca8a; --brand-ink: #120c0b; --on-brand: #2b1a18; --gold: #d6bb76; --gold-ink: #dcc283; --gold-soft: #3a2f1f;
-    --bg: #15100f; --surface: #1e1716; --surface-2: #271e1c; --line: #362a28; --line-2: #463734; --ink: #f4ede7; --ink-2: #c8bab4; --ink-3: #978883;
+    --logo-ink: #f7f3eb; --bg: #15100f; --surface: #1e1716; --surface-2: #271e1c; --line: #362a28; --line-2: #463734; --ink: #f4ede7; --ink-2: #c8bab4; --ink-3: #978883;
     --ok-soft: #173326; --warn-soft: #3a2c14; --bad-soft: #3d1c17; --info-soft: #172a37;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --brand: #d6bb76; --brand-2: #e3ca8a; --brand-ink: #120c0b; --on-brand: #2b1a18; --gold: #d6bb76; --gold-ink: #dcc283; --gold-soft: #3a2f1f;
-  --bg: #15100f; --surface: #1e1716; --surface-2: #271e1c; --line: #362a28; --line-2: #463734; --ink: #f4ede7; --ink-2: #c8bab4; --ink-3: #978883;
+  --logo-ink: #f7f3eb; --bg: #15100f; --surface: #1e1716; --surface-2: #271e1c; --line: #362a28; --line-2: #463734; --ink: #f4ede7; --ink-2: #c8bab4; --ink-3: #978883;
   --ok-soft: #173326; --warn-soft: #3a2c14; --bad-soft: #3d1c17; --info-soft: #172a37;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25); color-scheme: dark;
 }
@@ -91,11 +92,10 @@ h1, h2, h3, h4 { font-weight: 700; letter-spacing: 0; }
 .side::before { content: ""; position: absolute; inset: auto 0 0 0; height: 240px; background: var(--pattern) 0 0 / 72px; opacity: .07; z-index: -1; mask-image: linear-gradient(to top, #000, transparent); -webkit-mask-image: linear-gradient(to top, #000, transparent); }
 :root[data-theme="dark"] .side { background: #241917; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .side { background: #241917; } }
-.brand { display: flex; align-items: center; gap: 12px; padding: 2px 6px 18px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.09); }
-.brand .logo { width: 40px; height: 56px; flex: none; display: grid; place-items: center; }
-.brand .logo svg, .brand .logo img { width: 100%; height: 100%; object-fit: contain; }
-.brand .name { font-size: 26px; font-weight: 700; line-height: 1; color: #fff; }
-.brand .sub { font-size: 12px; color: #d9c6b8; margin-top: 6px; line-height: 1.35; }
+.brand { display: grid; justify-items: center; gap: 8px; padding: 8px 6px 18px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.09); text-align: center; }
+.brand .logo { width: 116px; height: 90px; color: #f7f3eb; }
+.brand .logo svg, .brand .logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.brand .sub { font-size: 12.5px; color: #d9c6b8; line-height: 1.4; }
 .nav { display: grid; gap: 2px; }
 .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; color: #e6d8cf; font-weight: 500; font-size: 14.5px; position: relative; }
 .nav a:hover { background: rgba(255,255,255,.07); color: #fff; }
@@ -118,8 +118,8 @@ h1, h2, h3, h4 { font-weight: 700; letter-spacing: 0; }
 
 .main { min-width: 0; display: flex; flex-direction: column; }
 .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; min-height: var(--top-h); padding: 10px 28px; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
-.topbar .tb-logo { display: none; width: 28px; height: 40px; }
-.topbar .tb-logo svg { width: 100%; height: 100%; }
+.topbar .tb-logo { display: none; width: 50px; height: 39px; color: var(--logo-ink); }
+.topbar .tb-logo svg, .topbar .tb-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .topbar .ttl { min-width: 0; }
 .topbar h1 { font-size: 20px; margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .topbar .crumbs { color: var(--ink-3); font-size: 12.5px; line-height: 1.2; }
@@ -384,9 +384,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 .login .art { background: #563331; color: #fff; padding: 48px 56px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; position: relative; overflow: hidden; isolation: isolate; }
 .login .art::before { content: ""; position: absolute; inset: 0; background: var(--pattern) 0 0 / 96px; opacity: .09; z-index: -1; }
 .login .art::after { content: ""; position: absolute; width: 520px; height: 520px; inset-inline-end: -180px; bottom: -200px; border-radius: 50%; background: radial-gradient(circle, rgba(206,178,107,.22), transparent 70%); z-index: -1; }
-.login .mark { width: 72px; height: 100px; }
-.login .art h1 { font-size: 72px; margin: 18px 0 0; line-height: 1; color: #fff; }
-.login .art .tag { font-size: 21px; color: #ceb26b; margin-top: 12px; font-weight: 600; }
+.login .mark { width: 230px; height: 180px; color: #f7f3eb; margin-inline-start: -8px; }
+.login .mark svg, .login .mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.login .art .tag { font-size: 26px; color: #f7f3eb; margin-top: 18px; font-weight: 700; }
+.login .art .divider { display: block; width: 72px; height: 3px; background: #ceb26b; margin-top: 16px; border-radius: 2px; }
 .login .art p { max-width: 470px; color: #e6d8cf; margin: 16px 0 0; }
 .login .art .feat { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 560px; }
 .login .art .feat div { display: flex; gap: 10px; align-items: center; color: #f1e7e0; font-size: 14px; background: rgba(0,0,0,.14); border: 1px solid rgba(255,255,255,.08); padding: 10px 12px; border-radius: 12px; }
@@ -439,8 +440,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 @media (max-width: 1100px) and (min-width: 861px) {
   :root { --side-w: 80px; }
   .side { padding: 14px 10px; align-items: center; overflow: visible; }
-  .brand { padding: 0 0 14px; border: 0; justify-content: center; }
-  .brand > div:not(.logo), .nav a > span:not(.badge), .nav .sec, .side .by, .side .me b, .side .me .role, .side .me button span { display: none; }
+  .brand { padding: 0 0 14px; border: 0; }
+  .brand .logo { width: 58px; height: 45px; }
+  .brand .sub, .nav a > span:not(.badge), .nav .sec, .side .by, .side .me b, .side .me .role, .side .me button span { display: none; }
   .nav a { justify-content: center; padding: 11px; width: 54px; }
   .nav a:hover::after { content: attr(data-l); position: absolute; inset-inline-start: calc(100% + 12px); background: var(--ink); color: var(--bg); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 500; white-space: nowrap; z-index: 90; }
   .nav .badge { position: absolute; top: 2px; inset-inline-end: 2px; min-width: 18px; font-size: 10px; padding: 0 4px; }
@@ -537,10 +539,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
   .modal .mf .btn { flex: 1; }
   .login { grid-template-columns: minmax(0, 1fr); }
   .login .art { padding: 26px 22px 24px; gap: 16px; padding-top: max(26px, env(safe-area-inset-top)); }
-  .login .art > div:first-of-type { display: grid; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center; }
-  .login .mark { width: 46px; height: 64px; grid-row: span 2; }
-  .login .art h1 { font-size: 42px; margin: 0; }
-  .login .art .tag { font-size: 15px; margin-top: 4px; }
+  .login .art { align-items: center; text-align: center; }
+  .login .art .head { display: grid; justify-items: center; }
+  .login .mark { width: 150px; height: 117px; margin: 0; }
+  .login .art .tag { font-size: 19px; margin-top: 10px; }
+  .login .art .divider { margin-top: 10px; }
   .login .art p, .login .art .feat, .login .verse { display: none; }
   .login .art .by { font-size: 12px; }
   .login .art .by img { height: 32px; }
@@ -681,14 +684,11 @@ const I = {
   logout: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
   copy: svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
 };
-// شعار «طيب» على هوية مؤسسة أبناء علي الماجد: «طيب» بالخط الكوفي الهندسي، وطرف الطاء قطرة عطر
+// شعار «طيب» المعتمد: حروف بلون الحبر (currentColor) وقائم الطاء الذهبي المتموج ونقاط معيّنة ذهبية
 const ASSETS = window.TAYYIB_ASSETS || "assets/";
-const LOGO_GLYPH = `<g transform="translate(0 4)"><g fill="none" stroke="#ceb26b" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"><path d="M62 44 V90 H75 a10 10 0 0 0 0 -20 H62"/><path d="M62 90 H50 V79 M50 90 H20 V78"/></g><g fill="#ceb26b"><path d="M62 22 c-5.5 7.5 -8 11 -8 15 a8 8 0 0 0 16 0 c0 -4 -2.5 -7.5 -8 -15z"/><path d="M45.5 101 l4 4 -4 4 -4 -4z"/><path d="M55.5 101 l4 4 -4 4 -4 -4z"/><path d="M31 101 l4 4 -4 4 -4 -4z"/></g></g>`;
-// onDark: على الخلفيات البنية يُرسم الإطار بحد ذهبي بدل التعبئة
-const logoSvg = (onDark = false) => `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب">${onDark
-  ? `<rect x="1.5" y="1.5" width="97" height="137" rx="17" fill="rgba(0,0,0,.18)" stroke="#ceb26b" stroke-opacity=".55" stroke-width="2"/>`
-  : `<rect width="100" height="140" rx="18" fill="#563331"/>`}${LOGO_GLYPH}</svg>`;
-const logoHtml = (onDark = false) => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : logoSvg(onDark);
+const LOGO_GLYPH = `<g fill="none" stroke-width="27" stroke-linejoin="round"><path stroke="currentColor" d="M687 453 V516 A61.5 61.5 0 0 0 748.5 577.5 H1247 A62.5 62.5 0 0 0 1247 452.5 H1098 M962 453 V577.5"/><path stroke="#ceb26b" d="M1097.5 591 V380 C1097.5 345 1148.5 320 1148.5 275 C1148.5 235 1112 215 1112 182"/></g><g fill="#ceb26b"><path d="M810.5 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/><path d="M936.5 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/><path d="M988 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/></g>`;
+const logoSvg = () => `<svg viewBox="660 168 680 532" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب">${LOGO_GLYPH}</svg>`;
+const logoHtml = () => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="طيب">` : logoSvg();
 const foundationLogo = (white = false) => `${ASSETS}foundation-${white ? "white" : "primary"}.png`;
 
 // ───── الأدوار والمراحل ─────
@@ -892,7 +892,7 @@ function exportXlsx(rows, filename, sheet = "البيانات") {
 function printDoc(title, inner) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:40px;height:56px">${logoHtml()}</div>
+  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:84px;height:66px;color:#563331">${logoHtml()}</div>
     <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> · ${fmtDateTime(new Date())}</div></div>
     <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
     ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
@@ -2351,7 +2351,7 @@ route("settings", {
     const s = S.settings;
     v.innerHTML = `<div class="grid g2">
       <div class="card"><div class="hd"><h3>هوية المنصة</h3></div><div class="bd">
-        <div class="row" style="margin-bottom:16px"><div style="width:56px;height:78px" class="brand-prev">${logoHtml()}</div>
+        <div class="row" style="margin-bottom:16px"><div style="width:110px;height:86px;color:var(--logo-ink)" class="brand-prev">${logoHtml()}</div>
           <div class="stack" style="gap:6px"><input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" id="logo" hidden>
           <button class="btn sm" id="logo-btn">${I.upload} استبدال شعار المنصة</button>${s.logo_path ? `<button class="btn sm danger" id="logo-rm">إزالة الشعار</button>` : ""}<div class="hint">PNG أو SVG مربع، حتى ٥ ميقابايت</div></div></div>
         <form class="form" id="f1" onsubmit="return false">${fld("platform_name", "اسم المنصة", { value: s.platform_name })}${fld("org_name", "اسم المشروع / المؤسسة", { value: s.org_name })}
@@ -2420,12 +2420,12 @@ function paintShell() {
   app.classList.remove("auth");
   const items = NAV.filter((n) => n.roles.includes(role()));
   let lastSec = null;
-  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml(true)}</div><div><div class="name">${esc(S.settings.platform_name || "طيب")}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div></div>
+  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div>
     <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}</nav>
     <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
-  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoSvg()}</div>
+  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml()}</div>
     <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} · ${esc(S.settings.org_name || "")}</div><h1></h1></div>
     <div class="right row" style="gap:8px;flex-wrap:nowrap">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع" aria-label="بحث">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات" aria-label="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
   const bn = BNAV[role()] || [];
@@ -2491,8 +2491,8 @@ function paintLogin(msg = "") {
   $(".side").innerHTML = ""; $(".topbar").innerHTML = ""; $(".bnav").innerHTML = "";
   $("#view").innerHTML = `<div class="login">
     <div class="art">
-      <div><div class="mark">${logoHtml(true)}</div>
-        <h1>${esc(S.settings.platform_name || "طيب")}</h1><div class="tag">${esc(S.settings.org_name || "مشروع تعطير مساجد الرياض")}</div>
+      <div class="head"><div class="mark">${logoHtml()}</div>
+        <div class="tag">${esc(S.settings.org_name || "تعطير المساجد")}</div><i class="divider"></i>
         <p>منصة متكاملة لإدارة تعطير بيوت الله: من اختيار المساجد وإسنادها للجمعيات المشرفة، إلى دراسة الاحتياج والتركيب والتعبئة الدورية وقياس رضا المصلين.</p></div>
       <div class="feat">${[["mosque", "ملف متكامل لكل مسجد وفريقه"], ["drop", "تذكير آلي قبل التعبئة بـ ٧٢ ساعة"], ["report", "تقارير الزيارات والرضا والأداء"], ["wa", "تواصل مباشر عبر واتساب والبريد"]].map(([i, t]) => `<div>${I[i]}${t}</div>`).join("")}</div>
       <div class="stack" style="gap:14px"><div class="verse">﴿ فِي بُيُوتٍ أَذِنَ اللَّهُ أَن تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ ﴾</div>

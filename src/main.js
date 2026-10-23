@@ -24,12 +24,12 @@ function paintShell() {
   app.classList.remove("auth");
   const items = NAV.filter((n) => n.roles.includes(role()));
   let lastSec = null;
-  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml(true)}</div><div><div class="name">${esc(S.settings.platform_name || "طيب")}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div></div>
+  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div>
     <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}</nav>
     <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
-  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoSvg()}</div>
+  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml()}</div>
     <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} · ${esc(S.settings.org_name || "")}</div><h1></h1></div>
     <div class="right row" style="gap:8px;flex-wrap:nowrap">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع" aria-label="بحث">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات" aria-label="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
   const bn = BNAV[role()] || [];
@@ -95,8 +95,8 @@ function paintLogin(msg = "") {
   $(".side").innerHTML = ""; $(".topbar").innerHTML = ""; $(".bnav").innerHTML = "";
   $("#view").innerHTML = `<div class="login">
     <div class="art">
-      <div><div class="mark">${logoHtml(true)}</div>
-        <h1>${esc(S.settings.platform_name || "طيب")}</h1><div class="tag">${esc(S.settings.org_name || "مشروع تعطير مساجد الرياض")}</div>
+      <div class="head"><div class="mark">${logoHtml()}</div>
+        <div class="tag">${esc(S.settings.org_name || "تعطير المساجد")}</div><i class="divider"></i>
         <p>منصة متكاملة لإدارة تعطير بيوت الله: من اختيار المساجد وإسنادها للجمعيات المشرفة، إلى دراسة الاحتياج والتركيب والتعبئة الدورية وقياس رضا المصلين.</p></div>
       <div class="feat">${[["mosque", "ملف متكامل لكل مسجد وفريقه"], ["drop", "تذكير آلي قبل التعبئة بـ ٧٢ ساعة"], ["report", "تقارير الزيارات والرضا والأداء"], ["wa", "تواصل مباشر عبر واتساب والبريد"]].map(([i, t]) => `<div>${I[i]}${t}</div>`).join("")}</div>
       <div class="stack" style="gap:14px"><div class="verse">﴿ فِي بُيُوتٍ أَذِنَ اللَّهُ أَن تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ ﴾</div>

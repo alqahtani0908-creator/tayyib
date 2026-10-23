@@ -123,7 +123,7 @@ route("settings", {
     const s = S.settings;
     v.innerHTML = `<div class="grid g2">
       <div class="card"><div class="hd"><h3>هوية المنصة</h3></div><div class="bd">
-        <div class="row" style="margin-bottom:16px"><div style="width:56px;height:78px" class="brand-prev">${logoHtml()}</div>
+        <div class="row" style="margin-bottom:16px"><div style="width:110px;height:86px;color:var(--logo-ink)" class="brand-prev">${logoHtml()}</div>
           <div class="stack" style="gap:6px"><input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" id="logo" hidden>
           <button class="btn sm" id="logo-btn">${I.upload} استبدال شعار المنصة</button>${s.logo_path ? `<button class="btn sm danger" id="logo-rm">إزالة الشعار</button>` : ""}<div class="hint">PNG أو SVG مربع، حتى ٥ ميقابايت</div></div></div>
         <form class="form" id="f1" onsubmit="return false">${fld("platform_name", "اسم المنصة", { value: s.platform_name })}${fld("org_name", "اسم المشروع / المؤسسة", { value: s.org_name })}
