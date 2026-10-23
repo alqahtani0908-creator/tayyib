@@ -1,0 +1,2334 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>طيب — مشروع تعطير مساجد الرياض</title>
+<meta name="description" content="منصة طيب لإدارة مشروع تعطير مساجد الرياض">
+<meta name="theme-color" content="#063a2f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="طيب">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+:root {
+  --brand: #0b5d4b;
+  --brand-2: #0e7a62;
+  --brand-ink: #063a2f;
+  --gold: #c39a4b;
+  --gold-soft: #f3e8d2;
+  --bg: #f5f3ec;
+  --surface: #ffffff;
+  --surface-2: #faf8f3;
+  --line: #e6e1d4;
+  --ink: #1b2622;
+  --ink-2: #4c5a54;
+  --ink-3: #7d8a84;
+  --ok: #1f8a5b;
+  --ok-soft: #e2f4ea;
+  --warn: #b7791f;
+  --warn-soft: #fbf0db;
+  --bad: #c0392b;
+  --bad-soft: #fbe5e2;
+  --info: #2c6e9b;
+  --info-soft: #e3eff7;
+  --shadow: 0 1px 2px rgba(10, 40, 30, .06), 0 4px 16px rgba(10, 40, 30, .06);
+  --radius: 14px;
+  --font: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand: #2bb38f; --brand-2: #39c9a2; --brand-ink: #d6f5ea; --gold: #d9b56a; --gold-soft: #3a3120;
+    --bg: #0e1513; --surface: #151f1c; --surface-2: #1a2622; --line: #26352f; --ink: #e8efec; --ink-2: #b3c1bb; --ink-3: #82918b;
+    --ok-soft: #173a2a; --warn-soft: #3b2f17; --bad-soft: #3d1d19; --info-soft: #172d3c; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --brand: #2bb38f; --brand-2: #39c9a2; --brand-ink: #d6f5ea; --gold: #d9b56a; --gold-soft: #3a3120;
+  --bg: #0e1513; --surface: #151f1c; --surface-2: #1a2622; --line: #26352f; --ink: #e8efec; --ink-2: #b3c1bb; --ink-3: #82918b;
+  --ok-soft: #173a2a; --warn-soft: #3b2f17; --bad-soft: #3d1d19; --info-soft: #172d3c; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.6; }
+body { -webkit-font-smoothing: antialiased; }
+a { color: var(--brand); text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-3); }
+.small { font-size: 13px; }
+.nowrap { white-space: nowrap; }
+.grow { flex: 1; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.stack { display: grid; gap: 14px; }
+.right { margin-inline-start: auto; }
+
+/* ───── layout ───── */
+#app { display: grid; grid-template-columns: 252px 1fr; min-height: 100vh; }
+#app.auth { display: block; }
+#app.auth .side, #app.auth .topbar, #app.auth .bnav { display: none; }
+#app.auth .view { padding: 0; max-width: none; }
+.side { background: var(--brand-ink); color: #e9f3ef; padding: 18px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+:root[data-theme="dark"] .side, :root:not([data-theme="light"]) .side { background: #0a1210; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .side { background: #063a2f; } }
+:root[data-theme="light"] .side { background: #063a2f; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 6px 16px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 10px; }
+.brand .logo { width: 44px; height: 44px; flex: none; }
+.brand .logo img { width: 44px; height: 44px; object-fit: contain; border-radius: 10px; background: #fff; }
+.brand .name { font-family: var(--font-display); font-size: 26px; line-height: 1; color: #fff; }
+.brand .sub { font-size: 11.5px; color: #a9c7bc; margin-top: 4px; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; color: #cfe2db; font-weight: 500; font-size: 14.5px; }
+.nav a:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav a.on { background: rgba(195,154,75,.16); color: #fff; box-shadow: inset -3px 0 0 var(--gold); }
+.nav a svg { width: 19px; height: 19px; flex: none; opacity: .9; }
+.nav .badge { margin-inline-start: auto; background: var(--gold); color: #1d1606; border-radius: 99px; font-size: 11px; padding: 0 7px; font-weight: 700; }
+.nav .sec { font-size: 11px; letter-spacing: .02em; color: #7fa597; padding: 12px 12px 4px; }
+.side .me { margin-top: auto; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.05); font-size: 13px; }
+.side .me b { display: block; color: #fff; font-weight: 600; }
+.side .me .role { color: var(--gold); font-size: 12px; }
+.side .me button { margin-top: 8px; background: none; border: 1px solid rgba(255,255,255,.18); color: #dfeee8; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 12.5px; }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.topbar h1 { font-size: 19px; margin: 0; font-weight: 700; }
+.topbar .crumbs { color: var(--ink-3); font-size: 13px; }
+.view { padding: 22px 24px 90px; max-width: 1400px; width: 100%; }
+.iconbtn { position: relative; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); }
+.iconbtn:hover { color: var(--brand); border-color: var(--brand); }
+.iconbtn svg { width: 20px; height: 20px; }
+.iconbtn .dot { position: absolute; top: -5px; inset-inline-end: -5px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 99px; background: var(--bad); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; border: 2px solid var(--bg); }
+.iconbtn.ring svg { animation: ring 1s ease; }
+@keyframes ring { 0%,100% { transform: rotate(0); } 15% { transform: rotate(16deg); } 30% { transform: rotate(-14deg); } 45% { transform: rotate(10deg); } 60% { transform: rotate(-6deg); } }
+.menu-btn { display: none; }
+.bnav { display: none; }
+
+/* ───── components ───── */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card > .hd { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.card > .hd h3 { margin: 0; font-size: 15.5px; font-weight: 700; }
+.card > .bd { padding: 16px 18px; }
+.card.pad { padding: 18px; }
+.grid { display: grid; gap: 16px; }
+.grid > *, .kpis > * { min-width: 0; }
+.card > .bd:has(> canvas) { position: relative; }
+canvas { max-width: 100%; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.span2 { grid-column: span 2; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 15px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap; color: var(--ink); }
+.btn:hover { border-color: var(--brand); color: var(--brand); }
+.btn svg { width: 17px; height: 17px; }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #062a21; }
+.btn.primary:hover { background: var(--brand-2); color: #fff; }
+.btn.gold { background: var(--gold); border-color: var(--gold); color: #1e1606; }
+.btn.danger { color: var(--bad); }
+.btn.danger:hover { border-color: var(--bad); }
+.btn.sm { padding: 5px 10px; font-size: 13px; border-radius: 8px; }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.contact { display: inline-flex; gap: 4px; vertical-align: middle; }
+.contact a { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); }
+.contact a svg { width: 15px; height: 15px; }
+.contact a.wa { color: #1fa855; }
+.contact a.wa:hover { background: #1fa855; color: #fff; border-color: #1fa855; }
+.contact a.tel:hover { background: var(--info); color: #fff; border-color: var(--info); }
+.contact a.mail:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); white-space: nowrap; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .8; }
+.chip.plain::before { display: none; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.chip.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.chip.bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.chip.info { background: var(--info-soft); color: var(--info); border-color: transparent; }
+.chip.gold { background: var(--gold-soft); color: #8a6a2a; border-color: transparent; }
+:root[data-theme="dark"] .chip.gold { color: var(--gold); }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.field label .req { color: var(--bad); }
+.input, select.input, textarea.input { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); outline: none; }
+.input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+textarea.input { min-height: 88px; resize: vertical; }
+.form { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form .full { grid-column: 1 / -1; }
+.hint { font-size: 12.5px; color: var(--ink-3); }
+.search { position: relative; }
+.search input { padding-inline-start: 36px; }
+.search svg { position: absolute; inset-inline-start: 11px; top: 50%; transform: translateY(-50%); width: 17px; color: var(--ink-3); }
+
+.rating { display: inline-flex; gap: 4px; direction: ltr; }
+.rating button { border: 1px solid var(--line); background: var(--surface); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-weight: 700; color: var(--ink-2); }
+.rating button.on { background: var(--gold); border-color: var(--gold); color: #1e1606; }
+.stars { color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
+.stars .off { color: var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 7px 14px; cursor: pointer; font-weight: 600; color: var(--ink-2); }
+.seg button.on { background: var(--brand); color: #fff; }
+
+table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: start; font-weight: 600; color: var(--ink-3); font-size: 12.5px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); position: sticky; top: 0; white-space: nowrap; }
+.tbl td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover { background: var(--surface-2); }
+.tbl tr.click { cursor: pointer; }
+.tbl .t-name { font-weight: 600; }
+.prow { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1.3; padding: 2px 0; }
+.prow .pr { color: var(--ink-3); font-size: 11.5px; width: 34px; flex: none; }
+.prow .contact a { width: 24px; height: 24px; border-radius: 7px; }
+.prow .contact a svg { width: 13px; height: 13px; }
+.tbl-wrap { overflow: auto; max-height: 70vh; border-radius: 0 0 var(--radius) var(--radius); }
+.empty { padding: 40px 20px; text-align: center; color: var(--ink-3); }
+.empty svg { width: 46px; height: 46px; color: var(--line); display: block; margin: 0 auto 10px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
+.tabs button { border: 0; background: none; padding: 10px 14px; cursor: pointer; font-weight: 600; color: var(--ink-3); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs button.on { color: var(--brand); border-bottom-color: var(--brand); }
+.tabs button .n { background: var(--surface-2); border-radius: 99px; padding: 0 7px; font-size: 11.5px; margin-inline-start: 4px; }
+
+/* ───── KPI ───── */
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.kpi { padding: 16px 18px; position: relative; overflow: hidden; }
+.kpi .lbl { color: var(--ink-3); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.kpi .lbl svg { width: 17px; height: 17px; color: var(--brand); }
+.kpi .val { font-size: 30px; font-weight: 700; margin-top: 6px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .val small { font-size: 14px; color: var(--ink-3); font-weight: 500; }
+.kpi .sub { font-size: 12.5px; color: var(--ink-3); margin-top: 4px; }
+.kpi.hero { background: linear-gradient(135deg, #063a2f, #0b5d4b 60%, #0e7a62); color: #fff; border: 0; }
+.kpi.hero .lbl, .kpi.hero .sub { color: #cfe7de; }
+.kpi.hero .lbl svg { color: var(--gold); }
+.kpi.hero::after { content: ""; position: absolute; inset-inline-end: -30px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%; border: 22px solid rgba(195,154,75,.18); }
+.kpi.alert .val { color: var(--bad); }
+.kpi.warn .val { color: var(--warn); }
+.kpi a.more { position: absolute; inset: 0; }
+
+/* funnel / pipeline */
+.pipe { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
+.pipe .st { padding: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; transition: .15s; }
+.pipe .st:hover { border-color: var(--brand); }
+.pipe .st .n { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pipe .st .l { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.pipe .st .who { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+.pipe .st.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+.pipe .st.on .l, .pipe .st.on .who { color: #d9efe7; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--brand); border-radius: 99px; }
+.bar.gold > i { background: var(--gold); }
+
+/* workflow stepper */
+.steps { display: grid; gap: 0; counter-reset: s; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; position: relative; padding-bottom: 14px; }
+.step::before { content: ""; position: absolute; inset-inline-start: 16px; top: 30px; bottom: 0; width: 2px; background: var(--line); }
+.step:last-child::before { display: none; }
+.step .dotn { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--surface-2); border: 2px solid var(--line); color: var(--ink-3); z-index: 1; }
+.step.done .dotn { background: var(--brand); border-color: var(--brand); color: #fff; }
+.step.done::before { background: var(--brand); }
+.step.now .dotn { background: var(--gold); border-color: var(--gold); color: #1e1606; box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 25%, transparent); }
+.step .t { font-weight: 600; font-size: 14px; }
+.step .w { font-size: 12px; color: var(--ink-3); }
+.step.now .t { color: var(--ink); }
+.step:not(.done):not(.now) .t { color: var(--ink-3); }
+
+.action-card { border: 1px solid color-mix(in srgb, var(--gold) 50%, var(--line)); background: linear-gradient(180deg, var(--gold-soft), var(--surface)); border-radius: var(--radius); padding: 16px 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.action-card .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--gold); color: #1e1606; display: grid; place-items: center; flex: none; }
+.action-card .ic svg { width: 22px; height: 22px; }
+.action-card > .grow { flex: 1 1 260px; min-width: 220px; }
+.action-card h4 { margin: 0; font-size: 15.5px; }
+.action-card p { margin: 2px 0 0; color: var(--ink-2); font-size: 13.5px; }
+
+/* mosque header */
+.mhead { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; padding: 20px; }
+.mhead .mic { width: 58px; height: 58px; border-radius: 16px; background: var(--gold-soft); color: var(--gold); display: grid; place-items: center; flex: none; }
+.mhead .mic svg { width: 32px; height: 32px; }
+.mhead h2 { margin: 0; font-size: 22px; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 20px; }
+.kv .k { font-size: 12.5px; color: var(--ink-3); }
+.kv .v { font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.people { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.person { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2); }
+.person .r { font-size: 12px; color: var(--gold); font-weight: 700; }
+.person .n { font-weight: 600; margin: 2px 0; }
+.person .p { font-size: 13px; color: var(--ink-3); direction: ltr; text-align: end; }
+
+/* timeline */
+.tl { display: grid; gap: 12px; }
+.tl-item { display: grid; grid-template-columns: 40px 1fr; gap: 12px; }
+.tl-item .ti { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); color: var(--brand); border: 1px solid var(--line); }
+.tl-item .ti svg { width: 19px; height: 19px; }
+.tl-item .tb { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface); }
+.tl-item .th { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tl-item .th b { font-size: 14.5px; }
+.tl-item dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px 16px; margin: 10px 0 0; }
+.tl-item dt { font-size: 12px; color: var(--ink-3); }
+.tl-item dd { margin: 0; font-weight: 600; font-size: 13.5px; }
+.files { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.file { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); font-size: 13px; cursor: pointer; max-width: 260px; }
+.file svg { width: 16px; height: 16px; flex: none; color: var(--bad); }
+.file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thumb { width: 92px; height: 92px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line); cursor: zoom-in; background: var(--surface-2); }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; color: var(--ink-3); cursor: pointer; background: var(--surface-2); }
+.drop:hover, .drop.over { border-color: var(--brand); color: var(--brand); }
+.uplist { display: grid; gap: 6px; margin-top: 8px; }
+.uplist .u { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 10px; border-radius: 8px; background: var(--surface-2); }
+.uplist .u .bar { flex: 1; }
+
+/* notifications */
+.npanel { position: fixed; top: 64px; inset-inline-end: 20px; width: 400px; max-width: calc(100vw - 32px); max-height: 75vh; display: flex; flex-direction: column; z-index: 60; }
+.npanel .list { overflow: auto; }
+.nitem { display: grid; grid-template-columns: 38px 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; position: relative; }
+.nitem:hover { background: var(--surface-2); }
+.nitem.unread { background: color-mix(in srgb, var(--gold-soft) 60%, var(--surface)); }
+.nitem.unread::after { content: ""; position: absolute; inset-inline-end: 14px; top: 18px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+.nitem .ni { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; }
+.nitem .ni svg { width: 18px; height: 18px; }
+.nitem b { font-size: 14px; font-weight: 600; display: block; padding-inline-end: 14px; }
+.nitem .nb { font-size: 13px; color: var(--ink-2); }
+.nitem .nt { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+.k-reminder .ni { background: var(--warn-soft); color: var(--warn); }
+.k-alert .ni { background: var(--bad-soft); color: var(--bad); }
+.k-approval .ni { background: var(--gold-soft); color: var(--gold); }
+.k-refill .ni, .k-stage .ni { background: var(--ok-soft); color: var(--ok); }
+.k-task .ni, .k-assign .ni { background: var(--info-soft); color: var(--info); }
+.k-report .ni, .k-info .ni { background: var(--surface-2); color: var(--brand); }
+
+.toasts { position: fixed; bottom: 20px; inset-inline-end: 20px; display: grid; gap: 10px; z-index: 100; max-width: 380px; }
+.toast { background: var(--surface); border: 1px solid var(--line); border-inline-start: 4px solid var(--brand); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); animation: tin .25s ease; font-size: 14px; }
+.toast.err { border-inline-start-color: var(--bad); }
+.toast.notif { border-inline-start-color: var(--gold); cursor: pointer; }
+.toast b { display: block; }
+@keyframes tin { from { opacity: 0; transform: translateY(10px); } }
+
+/* modal */
+.modal-bg { position: fixed; inset: 0; background: rgba(8, 20, 16, .5); z-index: 80; display: grid; place-items: center; padding: 16px; animation: fade .15s; }
+@keyframes fade { from { opacity: 0; } }
+.modal { background: var(--surface); border-radius: 18px; width: min(720px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.modal.wide { width: min(1080px, 100%); }
+.modal .mh { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.modal .mh h3 { margin: 0; font-size: 17px; }
+.modal .mb { padding: 18px 20px; overflow: auto; }
+.modal .mf { display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line); justify-content: flex-start; }
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 120; display: grid; place-items: center; cursor: zoom-out; padding: 20px; }
+.lightbox img { max-height: 90vh; border-radius: 10px; }
+
+/* login */
+.login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+.login .art { background: radial-gradient(circle at 30% 20%, #0e7a62 0, #063a2f 55%, #042720 100%); color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.login .art .pattern { position: absolute; inset: 0; opacity: .09; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.2'%3E%3Cpath d='M40 4l10 26 26 10-26 10-10 26-10-26L4 40l26-10z'/%3E%3Ccircle cx='40' cy='40' r='9'/%3E%3C/g%3E%3C/svg%3E"); }
+.login .art h1 { font-family: var(--font-display); font-size: 74px; margin: 0; line-height: 1; color: #fff; }
+.login .art .tag { font-size: 20px; color: #e3d2a9; margin-top: 10px; }
+.login .art p { max-width: 460px; color: #cfe3dc; }
+.login .art .feat { display: grid; gap: 10px; position: relative; }
+.login .art .feat div { display: flex; gap: 10px; align-items: center; color: #e6f1ed; }
+.login .art .feat svg { width: 20px; height: 20px; color: var(--gold); }
+.login .panel { display: grid; place-items: center; padding: 32px 20px; }
+.login .box { width: min(400px, 100%); }
+.login .box h2 { margin: 0 0 4px; font-size: 24px; }
+
+/* print */
+.print-only { display: none; }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff; color: #000; font-size: 12pt; }
+  .side, .topbar, .bnav, .toasts, .no-print, .modal-bg { display: none !important; }
+  #app { display: block; }
+  .view { padding: 0; max-width: none; }
+  .card { box-shadow: none; border-color: #ccc; break-inside: avoid; }
+  .print-only { display: block; }
+  body.printing-doc > *:not(#printdoc) { display: none !important; }
+  #printdoc { display: block !important; }
+}
+#printdoc { display: none; }
+.doc { font-family: var(--font); color: #111; }
+.doc .dh { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #0b5d4b; padding-bottom: 12px; margin-bottom: 18px; }
+.doc .dh .t { font-family: var(--font-display); font-size: 30px; color: #0b5d4b; line-height: 1; }
+.doc .dh .s { color: #555; font-size: 13px; }
+.doc h2 { font-size: 18px; margin: 18px 0 8px; color: #0b5d4b; }
+.doc table { width: 100%; border-collapse: collapse; font-size: 12pt; }
+.doc td, .doc th { border: 1px solid #ccc; padding: 6px 10px; text-align: start; }
+.doc th { background: #f1ede2; width: 30%; }
+.doc .foot { margin-top: 30px; font-size: 11px; color: #777; border-top: 1px solid #ddd; padding-top: 8px; }
+
+/* ───── responsive ───── */
+@media (max-width: 1100px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pipe { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  #app { grid-template-columns: 1fr; }
+  .side { position: fixed; inset-block: 0; inset-inline-start: 0; width: 270px; z-index: 70; transform: translateX(100%); transition: transform .2s; }
+  #app.menu .side { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.4); }
+  .menu-btn { display: grid; }
+  .topbar { padding: 10px 16px; }
+  .view { padding: 16px 16px 96px; }
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .span2 { grid-column: auto; }
+  .form { grid-template-columns: 1fr; }
+  .people { grid-template-columns: 1fr; }
+  .pipe { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .login { grid-template-columns: 1fr; }
+  .login .art { padding: 28px 22px; min-height: 0; }
+  .login .art h1 { font-size: 52px; }
+  .login .art .feat { display: none; }
+  .bnav { display: flex; position: fixed; bottom: 0; inset-inline: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 30; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .bnav a { flex: 1; display: grid; justify-items: center; gap: 2px; font-size: 11px; color: var(--ink-3); padding: 4px 0; }
+  .bnav a svg { width: 21px; height: 21px; }
+  .bnav a.on { color: var(--brand); }
+  .tbl.cards thead { display: none; }
+  .tbl.cards tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .tbl.cards td { border: 0; padding: 0; }
+  .tbl.cards td[data-hide-sm] { display: none; }
+  .tbl-wrap { max-height: none; }
+  .npanel { inset-inline-end: 16px; top: 60px; }
+  .toasts { inset-inline: 16px; bottom: 84px; max-width: none; }
+  .modal { border-radius: 16px; }
+}
+
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<div id="app" class="auth"><aside class="side"></aside><div class="main"><header class="topbar"></header><main class="view" id="view"></main></div><nav class="bnav" aria-label="التنقل السريع"></nav></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script>
+// ───────────────────────── الأساسيات ─────────────────────────
+const CFG = window.TAYYIB_CONFIG || {};
+const sb = window.TAYYIB_CLIENT || window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, {
+  auth: { persistSession: true, autoRefreshToken: true },
+});
+const MAX_FILE = 50 * 1024 * 1024;
+
+const S = {
+  me: null, settings: {}, associations: [], mosques: null, notifications: [], unread: 0,
+  route: "", params: {}, logoUrl: null,
+};
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
+// ───── التواريخ والأرقام ─────
+const AR_LOCALE = "ar-SA-u-ca-gregory-nu-latn";
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString(AR_LOCALE, { year: "numeric", month: "short", day: "numeric" }) : "—";
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString(AR_LOCALE, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—";
+const fmtNum = (n) => n == null ? "—" : Number(n).toLocaleString("en-US");
+const isoDay = (d = new Date()) => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+const monthKey = (d = new Date()) => isoDay(d).slice(0, 7);
+const monthName = (ym) => { const [y, m] = ym.split("-"); return new Date(+y, +m - 1, 1).toLocaleDateString(AR_LOCALE, { month: "long", year: "numeric" }); };
+function ago(d) {
+  if (!d) return "";
+  const s = (Date.now() - new Date(d)) / 1000;
+  if (s < 60) return "الآن";
+  if (s < 3600) return `قبل ${Math.floor(s / 60)} د`;
+  if (s < 86400) return `قبل ${Math.floor(s / 3600)} س`;
+  if (s < 86400 * 30) return `قبل ${Math.floor(s / 86400)} يوم`;
+  return fmtDate(d);
+}
+function untilText(d) {
+  if (!d) return "—";
+  const h = (new Date(d) - Date.now()) / 36e5;
+  if (h < 0) { const dd = Math.ceil(-h / 24); return `متأخر ${dd} يوم`; }
+  if (h < 72) return `خلال ${Math.max(1, Math.round(h))} ساعة`;
+  return `بعد ${Math.round(h / 24)} يوم`;
+}
+function refillChip(m) {
+  if (m.stage !== "active" || !m.next_refill_at) return `<span class="muted">—</span>`;
+  const h = (new Date(m.next_refill_at) - Date.now()) / 36e5;
+  const reminder = S.settings.reminder_hours || 72;
+  const cls = h < 0 ? "bad" : h <= reminder ? "warn" : "ok";
+  return `<span class="chip ${cls}" title="${esc(fmtDateTime(m.next_refill_at))}">${untilText(m.next_refill_at)}</span>`;
+}
+const stars = (v) => v == null ? `<span class="muted">—</span>` :
+  `<span class="stars" title="${Number(v).toFixed(2)} / 5">${"★".repeat(Math.round(v))}<span class="off">${"★".repeat(5 - Math.round(v))}</span></span> <b class="num">${Number(v).toFixed(1)}</b>`;
+const fmtSize = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.ceil(b / 1024) + " KB";
+
+// ───── الهاتف والتواصل ─────
+function normPhone(p) {
+  let d = String(p || "").replace(/[٠-٩]/g, (c) => "٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/\D/g, "");
+  if (!d) return "";
+  if (d.startsWith("00")) d = d.slice(2);
+  if (d.startsWith("05") && d.length === 10) d = "966" + d.slice(1);
+  else if (d.startsWith("5") && d.length === 9) d = "966" + d;
+  return d;
+}
+const waLink = (phone, text = "") => `https://wa.me/${normPhone(phone)}${text ? "?text=" + encodeURIComponent(text) : ""}`;
+const displayPhone = (p) => { const n = normPhone(p); return n.startsWith("966") && n.length === 12 ? "0" + n.slice(3) : (p || ""); };
+function contactBtns({ phone, email, text = "", name = "" } = {}) {
+  const parts = [];
+  if (phone && normPhone(phone)) {
+    parts.push(`<a class="wa" href="${esc(waLink(phone, text))}" target="_blank" rel="noopener" title="واتساب ${esc(name)}">${I.wa}</a>`);
+    parts.push(`<a class="tel" href="tel:+${normPhone(phone)}" title="اتصال">${I.phone}</a>`);
+  }
+  if (email) parts.push(`<a class="mail" href="mailto:${esc(email)}" title="بريد إلكتروني">${I.mail}</a>`);
+  return parts.length ? `<span class="contact" onclick="event.stopPropagation()">${parts.join("")}</span>` : "";
+}
+
+// ───── الأيقونات ─────
+const svg = (p, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${p}</svg>`;
+const I = {
+  dash: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
+  mosque: svg('<path d="M12 3c-3 2.2-5 4.2-5 6.5V11h10V9.5C17 7.2 15 5.2 12 3z"/><path d="M4 21V13h16v8"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/><path d="M2 21h20"/><path d="M12 1.5V3"/>'),
+  tasks: svg('<path d="M9 11l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/>'),
+  drop: svg('<path d="M12 2.7C8.5 7 6 10.3 6 14a6 6 0 0 0 12 0c0-3.7-2.5-7-6-11.3z"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"/>'),
+  report: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>'),
+  star: svg('<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'),
+  send: svg('<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>'),
+  org: svg('<path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/>'),
+  users: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  bell: svg('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>'),
+  wa: svg('<path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8c-1-.4-2.3-1.7-2.7-2.7l.8-1-1-2z" fill="currentColor" stroke-width="1"/>'),
+  phone: svg('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>'),
+  mail: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
+  upload: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>'),
+  download: svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>'),
+  excel: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8l8 8M16 8l-8 8"/>'),
+  file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
+  x: svg('<path d="M18 6L6 18M6 6l12 12"/>'),
+  check: svg('<path d="M20 6L9 17l-5-5"/>'),
+  menu: svg('<path d="M3 6h18M3 12h18M3 18h18"/>'),
+  clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  alert: svg('<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),
+  map: svg('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'),
+  print: svg('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>'),
+  edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+  trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
+  key: svg('<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M16 7l3 3M18 5l2 2"/>'),
+  visit: svg('<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'),
+  chat: svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+  sparkle: svg('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'),
+  install: svg('<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>'),
+  study: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/>'),
+  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  moon: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'),
+  logout: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
+  copy: svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+};
+const LOGO_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#0b5d4b"/><path d="M32 9c-6.5 8.2-12 14.6-12 22a12 12 0 0 0 24 0c0-7.4-5.5-13.8-12-22z" fill="#c39a4b"/><path d="M32 22c-3.6 2.6-6 5-6 8v2h12v-2c0-3-2.4-5.4-6-8z" fill="#063a2f"/><rect x="25" y="33" width="14" height="7" rx="1" fill="#063a2f"/><path d="M14 52h36" stroke="#c39a4b" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="19.5" r="1.4" fill="#063a2f"/></svg>`;
+const logoHtml = () => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : LOGO_SVG;
+
+// ───── الأدوار والمراحل ─────
+const ROLES = { admin: "مدير النظام", association: "جمعية مشرفة", company: "الشركة المنفذة", viewer: "حساب عرض" };
+const STAGES = {
+  selected: { l: "مختار — بانتظار الإسناد", s: "بانتظار الإسناد", c: "plain", who: "مدير النظام" },
+  assigned: { l: "استكمال البيانات", s: "استكمال البيانات", c: "info", who: "الجمعية" },
+  data_done: { l: "التواصل مع الإمام", s: "التواصل مع الإمام", c: "info", who: "الجمعية" },
+  feasible: { l: "دراسة الاحتياج", s: "دراسة الاحتياج", c: "gold", who: "الشركة" },
+  not_feasible: { l: "غير قابل للتطبيق", s: "غير قابل للتطبيق", c: "bad", who: "—" },
+  study_done: { l: "بانتظار اعتماد التركيب", s: "بانتظار الاعتماد", c: "warn", who: "مدير النظام" },
+  approved: { l: "معتمد — بانتظار التركيب", s: "بانتظار التركيب", c: "gold", who: "الشركة" },
+  active: { l: "مُركّب — قيد التشغيل", s: "قيد التشغيل", c: "ok", who: "الجمعية والشركة" },
+  suspended: { l: "موقوف", s: "موقوف", c: "bad", who: "—" },
+};
+const STAGE_ORDER = ["selected", "assigned", "data_done", "feasible", "study_done", "approved", "active"];
+const stageChip = (s) => `<span class="chip ${STAGES[s]?.c || ""}">${esc(STAGES[s]?.s || s)}</span>`;
+const isAdmin = () => S.me?.role === "admin";
+const role = () => S.me?.role;
+const assocName = (id) => S.associations.find((a) => a.id === id)?.name || "—";
+
+// ───── واجهة عامة ─────
+function toast(msg, type = "", opts = {}) {
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.innerHTML = opts.title ? `<b>${esc(opts.title)}</b>${esc(msg || "")}` : esc(msg);
+  if (opts.onClick) el.onclick = () => { opts.onClick(); el.remove(); };
+  $("#toasts").appendChild(el);
+  setTimeout(() => el.remove(), opts.ms || (type === "err" ? 6500 : 4000));
+}
+function errMsg(e) {
+  const m = e?.message || String(e);
+  if (/row-level security|permission denied/i.test(m)) return "لا تملك صلاحية تنفيذ هذا الإجراء";
+  if (/duplicate key/i.test(m)) return "القيمة موجودة مسبقًا";
+  if (/Failed to fetch|NetworkError/i.test(m)) return "تعذّر الاتصال بالخادم — تحقق من الإنترنت";
+  return m;
+}
+async function run(promise, okMsg) {
+  try {
+    const r = await promise;
+    if (r && r.error) throw r.error;
+    if (okMsg) toast(okMsg);
+    return r ? (r.data ?? true) : true;
+  } catch (e) { toast(errMsg(e), "err"); return null; }
+}
+
+function modal({ title, body, actions = [], wide = false, onOpen } = {}) {
+  return new Promise((resolve) => {
+    const bg = document.createElement("div");
+    bg.className = "modal-bg";
+    bg.innerHTML = `<div class="modal ${wide ? "wide" : ""}" role="dialog" aria-modal="true">
+      <div class="mh"><h3>${esc(title)}</h3><button class="btn ghost sm right" data-x>${I.x}</button></div>
+      <div class="mb"></div><div class="mf"></div></div>`;
+    const mb = $(".mb", bg), mf = $(".mf", bg);
+    if (typeof body === "string") mb.innerHTML = body; else if (body) mb.appendChild(body);
+    const close = (v) => { bg.remove(); document.removeEventListener("keydown", onKey); resolve(v); };
+    const onKey = (e) => { if (e.key === "Escape") close(null); };
+    document.addEventListener("keydown", onKey);
+    $("[data-x]", bg).onclick = () => close(null);
+    bg.addEventListener("mousedown", (e) => { if (e.target === bg) close(null); });
+    actions.forEach((a) => {
+      const b = document.createElement("button");
+      b.className = "btn " + (a.cls || "");
+      b.innerHTML = a.label;
+      b.onclick = async () => {
+        if (!a.onClick) return close(a.value);
+        b.disabled = true;
+        try { const v = await a.onClick(mb, close); if (v !== false && v !== undefined) close(v); }
+        finally { b.disabled = false; }
+      };
+      mf.appendChild(b);
+    });
+    if (!actions.length) mf.remove();
+    document.body.appendChild(bg);
+    onOpen && onOpen(mb, close);
+    setTimeout(() => $("input,select,textarea", mb)?.focus(), 30);
+  });
+}
+const confirmBox = (text, label = "تأكيد", cls = "primary") =>
+  modal({ title: "تأكيد", body: `<p style="margin:0">${esc(text)}</p>`, actions: [{ label, cls, value: true }, { label: "إلغاء", value: false }] });
+
+function lightbox(src) {
+  const el = document.createElement("div");
+  el.className = "lightbox";
+  el.innerHTML = `<img src="${esc(src)}" alt="">`;
+  el.onclick = () => el.remove();
+  document.body.appendChild(el);
+}
+
+// قراءة نموذج إلى كائن
+function formData(root) {
+  const o = {};
+  $$("[name]", root).forEach((el) => {
+    if (el.type === "checkbox") o[el.name] = el.checked;
+    else if (el.type === "radio") { if (el.checked) o[el.name] = el.value; }
+    else o[el.name] = el.value.trim();
+  });
+  $$("[data-rating]", root).forEach((el) => { o[el.dataset.rating] = el.dataset.value ? +el.dataset.value : null; });
+  return o;
+}
+const fld = (name, label, { type = "text", value = "", req = false, opts = null, full = false, hint = "", attrs = "", ph = "" } = {}) => {
+  let input;
+  if (opts) input = `<select class="input" name="${name}" ${attrs}>${opts.map((o) => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(value ?? "") ? "selected" : ""}>${esc(l)}</option>`; }).join("")}</select>`;
+  else if (type === "textarea") input = `<textarea class="input" name="${name}" placeholder="${esc(ph)}" ${attrs}>${esc(value)}</textarea>`;
+  else input = `<input class="input" type="${type}" name="${name}" value="${esc(value)}" placeholder="${esc(ph)}" ${type === "tel" ? 'dir="ltr" inputmode="tel"' : ""} ${type === "email" ? 'dir="ltr"' : ""} ${attrs}>`;
+  return `<div class="field ${full ? "full" : ""}"><label>${esc(label)}${req ? ' <span class="req">*</span>' : ""}</label>${input}${hint ? `<div class="hint">${esc(hint)}</div>` : ""}</div>`;
+};
+const ratingFld = (name, label, value = null, full = false) => `<div class="field ${full ? "full" : ""}"><label>${esc(label)}</label>
+  <div class="rating" data-rating="${name}" data-value="${value ?? ""}">${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-n="${n}" class="${value >= n ? "on" : ""}">${n}</button>`).join("")}</div></div>`;
+function bindRatings(root) {
+  $$("[data-rating]", root).forEach((r) => r.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    r.dataset.value = b.dataset.n;
+    $$("button", r).forEach((x) => x.classList.toggle("on", +x.dataset.n <= +b.dataset.n));
+  }));
+}
+
+// ───── رفع الملفات (حتى ٥٠ ميقابايت لكل ملف) ─────
+function uploader({ accept = "image/*,application/pdf", label = "اسحب الصور أو ملفات PDF هنا أو اضغط للاختيار" } = {}) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="drop">${I.upload.replace("<svg", '<svg style="width:26px;height:26px;display:block;margin:0 auto 6px"')}${esc(label)}<div class="hint">حتى ${MAX_FILE / 1048576} ميقابايت للملف الواحد</div></div>
+    <input type="file" multiple accept="${accept}" hidden><div class="uplist"></div>`;
+  const files = [];
+  const input = $("input", wrap), drop = $(".drop", wrap), list = $(".uplist", wrap);
+  const render = () => {
+    list.innerHTML = files.map((f, i) => `<div class="u">${f.type.startsWith("image/") ? I.file : I.report}<span class="grow">${esc(f.name)}</span><span class="muted small num">${fmtSize(f.size)}</span>
+      <button type="button" class="btn ghost sm" data-rm="${i}">${I.x}</button></div>`).join("");
+  };
+  const add = (fl) => {
+    for (const f of fl) {
+      if (f.size > MAX_FILE) { toast(`«${f.name}» أكبر من ٥٠ ميقابايت`, "err"); continue; }
+      files.push(f);
+    }
+    render();
+  };
+  drop.onclick = () => input.click();
+  input.onchange = () => { add(input.files); input.value = ""; };
+  drop.ondragover = (e) => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove("over"); add(e.dataTransfer.files); };
+  list.onclick = (e) => { const b = e.target.closest("[data-rm]"); if (b) { files.splice(+b.dataset.rm, 1); render(); } };
+  wrap.files = files;
+  wrap.progress = (i, txt) => { const row = list.children[i]; if (row) $(".num", row).textContent = txt; };
+  return wrap;
+}
+const safeName = (n) => n.replace(/[^\w.\-؀-ۿ]+/g, "_").slice(-80);
+// يرفع الملفات ثم يسجلها في جدول المرفقات
+async function uploadFiles(files, { mosqueId = null, taskId = null, reportId = null, ui = null } = {}) {
+  const out = [];
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const base = mosqueId ? `m/${mosqueId}` : `t/${taskId}`;
+    const path = `${base}/${uid()}-${safeName(f.name)}`;
+    ui?.progress(i, "جارٍ الرفع…");
+    const { error } = await sb.storage.from("files").upload(path, f, { contentType: f.type || "application/octet-stream", upsert: false });
+    if (error) { toast(`تعذّر رفع «${f.name}»: ${errMsg(error)}`, "err"); ui?.progress(i, "فشل"); continue; }
+    const { data, error: e2 } = await sb.from("attachments").insert({ mosque_id: mosqueId, task_id: taskId, report_id: reportId, path, name: f.name, size: f.size, mime: f.type }).select().single();
+    if (e2) { toast(errMsg(e2), "err"); continue; }
+    ui?.progress(i, "✓");
+    out.push(data);
+  }
+  return out;
+}
+const urlCache = new Map();
+async function fileUrl(path) {
+  const c = urlCache.get(path);
+  if (c && c.exp > Date.now()) return c.url;
+  const { data, error } = await sb.storage.from("files").createSignedUrl(path, 3600);
+  if (error) throw error;
+  urlCache.set(path, { url: data.signedUrl, exp: Date.now() + 3500e3 });
+  return data.signedUrl;
+}
+function filesHtml(atts) {
+  if (!atts?.length) return "";
+  return `<div class="files">${atts.map((a) => a.mime?.startsWith("image/")
+    ? `<img class="thumb" data-img="${esc(a.path)}" alt="${esc(a.name)}" title="${esc(a.name)}">`
+    : `<span class="file" data-open="${esc(a.path)}" title="${esc(a.name)}">${I.file}<span>${esc(a.name)}</span><small class="muted num">${a.size ? fmtSize(a.size) : ""}</small></span>`).join("")}</div>`;
+}
+// يحمّل الصور المصغرة ويربط فتح الملفات
+function hydrateFiles(root) {
+  $$("img[data-img]", root).forEach(async (img) => {
+    try { img.src = await fileUrl(img.dataset.img); img.onclick = () => lightbox(img.src); } catch { img.alt = "تعذّر التحميل"; }
+  });
+  $$("[data-open]", root).forEach((el) => el.onclick = async () => {
+    try { window.open(await fileUrl(el.dataset.open), "_blank", "noopener"); } catch (e) { toast(errMsg(e), "err"); }
+  });
+}
+
+// ───── تصدير Excel ─────
+function exportXlsx(rows, filename, sheet = "البيانات") {
+  if (!window.XLSX) return toast("مكتبة Excel لم تُحمّل بعد", "err");
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(12, k.length + 4) }));
+  const wb = XLSX.utils.book_new();
+  wb.Workbook = { Views: [{ RTL: true }] };
+  XLSX.utils.book_append_sheet(wb, ws, sheet);
+  XLSX.writeFile(wb, filename);
+}
+
+// ───── الطباعة ─────
+function printDoc(title, inner) {
+  let el = $("#printdoc");
+  if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
+  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:54px;height:54px">${logoHtml()}</div>
+    <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div></div>
+    <div style="margin-inline-start:auto;text-align:end"><b>${esc(title)}</b><div class="s">${fmtDateTime(new Date())}</div></div></div>
+    ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
+  document.body.classList.add("printing-doc");
+  const done = () => { document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", done); };
+  window.addEventListener("afterprint", done);
+  setTimeout(() => window.print(), 250);
+}
+
+// ───── التنقل ─────
+const ROUTES = {};
+function route(name, def) { ROUTES[name] = def; }
+function go(path) { if (location.hash !== "#" + path) location.hash = path; else render(); }
+function parseHash() {
+  const h = decodeURIComponent(location.hash.slice(1) || "/dashboard");
+  const [path, qs] = h.split("?");
+  const parts = path.split("/").filter(Boolean);
+  S.route = parts[0] || "dashboard";
+  S.params = { id: parts[1], ...Object.fromEntries(new URLSearchParams(qs || "")) };
+}
+
+// ───────────────────────── البيانات ─────────────────────────
+async function loadSettings() {
+  const { data } = await sb.from("settings").select("*").eq("id", 1).maybeSingle();
+  S.settings = data || {};
+  S.logoUrl = S.settings.logo_path ? sb.storage.from("brand").getPublicUrl(S.settings.logo_path).data.publicUrl : null;
+  document.title = S.settings.platform_name ? `${S.settings.platform_name} — ${S.settings.org_name || ""}` : "طيب";
+}
+async function loadAssociations() {
+  const { data } = await sb.from("associations").select("*").order("name");
+  S.associations = data || [];
+}
+async function loadMosques(force = false) {
+  if (S.mosques && !force) return S.mosques;
+  if (role() === "viewer") return (S.mosques = []);
+  const all = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from("mosques").select("*").order("code").range(from, from + 999);
+    if (error) { toast(errMsg(error), "err"); break; }
+    all.push(...data);
+    if (data.length < 1000) break;
+  }
+  S.mosques = all;
+  return all;
+}
+const mosqueById = (id) => S.mosques?.find((m) => m.id === id);
+async function refreshMosque(id) {
+  const { data } = await sb.from("mosques").select("*").eq("id", id).maybeSingle();
+  if (!S.mosques) return data;
+  const i = S.mosques.findIndex((m) => m.id === id);
+  if (data) { if (i >= 0) S.mosques[i] = data; else S.mosques.push(data); }
+  else if (i >= 0) S.mosques.splice(i, 1);
+  return data;
+}
+
+// ───── الإشعارات (لحظية مع تنبيه صوتي) ─────
+let notifChannel = null;
+async function loadNotifications() {
+  const { data } = await sb.from("notifications").select("*").order("created_at", { ascending: false }).limit(200);
+  S.notifications = data || [];
+  S.unread = S.notifications.filter((n) => !n.read_at).length;
+  paintBell();
+}
+function subscribeNotifications() {
+  if (notifChannel || !S.me) return;
+  notifChannel = sb.channel("notif-" + S.me.id)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `account_id=eq.${S.me.id}` }, (p) => {
+      const n = p.new;
+      if (S.notifications.some((x) => x.id === n.id)) return;
+      S.notifications.unshift(n);
+      S.unread++;
+      paintBell(true);
+      chime(n.kind);
+      toast(n.body || "", "notif", { title: n.title, ms: 7000, onClick: () => openNotification(n) });
+      if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+        try { new Notification(n.title, { body: n.body || "", icon: S.logoUrl || undefined, tag: n.id }); } catch {}
+      }
+      if (n.mosque_id && S.mosques) refreshMosque(n.mosque_id);
+    })
+    .subscribe();
+}
+let audioCtx = null;
+function chime(kind) {
+  if (localStorage.getItem("tayyib.mute") === "1") return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = kind === "alert" ? [880, 660] : kind === "reminder" ? [660, 880, 990] : [740, 988];
+    notes.forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      const t = audioCtx.currentTime + i * 0.13;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.4);
+    });
+  } catch {}
+}
+function paintBell(ring = false) {
+  const b = $("#bell");
+  if (!b) return;
+  const dot = $(".dot", b);
+  dot.textContent = S.unread > 99 ? "99+" : S.unread;
+  dot.hidden = !S.unread;
+  if (ring) { b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); }
+  const nb = $('.nav a[data-r="notifications"] .badge');
+  if (nb) { nb.textContent = S.unread; nb.hidden = !S.unread; }
+}
+async function markRead(ids) {
+  if (!ids.length) return;
+  const now = new Date().toISOString();
+  await sb.from("notifications").update({ read_at: now }).in("id", ids);
+  S.notifications.forEach((n) => { if (ids.includes(n.id)) n.read_at = now; });
+  S.unread = S.notifications.filter((n) => !n.read_at).length;
+  paintBell();
+}
+function openNotification(n) {
+  if (!n.read_at) markRead([n.id]);
+  closeNotifPanel();
+  if (n.task_id) go("/tasks/" + n.task_id);
+  else if (n.mosque_id) go("/mosque/" + n.mosque_id);
+}
+const N_ICON = { reminder: I.clock, alert: I.alert, approval: I.star, refill: I.drop, stage: I.check, task: I.tasks, assign: I.mosque, report: I.report, info: I.bell };
+const notifItem = (n) => `<div class="nitem k-${esc(n.kind)} ${n.read_at ? "" : "unread"}" data-n="${n.id}">
+  <div class="ni">${N_ICON[n.kind] || I.bell}</div>
+  <div><b>${esc(n.title)}</b>${n.body ? `<div class="nb">${esc(n.body)}</div>` : ""}<div class="nt">${ago(n.created_at)}</div></div></div>`;
+function toggleNotifPanel() {
+  if ($(".npanel")) return closeNotifPanel();
+  const p = document.createElement("div");
+  p.className = "npanel card";
+  const draw = () => {
+    const items = S.notifications.slice(0, 30);
+    p.innerHTML = `<div class="hd"><h3>الإشعارات</h3><span class="chip gold plain">${S.unread} غير مقروء</span>
+      <button class="btn sm ghost right" data-all>تحديد الكل كمقروء</button></div>
+      <div class="list">${items.length ? items.map(notifItem).join("") : `<div class="empty">${I.bell}لا توجد إشعارات</div>`}</div>
+      <div style="padding:10px 16px;border-top:1px solid var(--line)" class="row"><a href="#/notifications" data-go>عرض كل الإشعارات</a>
+      ${"Notification" in window && Notification.permission === "default" ? `<button class="btn sm right" data-perm>تفعيل تنبيهات المتصفح</button>` : ""}</div>`;
+  };
+  draw();
+  p.onclick = async (e) => {
+    const it = e.target.closest("[data-n]");
+    if (it) return openNotification(S.notifications.find((n) => n.id === it.dataset.n));
+    if (e.target.closest("[data-all]")) { await markRead(S.notifications.filter((n) => !n.read_at).map((n) => n.id)); draw(); }
+    if (e.target.closest("[data-perm]")) { await Notification.requestPermission(); draw(); }
+    if (e.target.closest("[data-go]")) closeNotifPanel();
+  };
+  document.body.appendChild(p);
+  setTimeout(() => document.addEventListener("mousedown", outsideNotif), 0);
+}
+function outsideNotif(e) { if (!e.target.closest(".npanel") && !e.target.closest("#bell")) closeNotifPanel(); }
+function closeNotifPanel() { $(".npanel")?.remove(); document.removeEventListener("mousedown", outsideNotif); }
+
+// ───── المسار: ما الإجراء التالي لكل مسجد ولكل دور ─────
+// يعيد {title, desc, action, who} أو null
+function nextAction(m, r = role()) {
+  const s = m.stage;
+  const A = {
+    selected: { who: "admin", title: "إسناد المسجد لجمعية مشرفة", desc: "اختر الجمعية المشرفة على هذا المسجد", action: "assign" },
+    assigned: { who: "association", title: "استكمال البيانات الناقصة", desc: "أكمل الحي وأسماء وأرقام الإمام والمؤذن والخادم ثم اعتمد الاكتمال", action: "complete" },
+    data_done: { who: "association", title: "التواصل مع الإمام ورفع التقرير", desc: "تأكد من قابلية تطبيق المشروع وارفع تقرير التواصل", action: "feasibility" },
+    not_feasible: { who: "association", title: "إعادة التواصل مع الإمام", desc: "أفادت الجمعية بعدم القابلية — يمكن رفع تقرير جديد عند تغيّر الحال", action: "feasibility" },
+    feasible: { who: "company", title: "دراسة احتياج الجامع", desc: "زيارة الموقع ورفع تقرير دراسة الاحتياج (عدد الأجهزة ومواقعها)", action: "needs_study" },
+    study_done: { who: "admin", title: "اعتماد التركيب", desc: "راجع دراسة الاحتياج واعتمد التركيب أو أعدها للشركة", action: "decide" },
+    approved: { who: "company", title: "التركيب ورفع التقرير", desc: "نفّذ التركيب وارفع تقرير التركيب مع الصور", action: "installation" },
+  }[s];
+  if (!A) return null;
+  if (r === "admin" || A.who === r) return A;
+  return { ...A, waiting: true };
+}
+// الإجراءات الدورية المتاحة لمسجد قيد التشغيل
+function opsActions(r = role()) {
+  const a = [];
+  if (r === "association" || r === "admin") a.push(["visit", "زيارة أسبوعية", I.visit], ["satisfaction", "قياس الرضا", I.star], ["monthly", "التقرير الشهري", I.report]);
+  if (r === "company" || r === "admin") a.push(["refill", "تعبئة العطر", I.drop]);
+  return a;
+}
+
+// ───────────────────────── التقارير ─────────────────────────
+const SCENT = ["قوي", "مناسب", "ضعيف", "منعدم"];
+const REPORT_TYPES = {
+  feasibility: { l: "تقرير التواصل مع الإمام", step: 4, icon: I.phone, by: "الجمعية",
+    fields: () => [
+      fld("date", "تاريخ التواصل", { type: "date", value: isoDay(), req: true }),
+      fld("method", "طريقة التواصل", { opts: ["اتصال هاتفي", "زيارة ميدانية", "واتساب"] }),
+      fld("contact", "تم التواصل مع", { opts: ["الإمام", "المؤذن", "خادم المسجد", "جماعة المسجد"] }),
+      fld("result", "قابلية تطبيق المشروع", { opts: [["yes", "قابل للتطبيق — الإمام موافق"], ["no", "غير قابل للتطبيق"]], req: true }),
+      fld("best_time", "الوقت المناسب للزيارة والتركيب", { ph: "مثال: بعد صلاة العصر" }),
+      fld("notes", "ملاحظات وتفاصيل", { type: "textarea", full: true }),
+    ],
+    summary: (d) => (d.result === "yes" ? "قابل للتطبيق" : "غير قابل للتطبيق") + (d.method ? ` — ${d.method}` : ""),
+    labels: { date: "تاريخ التواصل", method: "الطريقة", contact: "تم التواصل مع", result: "النتيجة", best_time: "الوقت المناسب", notes: "ملاحظات" },
+    show: { result: (v) => v === "yes" ? "قابل للتطبيق" : "غير قابل للتطبيق" } },
+  needs_study: { l: "تقرير دراسة الاحتياج", step: 5, icon: I.study, by: "الشركة المنفذة",
+    fields: () => [
+      fld("date", "تاريخ الزيارة", { type: "date", value: isoDay(), req: true }),
+      fld("devices", "عدد الأجهزة المقترحة", { type: "number", req: true, attrs: 'min="1"' }),
+      fld("device_type", "نوع الجهاز", { ph: "مثال: جهاز تعطير مركزي / جداري" }),
+      fld("area", "المساحة التقريبية (م²)", { type: "number" }),
+      fld("power", "توفر نقاط الكهرباء", { opts: ["متوفرة", "تحتاج تمديد", "غير متوفرة"] }),
+      fld("fragrance", "العطر المقترح", { ph: "مثال: عود، مسك، ورد طائفي" }),
+      fld("placement", "مواقع التركيب المقترحة", { type: "textarea", full: true, ph: "المصلى الرئيسي، مصلى النساء، المدخل، دورات المياه…" }),
+      fld("notes", "ملاحظات فنية", { type: "textarea", full: true }),
+    ],
+    summary: (d) => `${d.devices || "?"} أجهزة${d.fragrance ? ` — ${d.fragrance}` : ""}`,
+    labels: { date: "تاريخ الزيارة", devices: "عدد الأجهزة", device_type: "نوع الجهاز", area: "المساحة م²", power: "الكهرباء", fragrance: "العطر المقترح", placement: "مواقع التركيب", notes: "ملاحظات" } },
+  decision: { l: "قرار مدير النظام", step: 6, icon: I.check, by: "مدير النظام", fields: () => [],
+    labels: { approved: "القرار", note: "ملاحظة" }, show: { approved: (v) => v ? "اعتماد التركيب" : "إعادة الدراسة" } },
+  installation: { l: "تقرير التركيب", step: 7, icon: I.install, by: "الشركة المنفذة",
+    fields: (m) => [
+      fld("date", "تاريخ التركيب", { type: "date", value: isoDay(), req: true }),
+      fld("devices", "عدد الأجهزة المركبة", { type: "number", req: true, value: m?.devices_count || "", attrs: 'min="1"' }),
+      fld("fragrance", "العطر المستخدم", { req: true, value: m?.fragrance || "" }),
+      fld("cycle", "دورة التعبئة (يوم)", { type: "number", value: m?.refill_cycle_days || S.settings.refill_cycle_days || 30, hint: "يُحسب موعد التعبئة التالية تلقائيًا" }),
+      fld("serials", "الأرقام التسلسلية للأجهزة", { type: "textarea", full: true }),
+      fld("notes", "ملاحظات التركيب", { type: "textarea", full: true }),
+    ],
+    summary: (d) => `تركيب ${d.devices} أجهزة — ${d.fragrance}`,
+    labels: { date: "تاريخ التركيب", devices: "عدد الأجهزة", fragrance: "العطر", cycle: "دورة التعبئة", serials: "الأرقام التسلسلية", notes: "ملاحظات" } },
+  visit: { l: "تقرير الزيارة الأسبوعية", step: 8, icon: I.visit, by: "الجمعية",
+    fields: (m) => [
+      fld("date", "تاريخ الزيارة", { type: "date", value: isoDay(), req: true }),
+      fld("status", "حالة الأجهزة", { opts: [["ok", "تعمل بشكل سليم"], ["issue", "توجد ملاحظة فنية"]], req: true }),
+      fld("working", "عدد الأجهزة العاملة", { type: "number", value: m?.devices_count || "" }),
+      fld("scent", "مستوى الرائحة", { opts: SCENT }),
+      ratingFld("cleanliness", "نظافة الأجهزة ومحيطها"),
+      fld("notes", "ملاحظات الزيارة", { type: "textarea", full: true }),
+    ],
+    summary: (d) => (d.status === "issue" ? "ملاحظة فنية" : "الأجهزة سليمة") + (d.scent ? ` — الرائحة ${d.scent}` : "") + (d.notes ? ` — ${d.notes.slice(0, 60)}` : ""),
+    labels: { date: "تاريخ الزيارة", status: "حالة الأجهزة", working: "الأجهزة العاملة", scent: "مستوى الرائحة", cleanliness: "النظافة", notes: "ملاحظات" },
+    show: { status: (v) => v === "issue" ? "⚠️ توجد ملاحظة فنية" : "✓ سليمة", cleanliness: (v) => v ? `${v} / 5` : "—" } },
+  satisfaction: { l: "قياس الرضا عن الرائحة والعطر", step: 9, icon: I.star, by: "الجمعية",
+    fields: () => [
+      fld("date", "تاريخ القياس", { type: "date", value: isoDay(), req: true }),
+      fld("respondent", "الفئة المستطلعة", { opts: ["الإمام", "المؤذن", "خادم المسجد", "عينة من المصلين", "جماعة المسجد"] }),
+      fld("sample", "عدد المستطلعين", { type: "number", value: 1, attrs: 'min="1"' }),
+      ratingFld("scent", "الرضا عن نوع العطر"),
+      ratingFld("intensity", "الرضا عن قوة الرائحة وانتشارها"),
+      ratingFld("overall", "الرضا العام", null),
+      fld("comments", "آراء ومقترحات", { type: "textarea", full: true }),
+    ],
+    validate: (d) => d.overall ? null : "حدد درجة الرضا العام",
+    summary: (d) => `الرضا العام ${d.overall}/5 — ${d.respondent}`,
+    labels: { date: "تاريخ القياس", respondent: "الفئة", sample: "العدد", scent: "نوع العطر", intensity: "قوة الرائحة", overall: "الرضا العام", comments: "آراء" },
+    show: { scent: (v) => v ? `${v} / 5` : "—", intensity: (v) => v ? `${v} / 5` : "—", overall: (v) => v ? `${v} / 5` : "—" } },
+  monthly: { l: "التقرير الشهري لأداء التعطير", step: 10, icon: I.report, by: "الجمعية",
+    fields: (m, ctx = {}) => [
+      fld("month", "الشهر", { type: "month", value: ctx.month || monthKey(), req: true }),
+      ratingFld("performance", "تقييم أداء التعطير خلال الشهر"),
+      fld("visits", "عدد الزيارات", { type: "number", value: ctx.visits ?? "", hint: "محسوب من تقارير الزيارات" }),
+      fld("satisfaction", "متوسط الرضا", { value: ctx.satisfaction ?? "", hint: "محسوب من قياسات الرضا" }),
+      fld("refills", "عدد مرات التعبئة", { type: "number", value: ctx.refills ?? "" }),
+      fld("scent", "مستوى الرائحة الغالب", { opts: SCENT }),
+      fld("issues", "الملاحظات والمشكلات", { type: "textarea", full: true }),
+      fld("recommendations", "التوصيات", { type: "textarea", full: true }),
+    ],
+    validate: (d) => d.performance ? null : "حدد تقييم الأداء",
+    summary: (d) => `${monthName(d.month)} — الأداء ${d.performance}/5`,
+    labels: { month: "الشهر", performance: "تقييم الأداء", visits: "الزيارات", satisfaction: "متوسط الرضا", refills: "التعبئات", scent: "الرائحة", issues: "الملاحظات", recommendations: "التوصيات" },
+    show: { performance: (v) => v ? `${v} / 5` : "—", month: (v) => v ? monthName(v) : "—" } },
+  refill: { l: "تقرير التعبئة الشهرية", step: 11, icon: I.drop, by: "الشركة المنفذة",
+    fields: (m) => [
+      fld("date", "تاريخ ووقت التعبئة", { type: "datetime-local", value: new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 16), req: true }),
+      fld("fragrance", "العطر", { value: m?.fragrance || "" }),
+      fld("quantity", "الكمية (مل)", { type: "number" }),
+      fld("devices", "عدد الأجهزة التي عُبّئت", { type: "number", value: m?.devices_count || "" }),
+      fld("notes", "ملاحظات", { type: "textarea", full: true }),
+    ],
+    summary: (d) => `تعبئة ${d.devices || ""} أجهزة${d.quantity ? ` — ${d.quantity} مل` : ""}${d.fragrance ? ` — ${d.fragrance}` : ""}`,
+    labels: { date: "التاريخ", fragrance: "العطر", quantity: "الكمية (مل)", devices: "الأجهزة", notes: "ملاحظات" },
+    show: { date: (v) => fmtDateTime(v) } },
+  note: { l: "ملاحظة", icon: I.chat, by: "", fields: () => [fld("text", "الملاحظة", { type: "textarea", full: true, req: true })],
+    summary: (d) => d.text.slice(0, 120), labels: { text: "الملاحظة" } },
+};
+
+function reportDetails(r) {
+  const T = REPORT_TYPES[r.type] || { labels: {} };
+  const d = r.data || {};
+  const rows = Object.entries(T.labels || {}).filter(([k]) => d[k] !== undefined && d[k] !== "" && d[k] !== null)
+    .map(([k, l]) => [l, T.show?.[k] ? T.show[k](d[k]) : (k === "date" ? fmtDate(d[k]) : d[k])]);
+  return rows;
+}
+function reportCard(r, atts = [], authors = {}) {
+  const T = REPORT_TYPES[r.type] || { l: r.type, icon: I.report };
+  const rows = reportDetails(r);
+  return `<div class="tl-item" data-report="${r.id}"><div class="ti">${T.icon}</div><div class="tb">
+    <div class="th"><b>${esc(T.l)}</b>${T.step ? `<span class="chip plain">الخطوة ${T.step}</span>` : ""}
+      ${r.type === "visit" && r.data?.status === "issue" ? `<span class="chip bad">ملاحظة فنية</span>` : ""}
+      ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : "warn"}">${r.data?.approved ? "معتمد" : "أعيدت الدراسة"}</span>` : ""}
+      <span class="muted small right">${esc(authors[r.author_id] || ROLES[r.author_role] || "")} · ${fmtDateTime(r.created_at)}</span>
+      <button class="btn ghost sm no-print" data-print-report="${r.id}" title="طباعة">${I.print}</button></div>
+    ${rows.length ? `<dl>${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd style="white-space:pre-wrap">${esc(v)}</dd></div>`).join("")}</dl>` : r.summary ? `<div class="small">${esc(r.summary)}</div>` : ""}
+    ${filesHtml(atts)}</div></div>`;
+}
+function printReport(r, m) {
+  const T = REPORT_TYPES[r.type] || { l: r.type };
+  const rows = reportDetails(r);
+  printDoc(T.l, `<h2>${esc(m?.name || "")} <small style="color:#777">${esc(m?.code || "")}</small></h2>
+    <table><tr><th>الحي</th><td>${esc(m?.district || "—")}</td></tr><tr><th>الجمعية المشرفة</th><td>${esc(assocName(m?.association_id))}</td></tr>
+    <tr><th>تاريخ الرفع</th><td>${fmtDateTime(r.created_at)}</td></tr><tr><th>الجهة</th><td>${esc(ROLES[r.author_role] || "")}</td></tr></table>
+    <h2>تفاصيل التقرير</h2><table>${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${esc(v)}</td></tr>`).join("")}</table>`);
+}
+
+// نافذة رفع تقرير لمسجد — تعيد true عند النجاح
+async function openReportForm(m, type, ctx = {}) {
+  const T = REPORT_TYPES[type];
+  if (type === "monthly" && !ctx.month) Object.assign(ctx, await monthlyContext(m, monthKey()));
+  const body = document.createElement("div");
+  body.innerHTML = `<div class="row" style="margin-bottom:14px">${stageChip(m.stage)}<b>${esc(m.name)}</b><span class="muted small">${esc(m.code)}</span></div>
+    <form class="form" onsubmit="return false">${T.fields(m, ctx).join("")}</form>
+    <div class="field" style="margin-top:14px"><label>المرفقات (صور وملفات PDF)</label><div data-up></div></div>`;
+  const up = uploader();
+  $("[data-up]", body).appendChild(up);
+  bindRatings(body);
+  if (type === "monthly") {
+    $('[name="month"]', body).onchange = async (e) => {
+      const c = await monthlyContext(m, e.target.value);
+      $('[name="visits"]', body).value = c.visits; $('[name="satisfaction"]', body).value = c.satisfaction ?? ""; $('[name="refills"]', body).value = c.refills;
+    };
+  }
+  return modal({
+    title: T.l, body, wide: true,
+    actions: [{
+      label: `${I.check} رفع التقرير`, cls: "primary", onClick: async (mb) => {
+        const d = formData($("form", mb));
+        const missing = $$("[name]", mb).find((el) => el.closest(".field")?.querySelector(".req") && !el.value.trim());
+        if (missing) { toast("أكمل الحقول المطلوبة", "err"); missing.focus(); return false; }
+        const v = T.validate?.(d);
+        if (v) { toast(v, "err"); return false; }
+        if (type === "refill" && d.date) d.date = new Date(d.date).toISOString();
+        if ((type === "installation" || type === "visit") && d.date) d.date = new Date(d.date + "T09:00:00").toISOString();
+        const { data: rep, error } = await sb.rpc("submit_report", { p_mosque: m.id, p_type: type, p_data: d, p_summary: T.summary ? T.summary(d) : null });
+        if (error) { toast(errMsg(error), "err"); return false; }
+        if (up.files.length) await uploadFiles(up.files, { mosqueId: m.id, reportId: rep.id, ui: up });
+        toast("تم رفع التقرير بنجاح");
+        await refreshMosque(m.id);
+        return true;
+      },
+    }, { label: "إلغاء" }],
+  });
+}
+async function monthlyContext(m, ym) {
+  const start = new Date(ym + "-01T00:00:00"), end = new Date(start); end.setMonth(end.getMonth() + 1);
+  const { data } = await sb.from("reports").select("type,data,created_at").eq("mosque_id", m.id).gte("created_at", start.toISOString()).lt("created_at", end.toISOString());
+  const rs = data || [];
+  const sat = rs.filter((r) => r.type === "satisfaction" && r.data?.overall).map((r) => +r.data.overall);
+  return { month: ym, visits: rs.filter((r) => r.type === "visit").length, refills: rs.filter((r) => r.type === "refill").length,
+    satisfaction: sat.length ? (sat.reduce((a, b) => a + b, 0) / sat.length).toFixed(2) : null };
+}
+
+// ───────────────────────── لوحة المؤشرات ─────────────────────────
+const charts = [];
+function destroyCharts() { while (charts.length) charts.pop().destroy(); }
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+route("dashboard", {
+  title: "لوحة المؤشرات",
+  async render(v) {
+    v.innerHTML = `<div class="empty">جارٍ تحميل المؤشرات…</div>`;
+    const [{ data: st, error }] = await Promise.all([sb.rpc("dashboard_stats"), loadMosques()]);
+    if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
+    const r = role();
+    const stg = st.stages || {};
+    const kpi = (lbl, val, sub = "", icon = I.mosque, cls = "", href = "") =>
+      `<div class="card kpi ${cls}"><div class="lbl">${icon}${esc(lbl)}</div><div class="val">${val}</div>${sub ? `<div class="sub">${sub}</div>` : ""}${href ? `<a class="more" href="#${href}" aria-label="${esc(lbl)}"></a>` : ""}</div>`;
+    const pct = st.total ? Math.round((st.active / st.total) * 100) : 0;
+    const hello = r === "association" ? assocName(S.me.association_id) : r === "company" ? S.settings.company_name : S.settings.org_name;
+
+    v.innerHTML = `
+      <div class="row" style="margin-bottom:16px">
+        <div><div class="muted small">${esc(hello || "")}</div><h2 style="margin:0;font-size:22px">أهلًا ${esc(S.me.name)} 👋</h2></div>
+        <div class="right row no-print">
+          ${r !== "viewer" ? `<button class="btn" data-print>${I.print} طباعة اللوحة</button>` : ""}
+        </div>
+      </div>
+      <div class="kpis">
+        ${kpi("المساجد في المشروع", fmtNum(st.total), `${fmtNum(st.active)} مُركّب · ${pct}% إنجاز`, I.mosque, "hero", r !== "viewer" ? "/mosques" : "")}
+        ${kpi("أجهزة التعطير العاملة", fmtNum(st.devices), "في المساجد قيد التشغيل", I.sparkle)}
+        ${kpi("متوسط الرضا", st.satisfaction ? `${Number(st.satisfaction).toFixed(2)}<small> / 5</small>` : "—", st.satisfaction ? stars(st.satisfaction) : "لا توجد قياسات بعد", I.star)}
+        ${kpi("تعبئات هذا الشهر", fmtNum(st.refills_month), `${fmtNum(st.visits_week)} زيارة خلال ٧ أيام`, I.drop)}
+        ${kpi(`تعبئة خلال ${S.settings.reminder_hours || 72} ساعة`, fmtNum(st.due_soon), "تذكير آلي للشركة", I.clock, st.due_soon ? "warn" : "", r !== "viewer" ? "/refills" : "")}
+        ${kpi("تعبئات متأخرة", fmtNum(st.overdue), `${fmtNum(st.visit_overdue)} مسجد تأخرت زيارته`, I.alert, st.overdue ? "alert" : "", r !== "viewer" ? "/refills" : "")}
+        ${r === "viewer" ? kpi("التقارير المرفوعة", fmtNum(st.reports_total), "زيارات وقياسات وتعبئات", I.report) :
+          kpi("بانتظار اعتماد التركيب", fmtNum(st.pending_approval), "دراسات احتياج مرفوعة", I.check, st.pending_approval && r === "admin" ? "warn" : "", "/mosques?stage=study_done")}
+        ${kpi("المهام المفتوحة", fmtNum(st.open_tasks), st.overdue_tasks ? `<span style="color:var(--bad)">${fmtNum(st.overdue_tasks)} متأخرة</span>` : "لا مهام متأخرة", I.tasks, "", r !== "viewer" ? "/tasks" : "")}
+      </div>
+
+      <div class="card" style="margin-top:16px"><div class="hd"><h3>مسار المشروع</h3><span class="muted small">عدد المساجد في كل مرحلة — اضغط للتصفية</span></div>
+        <div class="bd"><div class="pipe">${STAGE_ORDER.concat(["not_feasible"]).map((s) => `<div class="st ${s === "active" ? "on" : ""}" ${r !== "viewer" ? `data-stage="${s}"` : ""}>
+          <div class="n">${fmtNum(stg[s] || 0)}</div><div class="l">${esc(STAGES[s].l)}</div><div class="who">${esc(STAGES[s].who)}</div></div>`).join("")}</div>
+          <div class="bar gold" style="margin-top:14px"><i style="width:${pct}%"></i></div>
+          <div class="row small muted" style="margin-top:6px"><span>نسبة الإنجاز (التركيب)</span><b class="right num">${pct}%</b></div></div></div>
+
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card span2"><div class="hd"><h3>النشاط خلال ٦ أشهر</h3></div><div class="bd" style="height:280px"><canvas id="c-series"></canvas></div></div>
+        <div class="card"><div class="hd"><h3>توزيع المراحل</h3></div><div class="bd" style="height:280px"><canvas id="c-stages"></canvas></div></div>
+      </div>
+
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card"><div class="hd"><h3>اتجاه الرضا</h3></div><div class="bd" style="height:240px"><canvas id="c-sat"></canvas></div></div>
+        <div class="card span2"><div class="hd"><h3>الأحياء</h3><span class="muted small">إجمالي ومُركّب</span></div><div class="bd" style="height:240px"><canvas id="c-dist"></canvas></div></div>
+      </div>
+
+      ${r === "admin" || r === "viewer" ? `<div class="card" style="margin-top:16px"><div class="hd"><h3>أداء الجمعيات المشرفة</h3></div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>الجمعية</th><th>المساجد</th><th>مُركّب</th><th>قيد الاستكمال</th><th>زيارات ٣٠ يومًا</th><th>الرضا</th><th style="width:20%">الإنجاز</th></tr></thead>
+        <tbody>${(st.by_association || []).map((a) => `<tr><td class="t-name">${esc(a.name)}</td><td class="num">${a.total}</td><td class="num">${a.active}</td><td class="num">${a.pending}</td>
+          <td class="num">${a.visits}</td><td>${stars(a.satisfaction)}</td><td><div class="bar"><i style="width:${a.total ? Math.round(a.active / a.total * 100) : 0}%"></i></div></td></tr>`).join("") ||
+          `<tr><td colspan="7" class="empty">لا توجد جمعيات مسند لها مساجد بعد</td></tr>`}</tbody></table></div></div>` : ""}
+
+      <div class="grid g2" style="margin-top:16px">
+        ${r !== "viewer" ? `<div class="card"><div class="hd"><h3>يتطلب إجراءك</h3><span class="chip gold plain" id="todo-n"></span></div><div class="bd" id="todo"></div></div>` : ""}
+        <div class="card ${r === "viewer" ? "span2" : ""}"><div class="hd"><h3>آخر المستجدات</h3></div><div class="bd"><div class="tl">${(st.recent || []).map((a) => `
+          <div class="row" style="gap:10px;${r !== "viewer" ? "cursor:pointer" : ""}" ${r !== "viewer" ? `data-m="${a.mosque_id}"` : ""}><span class="chip plain">${ago(a.at)}</span><b class="small">${esc(a.mosque)}</b><span class="small muted">${esc(a.action)}</span></div>`).join("") || `<div class="empty">لا يوجد نشاط بعد</div>`}</div></div></div>
+      </div>`;
+
+    $$("[data-stage]", v).forEach((el) => el.onclick = () => go("/mosques?stage=" + el.dataset.stage));
+    $$("[data-m]", v).forEach((el) => el.onclick = () => go("/mosque/" + el.dataset.m));
+    $("[data-print]", v)?.addEventListener("click", () => window.print());
+    if (r !== "viewer") drawTodo(v);
+    drawCharts(st);
+  },
+  leave: destroyCharts,
+});
+
+function drawTodo(v) {
+  const r = role();
+  const items = [];
+  for (const m of S.mosques || []) {
+    const a = nextAction(m);
+    if (a && !a.waiting) items.push({ m, t: a.title, c: "gold" });
+    if (m.stage === "active") {
+      const h = m.next_refill_at ? (new Date(m.next_refill_at) - Date.now()) / 36e5 : null;
+      if ((r === "company" || r === "admin") && h != null && h <= (S.settings.reminder_hours || 72)) items.push({ m, t: h < 0 ? "تعبئة متأخرة" : `تعبئة ${untilText(m.next_refill_at)}`, c: h < 0 ? "bad" : "warn" });
+      const lv = m.last_visit_at || m.installed_at;
+      if ((r === "association") && lv && Date.now() - new Date(lv) > (S.settings.visit_every_days || 7) * 864e5) items.push({ m, t: "زيارة أسبوعية مستحقة", c: "warn" });
+    }
+  }
+  $("#todo-n", v).textContent = items.length;
+  $("#todo", v).innerHTML = items.length ? `<div class="tl">${items.slice(0, 12).map((x) => `<div class="row" style="cursor:pointer" data-m="${x.m.id}">
+    <span class="chip ${x.c}">${esc(x.t)}</span><b class="small">${esc(x.m.name)}</b><span class="muted small">${esc(x.m.district || "")}</span></div>`).join("")}
+    ${items.length > 12 ? `<a href="#/mosques" class="small">و${items.length - 12} أخرى…</a>` : ""}</div>` : `<div class="empty">${I.check}لا توجد إجراءات معلّقة 🎉</div>`;
+  $$("#todo [data-m]", v).forEach((el) => el.onclick = () => go("/mosque/" + el.dataset.m));
+}
+
+function drawCharts(st) {
+  destroyCharts();
+  if (!window.Chart) {
+    // مكتبة الرسوم تُحمّل مؤجلة؛ نرسم عند اكتمالها
+    if (document.readyState !== "complete") window.addEventListener("load", () => $("#c-series") && drawCharts(st), { once: true });
+    return;
+  }
+  Chart.defaults.font.family = cssVar("--font") || "IBM Plex Sans Arabic";
+  Chart.defaults.color = cssVar("--ink-3");
+  Chart.defaults.borderColor = cssVar("--line");
+  const brand = cssVar("--brand"), gold = cssVar("--gold"), info = cssVar("--info");
+  const labels = (st.series || []).map((s) => monthName(s.month).split(" ")[0]);
+  const base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", rtl: true, labels: { usePointStyle: true, boxWidth: 8 } } } };
+  const c1 = $("#c-series");
+  if (c1) charts.push(new Chart(c1, { type: "bar", data: { labels, datasets: [
+    { label: "تركيب", data: st.series.map((s) => s.installs), backgroundColor: gold, borderRadius: 6, maxBarThickness: 26 },
+    { label: "تعبئة", data: st.series.map((s) => s.refills), backgroundColor: brand, borderRadius: 6, maxBarThickness: 26 },
+    { label: "زيارات", data: st.series.map((s) => s.visits), backgroundColor: info, borderRadius: 6, maxBarThickness: 26 },
+  ] }, options: { ...base, scales: { x: { reverse: true, grid: { display: false } }, y: { position: "right", beginAtZero: true, ticks: { precision: 0 } } } } }));
+  const stg = st.stages || {};
+  const keys = STAGE_ORDER.concat(["not_feasible", "suspended"]).filter((k) => stg[k]);
+  const palette = { selected: "#b8b2a3", assigned: "#7fb2d4", data_done: "#2c6e9b", feasible: "#e2c27f", study_done: "#d99a3a", approved: gold, active: brand, not_feasible: "#c0392b", suspended: "#7d1f16" };
+  const c2 = $("#c-stages");
+  if (c2) charts.push(new Chart(c2, { type: "doughnut", data: { labels: keys.map((k) => STAGES[k].s), datasets: [{ data: keys.map((k) => stg[k]), backgroundColor: keys.map((k) => palette[k]), borderWidth: 2, borderColor: cssVar("--surface") }] },
+    options: { ...base, cutout: "66%" } }));
+  const c3 = $("#c-sat");
+  if (c3) charts.push(new Chart(c3, { type: "line", data: { labels, datasets: [{ label: "متوسط الرضا", data: st.series.map((s) => s.satisfaction), borderColor: gold, backgroundColor: gold + "33", fill: true, tension: .35, spanGaps: true, pointRadius: 4 }] },
+    options: { ...base, plugins: { legend: { display: false } }, scales: { y: { position: "right", min: 0, max: 5, ticks: { stepSize: 1 } }, x: { reverse: true, grid: { display: false } } } } }));
+  const c4 = $("#c-dist");
+  const dist = st.by_district || [];
+  if (c4) charts.push(new Chart(c4, { type: "bar", data: { labels: dist.map((d) => d.district), datasets: [
+    { label: "إجمالي", data: dist.map((d) => d.total), backgroundColor: cssVar("--line"), borderRadius: 5, maxBarThickness: 22 },
+    { label: "مُركّب", data: dist.map((d) => d.active), backgroundColor: brand, borderRadius: 5, maxBarThickness: 22 },
+  ] }, options: { ...base, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } } } }));
+}
+
+// ───────────────────────── المساجد ─────────────────────────
+const MOSQUE_FIELDS = [
+  ["name", "اسم المسجد/الجامع", true], ["kind", "النوع"], ["district", "الحي"], ["address", "العنوان"], ["map_url", "رابط الموقع (خرائط Google)"],
+  ["imam_name", "اسم الإمام"], ["imam_phone", "جوال الإمام"], ["muezzin_name", "اسم المؤذن"], ["muezzin_phone", "جوال المؤذن"],
+  ["servant_name", "اسم خادم المسجد"], ["servant_phone", "جوال خادم المسجد"], ["notes", "ملاحظات"],
+];
+const missingData = (m) => ["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].filter((k) => !m[k]);
+
+route("mosques", {
+  title: "المساجد",
+  async render(v) {
+    await loadMosques();
+    const p = S.params;
+    const r = role();
+    const f = { q: p.q || "", stage: p.stage || "", assoc: p.assoc || "", district: p.district || "", missing: p.missing || "" };
+    const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+    v.innerHTML = `
+      <div class="card">
+        <div class="hd" style="flex-wrap:wrap">
+          <div class="search grow" style="min-width:220px">${I.search}<input class="input" id="q" placeholder="بحث بالاسم أو الرمز أو الحي أو اسم/جوال الإمام…" value="${esc(f.q)}"></div>
+          <select class="input" id="f-stage" style="width:auto"><option value="">كل المراحل</option>${Object.entries(STAGES).map(([k, s]) => `<option value="${k}" ${f.stage === k ? "selected" : ""}>${esc(s.l)}</option>`).join("")}</select>
+          ${r === "admin" || r === "company" ? `<select class="input" id="f-assoc" style="width:auto"><option value="">كل الجمعيات</option><option value="none" ${f.assoc === "none" ? "selected" : ""}>غير مسند</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+          <select class="input" id="f-district" style="width:auto"><option value="">كل الأحياء</option>${districts.map((d) => `<option ${f.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
+          ${r !== "company" ? `<label class="row small" style="gap:6px"><input type="checkbox" id="f-missing" ${f.missing ? "checked" : ""}> بيانات ناقصة</label>` : ""}
+        </div>
+        <div class="hd" style="background:var(--surface-2)">
+          <span class="muted small" id="count"></span>
+          <div class="right row">
+            ${r === "admin" ? `<button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد لجمعية</button>
+              <button class="btn sm" id="b-import">${I.upload} استيراد من Excel</button>
+              <button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>` : ""}
+            <button class="btn sm" id="b-export">${I.download} تصدير Excel</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table class="tbl cards"><thead><tr>
+          ${r === "admin" ? `<th style="width:34px"><input type="checkbox" id="all"></th>` : ""}
+          <th>المسجد</th>${r !== "association" ? "<th>الجمعية</th>" : ""}<th>المرحلة</th><th>فريق المسجد</th><th>التعبئة القادمة</th></tr></thead>
+          <tbody id="rows"></tbody></table></div>
+      </div>`;
+    const sel = new Set();
+    const apply = () => {
+      const q = f.q.trim().toLowerCase();
+      const list = S.mosques.filter((m) =>
+        (!f.stage || m.stage === f.stage) &&
+        (!f.assoc || (f.assoc === "none" ? !m.association_id : m.association_id === f.assoc)) &&
+        (!f.district || m.district === f.district) &&
+        (!f.missing || missingData(m).length) &&
+        (!q || [m.name, m.code, m.district, m.imam_name, m.imam_phone, m.muezzin_name, m.servant_name, m.address].some((x) => String(x || "").toLowerCase().includes(q))));
+      $("#count", v).textContent = `${fmtNum(list.length)} من ${fmtNum(S.mosques.length)} مسجد`;
+      const person = (role, n, ph, label) => `<div class="prow"><span class="pr">${role}</span>${n || ph ? `<b>${esc(n || "—")}</b>${contactBtns({ phone: ph, name: n, text: `السلام عليكم ${label} ${n || ""}، ` })}` : `<span class="chip bad plain small">ناقص</span>`}</div>`;
+      $("#rows", v).innerHTML = list.slice(0, 600).map((m) => `<tr class="click" data-id="${m.id}">
+        ${r === "admin" ? `<td data-hide-sm onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""}></td>` : ""}
+        <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num nowrap" dir="ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}</div></td>
+        ${r !== "association" ? `<td data-hide-sm class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
+        <td>${stageChip(m.stage)}</td>
+        <td data-hide-sm style="min-width:230px">${person("إمام", m.imam_name, m.imam_phone, "فضيلة الشيخ")}${person("مؤذن", m.muezzin_name, m.muezzin_phone, "الأخ")}${person("خادم", m.servant_name, m.servant_phone, "الأخ")}</td>
+        <td data-hide-sm>${refillChip(m)}</td></tr>`).join("") || `<tr><td colspan="9"><div class="empty">${I.mosque}لا توجد مساجد مطابقة${r === "admin" && !S.mosques.length ? " — ابدأ بإضافة مسجد أو استيراد ملف Excel" : ""}</div></td></tr>`;
+      if (list.length > 600) $("#rows", v).insertAdjacentHTML("beforeend", `<tr><td colspan="9" class="muted small" style="text-align:center">يُعرض أول ٦٠٠ — استخدم البحث والتصفية</td></tr>`);
+      v._list = list;
+    };
+    const setParam = () => { const qs = new URLSearchParams(Object.entries(f).filter(([, x]) => x)).toString(); history.replaceState(null, "", "#/mosques" + (qs ? "?" + qs : "")); };
+    $("#q", v).oninput = (e) => { f.q = e.target.value; apply(); setParam(); };
+    $("#f-stage", v).onchange = (e) => { f.stage = e.target.value; apply(); setParam(); };
+    $("#f-assoc", v)?.addEventListener("change", (e) => { f.assoc = e.target.value; apply(); setParam(); });
+    $("#f-district", v).onchange = (e) => { f.district = e.target.value; apply(); setParam(); };
+    $("#f-missing", v)?.addEventListener("change", (e) => { f.missing = e.target.checked ? "1" : ""; apply(); setParam(); });
+    $("#rows", v).onchange = (e) => {
+      const cb = e.target.closest("[data-sel]");
+      if (cb) { cb.checked ? sel.add(cb.dataset.sel) : sel.delete(cb.dataset.sel); $("#b-assign", v).disabled = !sel.size; $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد (${sel.size})`; }
+    };
+    $("#rows", v).onclick = (e) => {
+      const tr = e.target.closest("tr[data-id]");
+      if (tr) go("/mosque/" + tr.dataset.id);
+    };
+    $("#all", v)?.addEventListener("change", (e) => {
+      (v._list || []).slice(0, 600).forEach((m) => e.target.checked ? sel.add(m.id) : sel.delete(m.id));
+      $("#b-assign", v).disabled = !sel.size; $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد (${sel.size})`; apply();
+    });
+    $("#b-add", v)?.addEventListener("click", async () => { if (await mosqueForm()) render(); });
+    $("#b-import", v)?.addEventListener("click", () => importDialog());
+    $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
+    $("#b-export", v).onclick = () => exportXlsx((v._list || []).map(mosqueRow), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
+    apply();
+  },
+});
+
+const mosqueRow = (m) => ({
+  "الرمز": m.code, "اسم المسجد": m.name, "النوع": m.kind, "الحي": m.district || "", "العنوان": m.address || "", "رابط الموقع": m.map_url || "",
+  "الجمعية المشرفة": m.association_id ? assocName(m.association_id) : "", "المرحلة": STAGES[m.stage]?.l || m.stage,
+  "اسم الإمام": m.imam_name || "", "جوال الإمام": displayPhone(m.imam_phone), "اسم المؤذن": m.muezzin_name || "", "جوال المؤذن": displayPhone(m.muezzin_phone),
+  "اسم الخادم": m.servant_name || "", "جوال الخادم": displayPhone(m.servant_phone), "عدد الأجهزة": m.devices_count ?? "", "العطر": m.fragrance || "",
+  "تاريخ التركيب": m.installed_at ? isoDay(m.installed_at) : "", "آخر تعبئة": m.last_refill_at ? isoDay(m.last_refill_at) : "",
+  "التعبئة القادمة": m.next_refill_at ? isoDay(m.next_refill_at) : "", "آخر زيارة": m.last_visit_at ? isoDay(m.last_visit_at) : "",
+  "متوسط الرضا": m.satisfaction_avg ?? "", "ملاحظات": m.notes || "",
+});
+
+async function mosqueForm(m = null) {
+  const r = role();
+  const body = `<form class="form" onsubmit="return false">
+    ${fld("name", "اسم المسجد/الجامع", { value: m?.name, req: true, attrs: r !== "admin" ? "readonly" : "" })}
+    ${fld("kind", "النوع", { value: m?.kind || "جامع", opts: ["جامع", "مسجد", "مصلى"] })}
+    ${fld("district", "الحي", { value: m?.district, req: r === "association" })}
+    ${fld("address", "العنوان / أقرب معلم", { value: m?.address })}
+    ${fld("map_url", "رابط الموقع على الخريطة", { value: m?.map_url, type: "url", full: true, ph: "https://maps.google.com/…" })}
+    ${fld("imam_name", "اسم الإمام", { value: m?.imam_name, req: r === "association" })}${fld("imam_phone", "جوال الإمام", { type: "tel", value: m?.imam_phone, ph: "05xxxxxxxx", req: r === "association" })}
+    ${fld("muezzin_name", "اسم المؤذن", { value: m?.muezzin_name, req: r === "association" })}${fld("muezzin_phone", "جوال المؤذن", { type: "tel", value: m?.muezzin_phone, ph: "05xxxxxxxx", req: r === "association" })}
+    ${fld("servant_name", "اسم خادم المسجد", { value: m?.servant_name, req: r === "association" })}${fld("servant_phone", "جوال خادم المسجد", { type: "tel", value: m?.servant_phone, ph: "05xxxxxxxx", req: r === "association" })}
+    ${r === "admin" ? fld("association_id", "الجمعية المشرفة", { value: m?.association_id || "", opts: [["", "— بدون إسناد الآن —"], ...S.associations.filter((a) => a.active).map((a) => [a.id, a.name])], hint: m ? "لتغيير الإسناد استخدم زر «إسناد»" : "سيُسند المسجد وينتقل لمرحلة استكمال البيانات", attrs: m ? "disabled" : "" }) : ""}
+    ${r === "admin" && m ? fld("refill_cycle_days", "دورة التعبئة (يوم)", { type: "number", value: m.refill_cycle_days || "", ph: String(S.settings.refill_cycle_days || 30) }) : ""}
+    ${fld("notes", "ملاحظات", { type: "textarea", value: m?.notes, full: true })}
+  </form>`;
+  return modal({
+    title: m ? "تعديل بيانات المسجد" : "إضافة مسجد", body, wide: true,
+    actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: async (mb) => {
+      const d = formData(mb);
+      if (!d.name) { toast("اسم المسجد مطلوب", "err"); return false; }
+      ["imam_phone", "muezzin_phone", "servant_phone"].forEach((k) => { if (d[k]) d[k] = displayPhone(d[k]); });
+      const assoc = d.association_id; delete d.association_id;
+      if (d.refill_cycle_days !== undefined) d.refill_cycle_days = d.refill_cycle_days ? +d.refill_cycle_days : null;
+      Object.keys(d).forEach((k) => { if (d[k] === "") d[k] = null; });
+      if (r !== "admin") delete d.name;
+      if (m) {
+        const { error } = await sb.from("mosques").update(d).eq("id", m.id);
+        if (error) { toast(errMsg(error), "err"); return false; }
+        await refreshMosque(m.id); toast("تم الحفظ"); return true;
+      }
+      const { data, error } = await sb.from("mosques").insert({ ...d, created_by: S.me.id }).select().single();
+      if (error) { toast(errMsg(error), "err"); return false; }
+      if (assoc) await sb.rpc("assign_mosques", { p_ids: [data.id], p_assoc: assoc });
+      await loadMosques(true); toast("تمت إضافة المسجد"); return data;
+    } }, { label: "إلغاء" }],
+  });
+}
+
+async function assignDialog(ids) {
+  if (!ids.length) return;
+  const active = S.associations.filter((a) => a.active);
+  if (!active.length) { toast("أضف جمعية أولًا من صفحة الجمعيات", "err"); return; }
+  return modal({
+    title: `إسناد ${ids.length} مسجد لجمعية مشرفة`,
+    body: `<div class="stack">${fld("assoc", "الجمعية المشرفة", { opts: active.map((a) => [a.id, a.name]) })}
+      <div class="hint">المساجد في مرحلة «بانتظار الإسناد» تنتقل لمرحلة «استكمال البيانات»، ويصل إشعار لحسابات الجمعية.</div></div>`,
+    actions: [{ label: `${I.check} إسناد`, cls: "primary", onClick: async (mb) => {
+      const { data, error } = await sb.rpc("assign_mosques", { p_ids: ids, p_assoc: $('[name="assoc"]', mb).value });
+      if (error) { toast(errMsg(error), "err"); return false; }
+      await loadMosques(true); toast(`تم إسناد ${data} مسجد`); return true;
+    } }, { label: "إلغاء" }],
+  });
+}
+
+// ───── الاستيراد من Excel ─────
+const IMPORT_MAP = {
+  name: ["اسم المسجد", "المسجد", "اسم الجامع", "الجامع", "الاسم", "name", "mosque"],
+  kind: ["النوع", "نوع", "kind", "type"],
+  district: ["الحي", "حي", "district"],
+  address: ["العنوان", "الموقع الوصفي", "address"],
+  map_url: ["رابط الموقع", "الموقع", "الخريطة", "رابط", "location", "map"],
+  imam_name: ["اسم الإمام", "الإمام", "الامام", "اسم الامام", "imam"],
+  imam_phone: ["جوال الإمام", "رقم الإمام", "جوال الامام", "رقم الامام", "هاتف الإمام", "imam phone"],
+  muezzin_name: ["اسم المؤذن", "المؤذن", "muezzin"],
+  muezzin_phone: ["جوال المؤذن", "رقم المؤذن", "هاتف المؤذن", "muezzin phone"],
+  servant_name: ["اسم الخادم", "خادم المسجد", "الخادم", "اسم خادم المسجد", "servant"],
+  servant_phone: ["جوال الخادم", "رقم الخادم", "جوال خادم المسجد", "رقم خادم المسجد", "servant phone"],
+  association: ["الجمعية", "الجمعية المشرفة", "association"],
+  notes: ["ملاحظات", "notes"],
+};
+const normH = (s) => String(s || "").trim().replace(/[إأآ]/g, "ا").replace(/ة/g, "ه").replace(/\s+/g, " ").toLowerCase();
+function guessColumn(header) {
+  const h = normH(header);
+  let best = null;
+  for (const [k, names] of Object.entries(IMPORT_MAP)) for (const n of names) {
+    const nn = normH(n);
+    if (h === nn) return k;
+    if (!best && (h.includes(nn) && nn.length > 3)) best = k;
+  }
+  // الأعمدة المركبة مثل «جوال الإمام» يجب ألا تُطابق «الإمام» فقط
+  if (best && best.endsWith("_name") && /جوال|رقم|هاتف|phone|mobile/.test(h)) best = best.replace("_name", "_phone");
+  return best;
+}
+function downloadTemplate() {
+  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد");
+}
+async function importDialog() {
+  const body = document.createElement("div");
+  body.innerHTML = `<div class="stack">
+    <div class="row"><div class="grow small muted">يقبل ملفات Excel ‏(xlsx/xls) أو CSV. الصف الأول عناوين الأعمدة، ويتعرف النظام تلقائيًا على: اسم المسجد، الحي، اسم وجوال الإمام والمؤذن والخادم، الجمعية…</div>
+      <button class="btn sm" data-tpl>${I.download} تحميل النموذج</button></div>
+    <div class="drop" data-pick>${I.excel.replace("<svg", '<svg style="width:30px;height:30px;display:block;margin:0 auto 6px"')}اختر ملف Excel</div><input type="file" accept=".xlsx,.xls,.csv" hidden>
+    <div data-map></div><div data-prev></div></div>`;
+  let rows = [], mapping = {};
+  const input = $("input", body);
+  $("[data-tpl]", body).onclick = downloadTemplate;
+  $("[data-pick]", body).onclick = () => input.click();
+  const preview = () => {
+    const known = new Set(S.mosques.map((m) => normH(m.name) + "|" + normH(m.district)));
+    const out = rows.map((row) => {
+      const o = {};
+      for (const [col, key] of Object.entries(mapping)) if (key) o[key] = String(row[col] ?? "").trim();
+      return o;
+    }).filter((o) => o.name);
+    out.forEach((o) => { o._dup = known.has(normH(o.name) + "|" + normH(o.district)); });
+    body._out = out;
+    const unknownAssoc = [...new Set(out.map((o) => o.association).filter((a) => a && !S.associations.some((x) => normH(x.name) === normH(a))))];
+    $("[data-prev]", body).innerHTML = `<div class="row small" style="margin:6px 0"><b>${out.length} صف صالح</b>
+      <span class="chip warn plain">${out.filter((o) => o._dup).length} مكرر (سيُتجاوز)</span>
+      ${unknownAssoc.length ? `<span class="chip bad plain">جمعيات غير معرّفة: ${esc(unknownAssoc.join("، "))}</span>` : ""}</div>
+      <div class="tbl-wrap" style="max-height:300px;border:1px solid var(--line);border-radius:10px"><table class="tbl"><thead><tr><th>المسجد</th><th>الحي</th><th>الإمام</th><th>جوال الإمام</th><th>المؤذن</th><th>الخادم</th><th>الجمعية</th></tr></thead>
+      <tbody>${out.slice(0, 100).map((o) => `<tr style="${o._dup ? "opacity:.45" : ""}"><td>${esc(o.name)}</td><td>${esc(o.district || "")}</td><td>${esc(o.imam_name || "")}</td><td class="num">${esc(o.imam_phone || "")}</td><td>${esc(o.muezzin_name || "")}</td><td>${esc(o.servant_name || "")}</td><td>${esc(o.association || "")}</td></tr>`).join("")}</tbody></table></div>`;
+  };
+  input.onchange = async () => {
+    const file = input.files[0]; if (!file) return;
+    try {
+      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+    } catch (e) { toast("تعذّرت قراءة الملف: " + e.message, "err"); return; }
+    if (!rows.length) { toast("الملف فارغ", "err"); return; }
+    const headers = Object.keys(rows[0]);
+    mapping = Object.fromEntries(headers.map((h) => [h, guessColumn(h)]));
+    $("[data-pick]", body).innerHTML = `${I.check} ${esc(file.name)} — ${rows.length} صف`;
+    const opts = [["", "— تجاهل —"], ...Object.keys(IMPORT_MAP).map((k) => [k, { name: "اسم المسجد", kind: "النوع", district: "الحي", address: "العنوان", map_url: "رابط الموقع", imam_name: "اسم الإمام", imam_phone: "جوال الإمام", muezzin_name: "اسم المؤذن", muezzin_phone: "جوال المؤذن", servant_name: "اسم الخادم", servant_phone: "جوال الخادم", association: "الجمعية", notes: "ملاحظات" }[k]])];
+    $("[data-map]", body).innerHTML = `<div class="small" style="font-weight:600;margin-bottom:6px">مطابقة الأعمدة</div><div class="form" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${headers.map((h) =>
+      `<div class="field"><label>${esc(h)}</label><select class="input" data-col="${esc(h)}">${opts.map(([v, l]) => `<option value="${v}" ${mapping[h] === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>`).join("")}</div>`;
+    $$("[data-col]", body).forEach((s) => s.onchange = () => { mapping[s.dataset.col] = s.value; preview(); });
+    if (!Object.values(mapping).includes("name")) toast("حدد عمود «اسم المسجد» من المطابقة", "err");
+    preview();
+  };
+  await modal({
+    title: "استيراد المساجد من Excel", body, wide: true,
+    actions: [{ label: `${I.upload} استيراد`, cls: "primary", onClick: async () => {
+      const out = (body._out || []).filter((o) => !o._dup);
+      if (!out.length) { toast("لا توجد صفوف جديدة للاستيراد", "err"); return false; }
+      const byAssoc = {};
+      const recs = out.map((o) => {
+        const a = o.association && S.associations.find((x) => normH(x.name) === normH(o.association));
+        const rec = { created_by: S.me.id };
+        for (const k of Object.keys(IMPORT_MAP)) if (k !== "association" && o[k]) rec[k] = k.endsWith("_phone") ? displayPhone(o[k]) : o[k];
+        if (rec.kind && !["جامع", "مسجد", "مصلى"].includes(rec.kind)) rec.kind = rec.kind.includes("مسجد") ? "مسجد" : rec.kind.includes("مصل") ? "مصلى" : "جامع";
+        rec._assoc = a?.id;
+        return rec;
+      });
+      let ok = 0;
+      for (let i = 0; i < recs.length; i += 200) {
+        const chunk = recs.slice(i, i + 200);
+        const { data, error } = await sb.from("mosques").insert(chunk.map(({ _assoc, ...r }) => r)).select("id");
+        if (error) { toast(errMsg(error), "err"); break; }
+        data.forEach((d, j) => { const a = chunk[j]._assoc; if (a) (byAssoc[a] = byAssoc[a] || []).push(d.id); });
+        ok += data.length;
+      }
+      for (const [a, ids] of Object.entries(byAssoc)) await sb.rpc("assign_mosques", { p_ids: ids, p_assoc: a });
+      await loadMosques(true);
+      toast(`تم استيراد ${ok} مسجد`);
+      render();
+      return true;
+    } }, { label: "إلغاء" }],
+  });
+}
+
+// ───────────────────────── صفحة المسجد ─────────────────────────
+const WORKFLOW = [
+  [1, "إدخال المسجد في القائمة المختارة", "مدير النظام"], [2, "إيعاز المسجد للجمعية", "مدير النظام"], [3, "إكمال البيانات الناقصة", "الجمعية المشرفة"],
+  [4, "التواصل مع الإمام — تقرير", "الجمعية المشرفة"], [5, "دراسة احتياج الجامع — تقرير", "الشركة المنفذة"], [6, "اعتماد التركيب", "مدير النظام"],
+  [7, "التركيب ورفع التقرير", "الشركة المنفذة"], [8, "الزيارات الأسبوعية — تقارير", "الجمعية"], [9, "قياس الرضا عن الرائحة — تقرير", "الجمعية"],
+  [10, "التقرير الشهري لأداء التعطير", "الجمعية"], [11, "التعبئة الشهرية مع تذكير قبل ٧٢ ساعة", "الشركة المنفذة"], [12, "رفع التقرير بعد التعبئة", "الشركة المنفذة"],
+];
+const STAGE_STEP = { selected: 1, assigned: 3, data_done: 4, not_feasible: 4, feasible: 5, study_done: 6, approved: 7, active: 8, suspended: 8 };
+
+route("mosque", {
+  title: "بيانات المسجد",
+  async render(v) {
+    const id = S.params.id;
+    if (!S.mosques) await loadMosques();
+    const m = await refreshMosque(id);
+    if (!m) { v.innerHTML = `<div class="empty">${I.mosque}المسجد غير موجود أو لا تملك صلاحية عرضه</div>`; return; }
+    $(".topbar h1").textContent = m.name;
+    const r = role();
+    const [{ data: reports }, { data: atts }, { data: tasks }, { data: acts }] = await Promise.all([
+      sb.from("reports").select("*").eq("mosque_id", id).order("created_at", { ascending: false }),
+      sb.from("attachments").select("*").eq("mosque_id", id).order("created_at", { ascending: false }),
+      sb.from("tasks").select("*").eq("mosque_id", id).order("created_at", { ascending: false }),
+      sb.from("activity").select("*").eq("mosque_id", id).order("created_at", { ascending: false }).limit(200),
+    ]);
+    const attBy = {}; (atts || []).forEach((a) => { if (a.report_id) (attBy[a.report_id] = attBy[a.report_id] || []).push(a); });
+    const looseFiles = (atts || []).filter((a) => !a.report_id);
+    const cur = STAGE_STEP[m.stage] || 1;
+    const act = nextAction(m);
+    const ops = m.stage === "active" ? opsActions() : [];
+    const canEdit = r === "admin" || (r === "association" && m.association_id === S.me.association_id);
+    const tab = S.params.tab || "overview";
+    const greet = (who, n) => `السلام عليكم ${who} ${n || ""}، معكم فريق مشروع «${S.settings.platform_name || "طيب"}» لتعطير المساجد بخصوص ${m.name}. `;
+
+    v.innerHTML = `
+      <div class="card"><div class="mhead">
+        <div class="mic">${I.mosque}</div>
+        <div class="grow" style="min-width:220px">
+          <div class="row" style="gap:8px"><h2>${esc(m.name)}</h2>${stageChip(m.stage)}</div>
+          <div class="muted small" style="margin-top:4px">${esc(m.code)} · ${esc(m.kind)} · ${esc(m.district || "الحي غير محدد")}${m.association_id ? ` · ${esc(assocName(m.association_id))}` : ""}
+            ${m.map_url ? ` · <a href="${esc(m.map_url)}" target="_blank" rel="noopener">${I.map.replace("<svg", '<svg style="width:14px;vertical-align:-2px"')} الموقع</a>` : ""}</div>
+        </div>
+        <div class="row no-print">
+          ${canEdit ? `<button class="btn sm" data-edit>${I.edit} تعديل البيانات</button>` : ""}
+          ${r === "admin" ? `<button class="btn sm" data-assign>${I.org} ${m.association_id ? "تغيير الجمعية" : "إسناد"}</button>` : ""}
+          ${r !== "viewer" ? `<button class="btn sm" data-task>${I.tasks} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}
+          <button class="btn sm" data-print-m>${I.print} ملف المسجد</button>
+          ${r === "admin" ? `<button class="btn sm ghost" data-more title="المزيد">⋯</button>` : ""}
+        </div>
+      </div></div>
+
+      ${act ? `<div class="action-card" style="margin-top:14px"><div class="ic">${act.waiting ? I.clock : I.sparkle}</div>
+        <div class="grow"><h4>${act.waiting ? "بانتظار: " : "الإجراء التالي: "}${esc(act.title)}</h4><p>${esc(act.waiting ? `هذه الخطوة من مهام ${STAGES[m.stage].who}` : act.desc)}</p></div>
+        ${!act.waiting ? `<button class="btn primary" data-act="${act.action}">${act.action === "decide" ? "مراجعة واعتماد" : act.action === "assign" ? "إسناد الآن" : act.action === "complete" ? (missingData(m).length ? "استكمال البيانات" : "اعتماد اكتمال البيانات") : "رفع التقرير"}</button>` : ""}</div>` : ""}
+      ${ops.length ? `<div class="action-card" style="margin-top:14px"><div class="ic">${I.drop}</div><div class="grow"><h4>المسجد قيد التشغيل</h4>
+        <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) · آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
+        <div class="row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
+
+      <div class="tabs" style="margin-top:18px">${[["overview", "نظرة عامة"], ["reports", "التقارير", (reports || []).length], ["tasks", "المهام والطلبات", (tasks || []).length], ["files", "الملفات", (atts || []).length], ["log", "السجل"]]
+        .map(([k, l, n]) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${l}${n ? `<span class="n">${n}</span>` : ""}</button>`).join("")}</div>
+      <div id="tab"></div>`;
+
+    const T = $("#tab", v);
+    const authorIds = [...new Set((reports || []).map((x) => x.author_id).filter(Boolean))];
+    const authors = {};
+    if (r === "admin" && authorIds.length) { const { data } = await sb.from("accounts").select("id,name").in("id", authorIds); (data || []).forEach((a) => authors[a.id] = a.name); }
+
+    const drawTab = (k) => {
+      $$(".tabs button", v).forEach((b) => b.classList.toggle("on", b.dataset.tab === k));
+      history.replaceState(null, "", `#/mosque/${id}${k !== "overview" ? "?tab=" + k : ""}`);
+      if (k === "overview") {
+        T.innerHTML = `<div class="grid g3">
+          <div class="span2 stack">
+            <div class="card"><div class="hd"><h3>فريق المسجد</h3>${missingData(m).length ? `<span class="chip bad">ناقص: ${missingData(m).length} حقول</span>` : `<span class="chip ok">البيانات مكتملة</span>`}</div>
+              <div class="bd"><div class="people">${[["الإمام", m.imam_name, m.imam_phone, "فضيلة الشيخ"], ["المؤذن", m.muezzin_name, m.muezzin_phone, "الأخ"], ["خادم المسجد", m.servant_name, m.servant_phone, "الأخ"]]
+                .map(([l, n, p, g]) => `<div class="person"><div class="r">${l}</div><div class="n">${esc(n || "—")}</div><div class="row"><span class="p num">${esc(displayPhone(p) || "لا يوجد رقم")}</span><span class="right">${contactBtns({ phone: p, name: n, text: greet(g, n) })}</span></div></div>`).join("")}</div></div></div>
+            <div class="card"><div class="hd"><h3>بيانات التشغيل</h3></div><div class="bd"><div class="kv">
+              ${[["عدد الأجهزة", m.devices_count ?? "—"], ["العطر", m.fragrance || "—"], ["تاريخ التركيب", fmtDate(m.installed_at)], ["موعد التركيب المخطط", m.planned_install_at ? fmtDate(m.planned_install_at) : "—"],
+                 ["آخر تعبئة", fmtDateTime(m.last_refill_at)], ["التعبئة القادمة", m.next_refill_at ? `${fmtDateTime(m.next_refill_at)} ${refillChip(m)}` : "—"],
+                 ["دورة التعبئة", `${m.refill_cycle_days || S.settings.refill_cycle_days || 30} يوم`], ["آخر زيارة", fmtDate(m.last_visit_at)], ["متوسط الرضا", stars(m.satisfaction_avg)],
+                 ["العنوان", esc(m.address || "—")]].map(([k2, v2]) => `<div><div class="k">${k2}</div><div class="v">${typeof v2 === "string" && v2.includes("<") ? v2 : esc(v2)}</div></div>`).join("")}</div>
+              ${r === "company" && ["feasible", "study_done", "approved"].includes(m.stage) ? `<div class="row" style="margin-top:14px"><label class="small">موعد التركيب المخطط</label><input type="date" class="input" style="width:auto" id="plan" value="${m.planned_install_at || ""}"><button class="btn sm" id="plan-save">حفظ</button></div>` : ""}
+              ${m.notes ? `<div style="margin-top:14px" class="small"><b>ملاحظات:</b> ${esc(m.notes)}</div>` : ""}</div></div>
+            <div class="card"><div class="hd"><h3>آخر التقارير</h3><a class="right small" href="#/mosque/${id}?tab=reports" data-tabgo="reports">الكل</a></div><div class="bd"><div class="tl">${(reports || []).slice(0, 3).map((x) => reportCard(x, attBy[x.id], authors)).join("") || `<div class="empty">لا توجد تقارير بعد</div>`}</div></div></div>
+          </div>
+          <div class="card"><div class="hd"><h3>مسار الإجراءات</h3></div><div class="bd"><div class="steps">${WORKFLOW.map(([n, t, w]) => {
+            const done = m.stage === "active" ? n <= 7 || hasType(reports, n) : n < cur;
+            const now = m.stage === "active" ? n >= 8 && !done : n === cur;
+            return `<div class="step ${done ? "done" : ""} ${now ? "now" : ""}"><div class="dotn">${done ? "✓" : n}</div><div><div class="t">${t}</div><div class="w">${w}</div></div></div>`;
+          }).join("")}</div></div></div></div>`;
+        $("[data-tabgo]", T)?.addEventListener("click", (e) => { e.preventDefault(); drawTab("reports"); });
+        $("#plan-save", T)?.addEventListener("click", async () => {
+          if (await run(sb.from("mosques").update({ planned_install_at: $("#plan", T).value || null }).eq("id", id), "تم حفظ موعد التركيب")) render();
+        });
+      } else if (k === "reports") {
+        const types = [...new Set((reports || []).map((x) => x.type))];
+        T.innerHTML = `<div class="row" style="margin-bottom:12px"><select class="input" style="width:auto" id="rt"><option value="">كل التقارير</option>${types.map((t) => `<option value="${t}">${esc(REPORT_TYPES[t]?.l || t)}</option>`).join("")}</select>
+          ${r !== "viewer" ? `<button class="btn sm right" data-op="note">${I.chat} إضافة ملاحظة</button>` : ""}</div><div class="tl" id="rl"></div>`;
+        const drawR = (t) => { $("#rl", T).innerHTML = (reports || []).filter((x) => !t || x.type === t).map((x) => reportCard(x, attBy[x.id], authors)).join("") || `<div class="empty">${I.report}لا توجد تقارير</div>`; hydrateFiles(T); };
+        $("#rt", T).onchange = (e) => drawR(e.target.value);
+        drawR("");
+      } else if (k === "tasks") {
+        T.innerHTML = `<div class="card">${tasksTable(tasks || [], { mosque: false })}</div>`;
+        bindTaskRows(T);
+      } else if (k === "files") {
+        T.innerHTML = `<div class="card pad">${r !== "viewer" ? `<div data-up></div><button class="btn primary" style="margin-top:10px" data-upgo>${I.upload} رفع الملفات</button>` : ""}
+          <h4 style="margin:18px 0 6px">جميع الملفات (${(atts || []).length})</h4>${filesHtml(atts) || `<div class="empty">لا توجد ملفات</div>`}</div>`;
+        if (r !== "viewer") {
+          const up = uploader(); $("[data-up]", T).appendChild(up);
+          $("[data-upgo]", T).onclick = async () => { if (!up.files.length) return toast("اختر ملفات أولًا", "err"); await uploadFiles(up.files, { mosqueId: id, ui: up }); toast("تم رفع الملفات"); render(); };
+        }
+      } else if (k === "log") {
+        T.innerHTML = `<div class="card pad"><div class="tl">${(acts || []).map((a) => `<div class="row small" style="gap:10px"><span class="chip plain num">${fmtDateTime(a.created_at)}</span><b>${esc(a.action)}</b>${a.details ? `<span class="muted">${esc(a.details)}</span>` : ""}</div>`).join("") || `<div class="empty">لا يوجد سجل</div>`}</div></div>`;
+      }
+      hydrateFiles(T);
+      $$("[data-print-report]", T).forEach((b) => b.onclick = () => printReport(reports.find((x) => x.id === b.dataset.printReport), m));
+      $$("[data-op]", T).forEach((b) => b.onclick = async () => { if (await openReportForm(m, b.dataset.op)) render(); });
+    };
+    v._looseFiles = looseFiles;
+    drawTab(tab);
+    $$(".tabs button", v).forEach((b) => b.onclick = () => drawTab(b.dataset.tab));
+    $("[data-edit]", v)?.addEventListener("click", async () => { if (await mosqueForm(m)) render(); });
+    $("[data-assign]", v)?.addEventListener("click", async () => { if (await assignDialog([id])) render(); });
+    $("[data-task]", v)?.addEventListener("click", async () => { if (await taskForm({ mosque_id: id })) render(); });
+    $("[data-print-m]", v).onclick = () => printMosque(m, reports || []);
+    $("[data-more]", v)?.addEventListener("click", () => adminStageDialog(m));
+    $$("[data-op]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(m, b.dataset.op)) render(); });
+    $("[data-act]", v)?.addEventListener("click", async (e) => {
+      const a = e.currentTarget.dataset.act;
+      if (a === "assign") { if (await assignDialog([id])) render(); }
+      else if (a === "complete") {
+        if (missingData(m).length) { if (await mosqueForm(m)) render(); return; }
+        if (await run(sb.rpc("complete_data", { p_mosque: id }), "تم اعتماد اكتمال البيانات — الخطوة التالية: التواصل مع الإمام")) { await refreshMosque(id); render(); }
+      } else if (a === "decide") decideDialog(m, reports || [], attBy);
+      else if (await openReportForm(m, a)) render();
+    });
+  },
+});
+function hasType(reports, step) {
+  const t = { 8: "visit", 9: "satisfaction", 10: "monthly", 11: "refill", 12: "refill" }[step];
+  return t && (reports || []).some((r) => r.type === t);
+}
+
+async function decideDialog(m, reports, attBy) {
+  const study = reports.find((r) => r.type === "needs_study");
+  const body = document.createElement("div");
+  body.innerHTML = `${study ? `<div class="tl">${reportCard(study, attBy[study.id])}</div>` : `<div class="empty">لا يوجد تقرير دراسة</div>`}
+    <div class="field" style="margin-top:14px"><label>ملاحظة القرار (تصل للشركة والجمعية)</label><textarea class="input" name="note"></textarea></div>`;
+  hydrateFiles(body);
+  const res = await modal({ title: `اعتماد التركيب — ${m.name}`, body, wide: true, actions: [
+    { label: `${I.check} اعتماد التركيب`, cls: "primary", value: "yes" }, { label: "إعادة الدراسة للشركة", cls: "danger", value: "no" }, { label: "إلغاء" }] });
+  if (!res) return;
+  const note = $('[name="note"]', body).value.trim() || null;
+  if (await run(sb.rpc("decide_study", { p_mosque: m.id, p_approve: res === "yes", p_note: note }), res === "yes" ? "تم اعتماد التركيب وإشعار الشركة" : "أعيدت الدراسة للشركة")) { await refreshMosque(m.id); render(); }
+}
+async function adminStageDialog(m) {
+  const res = await modal({ title: "إجراءات المدير", body: `<div class="stack">
+    ${fld("stage", "تغيير المرحلة يدويًا", { value: m.stage, opts: Object.entries(STAGES).map(([k, s]) => [k, s.l]) })}
+    ${fld("note", "السبب", { type: "textarea" })}<div class="hint">يُستخدم للإيقاف أو إعادة التفعيل أو تصحيح المرحلة، ويُسجَّل في سجل المسجد.</div></div>`,
+    actions: [{ label: "حفظ المرحلة", cls: "primary", onClick: async (mb) => {
+      const d = formData(mb);
+      return (await run(sb.rpc("set_stage", { p_mosque: m.id, p_stage: d.stage, p_note: d.note || null }), "تم تغيير المرحلة")) ? "ok" : false;
+    } }, { label: `${I.trash} حذف المسجد`, cls: "danger", value: "del" }, { label: "إغلاق" }] });
+  if (res === "del") {
+    if (!(await confirmBox(`حذف «${m.name}» نهائيًا مع جميع تقاريره ومهامه؟`, "حذف", "danger"))) return;
+    if (await run(sb.from("mosques").delete().eq("id", m.id), "تم حذف المسجد")) { await loadMosques(true); go("/mosques"); }
+  } else if (res) { await refreshMosque(m.id); render(); }
+}
+function printMosque(m, reports) {
+  const rows = [["الرمز", m.code], ["النوع", m.kind], ["الحي", m.district], ["العنوان", m.address], ["الجمعية المشرفة", assocName(m.association_id)], ["المرحلة", STAGES[m.stage]?.l],
+    ["الإمام", `${m.imam_name || "—"} — ${displayPhone(m.imam_phone) || ""}`], ["المؤذن", `${m.muezzin_name || "—"} — ${displayPhone(m.muezzin_phone) || ""}`], ["خادم المسجد", `${m.servant_name || "—"} — ${displayPhone(m.servant_phone) || ""}`],
+    ["عدد الأجهزة", m.devices_count], ["العطر", m.fragrance], ["تاريخ التركيب", fmtDate(m.installed_at)], ["آخر تعبئة", fmtDate(m.last_refill_at)], ["التعبئة القادمة", fmtDate(m.next_refill_at)],
+    ["آخر زيارة", fmtDate(m.last_visit_at)], ["متوسط الرضا", m.satisfaction_avg ? `${m.satisfaction_avg} / 5` : "—"]];
+  printDoc("ملف مسجد", `<h2>${esc(m.name)}</h2><table>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${esc(v ?? "—")}</td></tr>`).join("")}</table>
+    <h2>سجل التقارير</h2><table><tr><th style="width:auto">التاريخ</th><th style="width:auto">التقرير</th><th style="width:auto">الملخص</th></tr>
+    ${reports.map((r) => `<tr><td>${fmtDate(r.created_at)}</td><td>${esc(REPORT_TYPES[r.type]?.l || r.type)}</td><td>${esc(r.summary || "")}</td></tr>`).join("")}</table>`);
+}
+
+// ───────────────────────── المهام والطلبات ─────────────────────────
+const T_STATUS = { open: ["مفتوحة", "info"], in_progress: ["قيد التنفيذ", "warn"], done: ["منجزة", "ok"], cancelled: ["ملغاة", "plain"] };
+const T_PRIO = { low: ["منخفضة", "plain"], normal: ["عادية", "plain"], high: ["عالية", "warn"], urgent: ["عاجلة", "bad"] };
+const T_ASSIGNEE = { admin: "مدير النظام", association: "الجمعية", company: "الشركة المنفذة" };
+const taskWho = (t) => t.assignee === "association" ? assocName(t.association_id) : T_ASSIGNEE[t.assignee];
+
+function tasksTable(tasks, { mosque = true } = {}) {
+  if (!tasks.length) return `<div class="empty">${I.tasks}لا توجد مهام أو طلبات</div>`;
+  return `<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>المهمة</th>${mosque ? "<th>المسجد</th>" : ""}<th>الجهة المكلفة</th><th>الأولوية</th><th>الاستحقاق</th><th>الحالة</th></tr></thead><tbody>
+    ${tasks.map((t) => {
+      const late = t.due_date && !["done", "cancelled"].includes(t.status) && t.due_date < isoDay();
+      return `<tr class="click" data-task="${t.id}"><td><div class="t-name">${t.kind === "request" ? `<span class="chip gold plain small">طلب</span> ` : ""}${esc(t.title)}</div><div class="muted small">${ago(t.created_at)}</div></td>
+      ${mosque ? `<td data-hide-sm>${t.mosque_id ? esc(mosqueById(t.mosque_id)?.name || "—") : `<span class="muted">عام</span>`}</td>` : ""}
+      <td data-hide-sm>${esc(taskWho(t))}</td><td data-hide-sm><span class="chip ${T_PRIO[t.priority][1]}">${T_PRIO[t.priority][0]}</span></td>
+      <td data-hide-sm class="${late ? "" : "muted"}" style="${late ? "color:var(--bad);font-weight:600" : ""}">${t.due_date ? fmtDate(t.due_date) : "—"}</td>
+      <td><span class="chip ${T_STATUS[t.status][1]}">${T_STATUS[t.status][0]}</span></td></tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+function bindTaskRows(root) { $$("[data-task]", root).forEach((tr) => tr.onclick = () => go("/tasks/" + tr.dataset.task)); }
+
+async function taskForm(pre = {}) {
+  const r = role();
+  await loadMosques();
+  const mosques = S.mosques;
+  const assignees = r === "admin" ? [["association", "الجمعية المشرفة"], ["company", "الشركة المنفذة"], ["admin", "مدير النظام"]]
+    : r === "association" ? [["admin", "طلب إلى مدير النظام"], ["association", "مهمة داخلية للجمعية"]] : [["admin", "طلب إلى مدير النظام"]];
+  const body = document.createElement("div");
+  body.innerHTML = `<form class="form" onsubmit="return false">
+    ${fld("title", r === "admin" ? "عنوان المهمة" : "عنوان الطلب", { req: true, full: true, ph: r === "admin" ? "مثال: التحقق من جهاز المصلى الرئيسي" : "مثال: طلب تغيير نوع العطر" })}
+    ${fld("mosque_id", "المسجد", { value: pre.mosque_id || "", opts: [["", "— عام (غير مرتبط بمسجد) —"], ...mosques.map((m) => [m.id, `${m.name} — ${m.code}`])] })}
+    ${fld("assignee", r === "admin" ? "الجهة المكلفة" : "الوجهة", { value: pre.assignee || assignees[0][0], opts: assignees })}
+    ${r === "admin" ? `<div data-assoc-wrap>${fld("association_id", "الجمعية", { opts: [["", "— جمعية المسجد —"], ...S.associations.map((a) => [a.id, a.name])] })}</div>` : ""}
+    ${fld("priority", "الأولوية", { value: "normal", opts: Object.entries(T_PRIO).map(([k, x]) => [k, x[0]]) })}
+    ${fld("due_date", "تاريخ الاستحقاق", { type: "date" })}
+    ${fld("details", "التفاصيل", { type: "textarea", full: true })}
+  </form><div class="field" style="margin-top:12px"><label>مرفقات</label><div data-up></div></div>`;
+  const up = uploader(); $("[data-up]", body).appendChild(up);
+  const syncAssoc = () => { const w = $("[data-assoc-wrap]", body); if (w) w.hidden = $('[name="assignee"]', body).value !== "association"; };
+  $('[name="assignee"]', body).onchange = syncAssoc; syncAssoc();
+  return modal({
+    title: r === "admin" ? "إيعاز مهمة" : "رفع طلب", body, wide: true,
+    actions: [{ label: `${I.send} إرسال`, cls: "primary", onClick: async (mb) => {
+      const d = formData($("form", mb));
+      if (!d.title) { toast("العنوان مطلوب", "err"); return false; }
+      const rec = { title: d.title, details: d.details || null, mosque_id: d.mosque_id || null, assignee: d.assignee, priority: d.priority, due_date: d.due_date || null,
+        association_id: d.assignee === "association" ? (d.association_id || (r === "association" ? S.me.association_id : null)) : null, kind: r === "admin" ? "task" : "request" };
+      if (rec.assignee === "association" && !rec.association_id && !rec.mosque_id) { toast("حدد الجمعية أو المسجد", "err"); return false; }
+      const { data, error } = await sb.from("tasks").insert(rec).select().single();
+      if (error) { toast(errMsg(error), "err"); return false; }
+      if (up.files.length) await uploadFiles(up.files, { taskId: data.id, mosqueId: null, ui: up });
+      toast(r === "admin" ? "تم إيعاز المهمة وإشعار الجهة المكلفة" : "تم رفع الطلب لمدير النظام");
+      return data;
+    } }, { label: "إلغاء" }],
+  });
+}
+
+route("tasks", {
+  title: "المهام والطلبات",
+  async render(v) {
+    if (S.params.id) return taskDetail(v, S.params.id);
+    await loadMosques();
+    const { data: tasks, error } = await sb.from("tasks").select("*").order("created_at", { ascending: false }).limit(1000);
+    if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
+    const r = role();
+    let f = S.params.f || "open";
+    const mine = (t) => t.assignee === r && (r !== "association" || t.association_id === S.me.association_id);
+    const groups = {
+      open: ["المفتوحة", (t) => ["open", "in_progress"].includes(t.status)],
+      mine: [r === "admin" ? "الواردة لي" : "المكلفة بها", (t) => mine(t) && ["open", "in_progress"].includes(t.status)],
+      sent: ["المرسلة مني", (t) => t.created_by === S.me.id],
+      requests: ["الطلبات", (t) => t.kind === "request"],
+      late: ["المتأخرة", (t) => t.due_date && t.due_date < isoDay() && ["open", "in_progress"].includes(t.status)],
+      done: ["المنجزة", (t) => t.status === "done"],
+      all: ["الكل", () => true],
+    };
+    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg">${Object.entries(groups).map(([k, [l, fn]]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l} <span class="num">${tasks.filter(fn).length}</span></button>`).join("")}</div>
+      ${r !== "viewer" ? `<button class="btn primary right" id="new">${I.plus} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}</div>
+      <div class="card" id="list"></div>`;
+    const draw = () => { $("#list", v).innerHTML = tasksTable(tasks.filter(groups[f][1])); bindTaskRows(v); };
+    $("#seg", v).onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; f = b.dataset.f; $$("#seg button", v).forEach((x) => x.classList.toggle("on", x === b)); draw(); history.replaceState(null, "", "#/tasks?f=" + f); };
+    $("#new", v)?.addEventListener("click", async () => { if (await taskForm()) render(); });
+    draw();
+  },
+});
+
+async function taskDetail(v, id) {
+  await loadMosques();
+  const [{ data: t }, { data: comments }, { data: atts }] = await Promise.all([
+    sb.from("tasks").select("*").eq("id", id).maybeSingle(),
+    sb.from("task_comments").select("*").eq("task_id", id).order("created_at"),
+    sb.from("attachments").select("*").eq("task_id", id),
+  ]);
+  if (!t) { v.innerHTML = `<div class="empty">المهمة غير موجودة أو لا تملك صلاحية عرضها</div>`; return; }
+  $(".topbar h1").textContent = t.title;
+  const m = t.mosque_id && mosqueById(t.mosque_id);
+  const names = {};
+  if (isAdmin()) { const ids = [t.created_by, ...(comments || []).map((c) => c.author_id)].filter(Boolean); const { data } = await sb.from("accounts").select("id,name,role").in("id", ids); (data || []).forEach((a) => names[a.id] = a.name); }
+  const who = (aid) => aid === S.me.id ? "أنت" : names[aid] || "عضو";
+  v.innerHTML = `<div class="grid g3"><div class="span2 stack">
+    <div class="card pad"><div class="row"><a href="#/tasks" class="small">→ المهام</a></div>
+      <div class="row" style="margin-top:8px">${t.kind === "request" ? `<span class="chip gold">طلب</span>` : `<span class="chip info">مهمة</span>`}<h2 style="margin:0;font-size:20px">${esc(t.title)}</h2></div>
+      ${t.details ? `<p style="white-space:pre-wrap">${esc(t.details)}</p>` : `<p class="muted">لا توجد تفاصيل</p>`}${filesHtml(atts)}</div>
+    <div class="card"><div class="hd"><h3>المتابعة والتعليقات</h3></div><div class="bd"><div class="tl">${(comments || []).map((c) => `<div class="tl-item"><div class="ti">${I.chat}</div><div class="tb"><div class="th"><b class="small">${esc(who(c.author_id))}</b><span class="muted small right">${fmtDateTime(c.created_at)}</span></div><div style="white-space:pre-wrap;margin-top:4px">${esc(c.body)}</div></div></div>`).join("") || `<div class="muted small">لا توجد تعليقات</div>`}</div>
+      ${role() !== "viewer" ? `<div class="row" style="margin-top:14px;align-items:flex-end"><textarea class="input grow" id="cm" placeholder="اكتب تحديثًا أو ردًا…" style="min-height:60px"></textarea><button class="btn primary" id="cm-send">${I.send} إرسال</button></div>` : ""}</div></div>
+  </div>
+  <div class="card pad stack">
+    <div><div class="muted small">الحالة</div><select class="input" id="st" ${role() === "viewer" ? "disabled" : ""}>${Object.entries(T_STATUS).map(([k, [l]]) => `<option value="${k}" ${t.status === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div><div class="muted small">الجهة المكلفة</div><b>${esc(taskWho(t))}</b></div>
+    <div><div class="muted small">الأولوية</div><span class="chip ${T_PRIO[t.priority][1]}">${T_PRIO[t.priority][0]}</span></div>
+    <div><div class="muted small">الاستحقاق</div><b>${t.due_date ? fmtDate(t.due_date) : "—"}</b></div>
+    <div><div class="muted small">المسجد</div>${m ? `<a href="#/mosque/${m.id}"><b>${esc(m.name)}</b></a>` : "<b>عام</b>"}</div>
+    <div><div class="muted small">أنشأها</div><b>${esc(who(t.created_by))}</b> <span class="muted small">(${ROLES[t.creator_role] || ""}) · ${fmtDateTime(t.created_at)}</span></div>
+    ${t.closed_at ? `<div><div class="muted small">أُغلقت</div><b>${fmtDateTime(t.closed_at)}</b></div>` : ""}
+    ${isAdmin() ? `<button class="btn danger sm" id="del">${I.trash} حذف</button>` : ""}
+  </div></div>`;
+  hydrateFiles(v);
+  $("#st", v).onchange = async (e) => { if (await run(sb.from("tasks").update({ status: e.target.value }).eq("id", id), "تم تحديث الحالة")) render(); };
+  $("#cm-send", v)?.addEventListener("click", async () => {
+    const body = $("#cm", v).value.trim(); if (!body) return;
+    if (await run(sb.from("task_comments").insert({ task_id: id, body }))) render();
+  });
+  $("#del", v)?.addEventListener("click", async () => { if (await confirmBox("حذف المهمة نهائيًا؟", "حذف", "danger") && await run(sb.from("tasks").delete().eq("id", id), "تم الحذف")) go("/tasks"); });
+}
+
+// ───────────────────────── جدول التعبئة ─────────────────────────
+route("refills", {
+  title: "جدول التعبئة والزيارات",
+  async render(v) {
+    await loadMosques();
+    const r = role();
+    const active = S.mosques.filter((m) => m.stage === "active");
+    const rh = S.settings.reminder_hours || 72, vd = S.settings.visit_every_days || 7;
+    const h = (m) => m.next_refill_at ? (new Date(m.next_refill_at) - Date.now()) / 36e5 : Infinity;
+    const overdue = active.filter((m) => h(m) < 0).sort((a, b) => h(a) - h(b));
+    const soon = active.filter((m) => h(m) >= 0 && h(m) <= rh).sort((a, b) => h(a) - h(b));
+    const later = active.filter((m) => h(m) > rh).sort((a, b) => h(a) - h(b));
+    const visitDue = active.filter((m) => Date.now() - new Date(m.last_visit_at || m.installed_at) > vd * 864e5);
+    const tbl = (list, empty) => list.length ? `<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>المسجد</th><th>الحي</th><th>الأجهزة</th><th>العطر</th><th>آخر تعبئة</th><th>الموعد</th><th>المتبقي</th><th></th></tr></thead><tbody>
+      ${list.map((m) => `<tr class="click" data-id="${m.id}"><td><div class="t-name">${esc(m.name)}</div><div class="small muted">${esc(m.code)} ${contactBtns({ phone: m.servant_phone, name: m.servant_name, text: `السلام عليكم، نود إبلاغكم بموعد تعبئة عطر ${m.name}: ${fmtDateTime(m.next_refill_at)}` })}</div></td>
+        <td data-hide-sm>${esc(m.district || "—")}</td><td data-hide-sm class="num">${m.devices_count ?? "—"}</td><td data-hide-sm>${esc(m.fragrance || "—")}</td>
+        <td data-hide-sm>${fmtDate(m.last_refill_at)}</td><td data-hide-sm class="num">${fmtDateTime(m.next_refill_at)}</td><td>${refillChip(m)}</td>
+        <td data-hide-sm onclick="event.stopPropagation()">${r === "company" || r === "admin" ? `<button class="btn sm gold" data-refill="${m.id}">${I.drop} تسجيل التعبئة</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">${empty}</div>`;
+    v.innerHTML = `<div class="kpis" style="margin-bottom:16px">
+        <div class="card kpi alert"><div class="lbl">${I.alert}متأخرة</div><div class="val">${overdue.length}</div></div>
+        <div class="card kpi warn"><div class="lbl">${I.clock}خلال ${rh} ساعة</div><div class="val">${soon.length}</div><div class="sub">يصل تذكير آلي للشركة</div></div>
+        <div class="card kpi"><div class="lbl">${I.drop}مجدولة لاحقًا</div><div class="val">${later.length}</div></div>
+        <div class="card kpi"><div class="lbl">${I.visit}زيارات أسبوعية مستحقة</div><div class="val">${visitDue.length}</div></div>
+      </div>
+      <div class="stack">
+        <div class="card"><div class="hd"><h3>تعبئات متأخرة</h3><span class="chip bad">${overdue.length}</span></div>${tbl(overdue, "لا توجد تعبئات متأخرة ✓")}</div>
+        <div class="card"><div class="hd"><h3>تعبئات خلال ${rh} ساعة</h3><span class="chip warn">${soon.length}</span></div>${tbl(soon, "لا توجد تعبئات قريبة")}</div>
+        <div class="card"><div class="hd"><h3>الجدول القادم</h3><button class="btn sm right" id="exp">${I.download} تصدير</button></div>${tbl(later, "لا توجد مساجد قيد التشغيل بعد")}</div>
+        ${r !== "company" ? `<div class="card"><div class="hd"><h3>زيارات أسبوعية مستحقة</h3><span class="chip warn">${visitDue.length}</span></div>
+          ${visitDue.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>المسجد</th><th>الجمعية</th><th>آخر زيارة</th><th></th></tr></thead><tbody>${visitDue.map((m) => `<tr class="click" data-id="${m.id}"><td class="t-name">${esc(m.name)}</td><td>${esc(assocName(m.association_id))}</td><td>${m.last_visit_at ? `${fmtDate(m.last_visit_at)} (${ago(m.last_visit_at)})` : "لا توجد"}</td>
+            <td onclick="event.stopPropagation()">${r !== "viewer" ? `<button class="btn sm" data-visit="${m.id}">${I.visit} رفع زيارة</button>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">جميع الزيارات محدثة ✓</div>`}</div>` : ""}
+      </div>`;
+    $$("tr[data-id]", v).forEach((tr) => tr.onclick = () => go("/mosque/" + tr.dataset.id));
+    $$("[data-refill]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.refill), "refill")) render(); });
+    $$("[data-visit]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.visit), "visit")) render(); });
+    $("#exp", v).onclick = () => exportXlsx(active.map(mosqueRow), `جدول-التعبئة-${isoDay()}.xlsx`, "التعبئة");
+  },
+});
+
+// ───────────────────────── مركز التقارير ─────────────────────────
+route("reports", {
+  title: "التقارير",
+  async render(v) {
+    await loadMosques();
+    const p = S.params;
+    const f = { type: p.type || "", assoc: p.assoc || "", from: p.from || isoDay(new Date(Date.now() - 30 * 864e5)), to: p.to || isoDay() };
+    const r = role();
+    v.innerHTML = `<div class="card"><div class="hd" style="flex-wrap:wrap">
+        <select class="input" id="t" style="width:auto"><option value="">كل أنواع التقارير</option>${Object.entries(REPORT_TYPES).filter(([k]) => k !== "note").map(([k, x]) => `<option value="${k}" ${f.type === k ? "selected" : ""}>${esc(x.l)}</option>`).join("")}</select>
+        ${r === "admin" ? `<select class="input" id="a" style="width:auto"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+        <label class="small">من</label><input type="date" class="input" id="from" style="width:auto" value="${f.from}">
+        <label class="small">إلى</label><input type="date" class="input" id="to" style="width:auto" value="${f.to}">
+        <div class="right row"><button class="btn sm" id="monthly">${I.report} التقرير الشهري المجمع</button><button class="btn sm" id="exp">${I.download} تصدير Excel</button></div>
+      </div><div id="sum" class="bd" style="border-bottom:1px solid var(--line)"></div><div id="list"></div></div>`;
+    let rows = [];
+    const load = async () => {
+      let q = sb.from("reports").select("*").gte("created_at", f.from + "T00:00:00").lte("created_at", f.to + "T23:59:59").order("created_at", { ascending: false }).limit(2000);
+      if (f.type) q = q.eq("type", f.type);
+      const { data, error } = await q;
+      if (error) { toast(errMsg(error), "err"); return; }
+      rows = (data || []).filter((x) => !f.assoc || mosqueById(x.mosque_id)?.association_id === f.assoc);
+      const count = (t) => rows.filter((x) => x.type === t).length;
+      const sat = rows.filter((x) => x.type === "satisfaction" && x.data?.overall).map((x) => +x.data.overall);
+      $("#sum", v).innerHTML = `<div class="row small" style="gap:16px"><b>${rows.length} تقرير</b>
+        <span>زيارات: <b>${count("visit")}</b></span><span>تعبئات: <b>${count("refill")}</b></span><span>تركيب: <b>${count("installation")}</b></span>
+        <span>قياسات رضا: <b>${sat.length}</b>${sat.length ? ` (متوسط ${(sat.reduce((a, b) => a + b, 0) / sat.length).toFixed(2)})` : ""}</span>
+        <span>ملاحظات فنية: <b style="color:var(--bad)">${rows.filter((x) => x.type === "visit" && x.data?.status === "issue").length}</b></span></div>`;
+      $("#list", v).innerHTML = rows.length ? `<div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>التاريخ</th><th>المسجد</th><th>التقرير</th><th>الملخص</th><th>الجهة</th></tr></thead><tbody>
+        ${rows.map((x) => { const m = mosqueById(x.mosque_id); return `<tr class="click" data-m="${x.mosque_id}" data-r="${x.id}"><td class="num nowrap">${fmtDate(x.created_at)}</td><td class="t-name">${esc(m?.name || "—")}</td>
+          <td><span class="chip plain">${esc(REPORT_TYPES[x.type]?.l || x.type)}</span></td><td data-hide-sm class="small">${esc(x.summary || "")}</td><td data-hide-sm class="small muted">${esc(ROLES[x.author_role] || "")}</td></tr>`; }).join("")}</tbody></table></div>` : `<div class="empty">${I.report}لا توجد تقارير في هذه الفترة</div>`;
+      $$("tr[data-m]", v).forEach((tr) => tr.onclick = () => go(`/mosque/${tr.dataset.m}?tab=reports`));
+    };
+    const upd = () => { f.type = $("#t", v).value; f.assoc = $("#a", v)?.value || ""; f.from = $("#from", v).value; f.to = $("#to", v).value; load(); };
+    ["#t", "#a", "#from", "#to"].forEach((s) => $(s, v)?.addEventListener("change", upd));
+    $("#exp", v).onclick = () => exportXlsx(rows.map((x) => { const m = mosqueById(x.mosque_id); return { "التاريخ": fmtDateTime(x.created_at), "الرمز": m?.code, "المسجد": m?.name, "الحي": m?.district, "الجمعية": assocName(m?.association_id),
+      "نوع التقرير": REPORT_TYPES[x.type]?.l || x.type, "الملخص": x.summary || "", "الجهة": ROLES[x.author_role] || "", ...Object.fromEntries(reportDetails(x)) }; }), `تقارير-طيب-${f.from}_${f.to}.xlsx`, "التقارير");
+    $("#monthly", v).onclick = () => monthlyCompound();
+    load();
+  },
+});
+
+// تقرير شهري مجمع: أداء التعطير في كل مسجد خلال شهر
+async function monthlyCompound() {
+  const ym = await modal({ title: "التقرير الشهري المجمع", body: fld("m", "الشهر", { type: "month", value: monthKey() }),
+    actions: [{ label: `${I.print} إنشاء التقرير`, cls: "primary", onClick: (mb) => $('[name="m"]', mb).value }, { label: "إلغاء" }] });
+  if (!ym) return;
+  const start = new Date(ym + "-01T00:00:00"), end = new Date(start); end.setMonth(end.getMonth() + 1);
+  const { data } = await sb.from("reports").select("*").gte("created_at", start.toISOString()).lt("created_at", end.toISOString());
+  const { data: monthlies } = await sb.from("reports").select("*").eq("type", "monthly").filter("data->>month", "eq", ym);
+  const rs = data || [];
+  const active = S.mosques.filter((m) => m.stage === "active" || rs.some((x) => x.mosque_id === m.id));
+  const rows = active.map((m) => {
+    const mine = rs.filter((x) => x.mosque_id === m.id);
+    const sat = mine.filter((x) => x.type === "satisfaction" && x.data?.overall).map((x) => +x.data.overall);
+    const mr = (monthlies || []).find((x) => x.mosque_id === m.id);
+    return { m, visits: mine.filter((x) => x.type === "visit").length, issues: mine.filter((x) => x.type === "visit" && x.data?.status === "issue").length,
+      refills: mine.filter((x) => x.type === "refill").length, sat: sat.length ? (sat.reduce((a, b) => a + b, 0) / sat.length).toFixed(2) : "—", perf: mr?.data?.performance ? `${mr.data.performance}/5` : "لم يُرفع" };
+  });
+  printDoc(`التقرير الشهري — ${monthName(ym)}`, `<h2>ملخص الشهر</h2><table>
+    <tr><th>المساجد قيد التشغيل</th><td>${rows.length}</td></tr><tr><th>إجمالي الزيارات</th><td>${rows.reduce((a, x) => a + x.visits, 0)}</td></tr>
+    <tr><th>إجمالي التعبئات</th><td>${rows.reduce((a, x) => a + x.refills, 0)}</td></tr><tr><th>الملاحظات الفنية</th><td>${rows.reduce((a, x) => a + x.issues, 0)}</td></tr>
+    <tr><th>التقارير الشهرية المرفوعة</th><td>${rows.filter((x) => x.perf !== "لم يُرفع").length} من ${rows.length}</td></tr></table>
+    <h2>أداء التعطير في كل مسجد</h2><table><tr><th style="width:auto">المسجد</th><th style="width:auto">الجمعية</th><th style="width:auto">زيارات</th><th style="width:auto">تعبئات</th><th style="width:auto">ملاحظات</th><th style="width:auto">الرضا</th><th style="width:auto">تقييم الأداء</th></tr>
+    ${rows.map((x) => `<tr><td>${esc(x.m.name)}</td><td>${esc(assocName(x.m.association_id))}</td><td>${x.visits}</td><td>${x.refills}</td><td>${x.issues}</td><td>${x.sat}</td><td>${x.perf}</td></tr>`).join("")}</table>`);
+}
+
+// ───────────────────────── المنجزات ─────────────────────────
+route("achievements", {
+  title: "المنجزات",
+  async render(v) {
+    const [{ data: list, error }, { data: st }] = await Promise.all([sb.rpc("achievements"), sb.rpc("dashboard_stats")]);
+    if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
+    const totalRefills = list.reduce((a, x) => a + (x.refills || 0), 0);
+    v.innerHTML = `<div class="card kpi hero" style="padding:26px 28px;margin-bottom:16px">
+        <div class="lbl">${I.sparkle} منجزات ${esc(S.settings.org_name || "المشروع")}</div>
+        <div class="row" style="gap:36px;margin-top:10px;align-items:flex-end">
+          <div><div class="val" style="font-size:44px">${fmtNum(list.length)}</div><div class="sub">مسجد وجامع معطّر</div></div>
+          <div><div class="val">${fmtNum(st?.devices || 0)}</div><div class="sub">جهاز تعطير</div></div>
+          <div><div class="val">${fmtNum(totalRefills)}</div><div class="sub">عملية تعبئة</div></div>
+          <div><div class="val">${st?.satisfaction ? Number(st.satisfaction).toFixed(1) : "—"}<small style="color:#cfe7de"> / 5</small></div><div class="sub">متوسط رضا المصلين</div></div>
+        </div></div>
+      <div class="grid g3" id="gal">${list.map((x) => `<div class="card" style="overflow:hidden">
+        <div style="aspect-ratio:16/10;background:var(--surface-2);display:grid;place-items:center;color:var(--gold)">${x.photos?.length ? `<img data-img="${esc(x.photos[0])}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" alt="">` : I.mosque.replace("<svg", '<svg style="width:54px;height:54px"')}</div>
+        <div class="bd"><div class="row"><b>${esc(x.name)}</b><span class="chip ok right">مُركّب</span></div>
+          <div class="muted small">${esc(x.district || "")}${x.association ? ` · ${esc(x.association)}` : ""}</div>
+          <div class="row small" style="margin-top:10px;gap:14px"><span>التركيب: ${fmtDate(x.installed_at)}</span><span><b>${x.devices ?? "—"}</b> أجهزة</span><span><b>${x.refills}</b> تعبئة</span><span><b>${x.visits}</b> زيارة</span></div>
+          <div style="margin-top:6px">${stars(x.satisfaction)}</div>
+          ${x.photos?.length > 1 ? `<div class="files">${x.photos.slice(1, 5).map((p) => `<img class="thumb" style="width:60px;height:60px" data-img="${esc(p)}" alt="">`).join("")}</div>` : ""}</div></div>`).join("") ||
+        `<div class="card span2 empty" style="grid-column:1/-1">${I.sparkle}ستظهر هنا المساجد بعد تركيب أجهزة التعطير فيها</div>`}</div>`;
+    hydrateFiles(v);
+  },
+});
+
+// ───────────────────────── الإشعارات ─────────────────────────
+route("notifications", {
+  title: "الإشعارات",
+  async render(v) {
+    await loadNotifications();
+    let f = "all";
+    const kinds = { all: "الكل", unread: "غير المقروءة", reminder: "التذكيرات", alert: "التنبيهات", approval: "الاعتمادات", task: "المهام", report: "التقارير" };
+    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg">${Object.entries(kinds).map(([k, l]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l}</button>`).join("")}</div>
+      <div class="right row"><button class="btn sm" id="mute">${localStorage.getItem("tayyib.mute") === "1" ? "🔕 الصوت متوقف" : "🔔 الصوت مفعّل"}</button>
+      ${"Notification" in window && Notification.permission !== "granted" ? `<button class="btn sm" id="perm">تفعيل تنبيهات المتصفح</button>` : ""}
+      <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div class="card" id="list"></div>`;
+    const draw = () => {
+      const list = S.notifications.filter((n) => f === "all" || (f === "unread" ? !n.read_at : f === "task" ? ["task", "assign"].includes(n.kind) : f === "report" ? ["report", "stage", "refill"].includes(n.kind) : n.kind === f));
+      $("#list", v).innerHTML = list.length ? list.map(notifItem).join("") : `<div class="empty">${I.bell}لا توجد إشعارات</div>`;
+    };
+    $("#seg", v).onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; f = b.dataset.f; $$("#seg button", v).forEach((x) => x.classList.toggle("on", x === b)); draw(); };
+    $("#list", v).onclick = (e) => { const it = e.target.closest("[data-n]"); if (it) openNotification(S.notifications.find((n) => n.id === it.dataset.n)); };
+    $("#all", v).onclick = async () => { await markRead(S.notifications.filter((n) => !n.read_at).map((n) => n.id)); draw(); };
+    $("#mute", v).onclick = (e) => { const m = localStorage.getItem("tayyib.mute") === "1"; localStorage.setItem("tayyib.mute", m ? "0" : "1"); e.target.textContent = m ? "🔔 الصوت مفعّل" : "🔕 الصوت متوقف"; if (m) chime("info"); };
+    $("#perm", v)?.addEventListener("click", async () => { await Notification.requestPermission(); render(); });
+    draw();
+  },
+});
+
+// ───────────────────────── الرسائل الجماعية (واتساب / بريد) ─────────────────────────
+route("messages", {
+  title: "الرسائل الجماعية",
+  async render(v) {
+    await loadMosques();
+    const r = role();
+    let accounts = [];
+    if (r === "admin") { const { data } = await sb.from("accounts").select("id,name,phone,email,role,association_id,active").eq("active", true); accounts = data || []; }
+    const { data: history } = await sb.from("broadcasts").select("*").order("created_at", { ascending: false }).limit(30);
+    const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+    v.innerHTML = `<div class="grid g3">
+      <div class="card span2"><div class="hd"><h3>رسالة جديدة</h3></div><div class="bd stack">
+        <div><div class="small" style="font-weight:600;margin-bottom:6px">المستلمون</div><div class="row" id="aud">
+          ${[["imam", "الأئمة"], ["muezzin", "المؤذنون"], ["servant", "خدام المساجد"], ...(r === "admin" ? [["assoc", "مسؤولو الجمعيات"], ["accounts", "حسابات المنصة"]] : [])]
+            .map(([k, l], i) => `<label class="chip plain" style="cursor:pointer;padding:6px 12px"><input type="checkbox" value="${k}" ${i === 0 ? "checked" : ""}> ${l}</label>`).join("")}</div></div>
+        <div class="form" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+          ${r === "admin" ? fld("f_assoc", "الجمعية", { opts: [["", "كل الجمعيات"], ...S.associations.map((a) => [a.id, a.name])] }) : ""}
+          ${fld("f_stage", "المرحلة", { opts: [["", "كل المراحل"], ...Object.entries(STAGES).map(([k, s]) => [k, s.l])] })}
+          ${fld("f_district", "الحي", { opts: [["", "كل الأحياء"], ...districts] })}
+        </div>
+        ${fld("extra", "أرقام إضافية (اختياري)", { type: "textarea", ph: "رقم في كل سطر — يمكن إضافة الاسم بعد فاصلة: 0500000000, أحمد", attrs: 'style="min-height:60px" dir="auto"' })}
+        <div class="field"><label>نص الرسالة</label><textarea class="input" name="body" style="min-height:130px" placeholder="السلام عليكم {الاسم}، …"></textarea>
+          <div class="row small muted">متغيرات: ${["{الاسم}", "{المسجد}", "{الحي}"].map((x) => `<button type="button" class="btn sm ghost" data-var="${x}">${x}</button>`).join("")}</div></div>
+        <div class="row"><button class="btn primary" id="prep">${I.send} تجهيز قائمة الإرسال</button><span class="muted small" id="cnt"></span></div>
+      </div></div>
+      <div class="card"><div class="hd"><h3>السجل</h3></div><div class="bd"><div class="tl">${(history || []).map((b) => {
+        const sent = (b.recipients || []).filter((x) => x.sent).length;
+        return `<div style="cursor:pointer" data-b="${b.id}"><div class="row small"><b>${esc(b.title || "رسالة")}</b><span class="muted right">${ago(b.created_at)}</span></div>
+          <div class="small muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(b.body)}</div>
+          <div class="bar" style="margin-top:4px"><i style="width:${b.recipients?.length ? sent / b.recipients.length * 100 : 0}%"></i></div><div class="small muted">${sent} / ${b.recipients?.length || 0} أُرسلت</div></div>`;
+      }).join("") || `<div class="muted small">لا توجد رسائل سابقة</div>`}</div></div></div></div>`;
+
+    const body = $('[name="body"]', v);
+    $$("[data-var]", v).forEach((b) => b.onclick = () => { body.setRangeText(b.dataset.var, body.selectionStart, body.selectionEnd, "end"); body.focus(); });
+    const collect = () => {
+      const aud = $$("#aud input:checked", v).map((x) => x.value);
+      const fa = $('[name="f_assoc"]', v)?.value || "", fs = $('[name="f_stage"]', v).value, fd = $('[name="f_district"]', v).value;
+      const ms = S.mosques.filter((m) => (!fa || m.association_id === fa) && (!fs || m.stage === fs) && (!fd || m.district === fd));
+      const out = new Map();
+      const add = (phone, name, mosque = "", district = "") => { const n = normPhone(phone); if (n.length >= 11 && !out.has(n)) out.set(n, { phone: n, name: name || "", mosque, district, sent: false }); };
+      for (const m of ms) {
+        if (aud.includes("imam")) add(m.imam_phone, m.imam_name, m.name, m.district);
+        if (aud.includes("muezzin")) add(m.muezzin_phone, m.muezzin_name, m.name, m.district);
+        if (aud.includes("servant")) add(m.servant_phone, m.servant_name, m.name, m.district);
+      }
+      if (aud.includes("assoc")) S.associations.filter((a) => !fa || a.id === fa).forEach((a) => add(a.phone, a.contact_name || a.name));
+      if (aud.includes("accounts")) accounts.filter((a) => !fa || a.association_id === fa).forEach((a) => add(a.phone, a.name));
+      $('[name="extra"]', v).value.split(/\n+/).forEach((line) => { const [p, n] = line.split(/[,،]/); if (p?.trim()) add(p, n?.trim()); });
+      return [...out.values()];
+    };
+    const updCount = () => { $("#cnt", v).textContent = `${collect().length} رقم بعد إزالة التكرار`; };
+    v.addEventListener("change", updCount); v.addEventListener("input", (e) => { if (e.target.name === "extra") updCount(); });
+    updCount();
+    $("#prep", v).onclick = async () => {
+      const recipients = collect();
+      if (!body.value.trim()) return toast("اكتب نص الرسالة", "err");
+      if (!recipients.length) return toast("لا توجد أرقام مطابقة", "err");
+      const { data, error } = await sb.from("broadcasts").insert({ title: body.value.trim().slice(0, 40), body: body.value.trim(), recipients }).select().single();
+      if (error) return toast(errMsg(error), "err");
+      await sendQueue(data);
+      render();
+    };
+    $$("[data-b]", v).forEach((el) => el.onclick = async () => { await sendQueue(history.find((b) => b.id === el.dataset.b)); render(); });
+  },
+});
+
+const fillVars = (t, x) => t.replace(/\{الاسم\}/g, x.name || "").replace(/\{المسجد\}/g, x.mosque || "").replace(/\{الحي\}/g, x.district || "").replace(/\s+،/g, "،").trim();
+
+// قائمة إرسال: كل رقم يُفتح في واتساب برسالة مخصصة، مع تتبع ما أُرسل
+async function sendQueue(b) {
+  const rec = b.recipients || [];
+  const body = document.createElement("div");
+  let saveT = null;
+  const save = () => { clearTimeout(saveT); saveT = setTimeout(() => sb.from("broadcasts").update({ recipients: rec }).eq("id", b.id), 600); };
+  const draw = () => {
+    const sent = rec.filter((x) => x.sent).length;
+    body.innerHTML = `<div class="hint" style="margin-bottom:10px">يفتح زر «إرسال» محادثة واتساب بالرسالة جاهزة لكل رقم — اضغط «إرسال» في واتساب ثم عد للقائمة. يمكنك أيضًا «إرسال التالي» للتنقل السريع.</div>
+      <div class="row" style="margin-bottom:10px"><div class="bar grow"><i style="width:${rec.length ? sent / rec.length * 100 : 0}%"></i></div><b class="num">${sent} / ${rec.length}</b></div>
+      <div class="row" style="margin-bottom:12px"><button class="btn primary" data-next ${sent === rec.length ? "disabled" : ""}>${I.wa} إرسال التالي</button>
+        <button class="btn sm" data-copy>${I.copy} نسخ الأرقام</button><button class="btn sm" data-xls>${I.download} تصدير القائمة</button></div>
+      <div class="tbl-wrap" style="max-height:50vh;border:1px solid var(--line);border-radius:10px"><table class="tbl"><tbody>${rec.map((x, i) => `<tr style="${x.sent ? "opacity:.55" : ""}">
+        <td><b>${esc(x.name || "—")}</b><div class="small muted">${esc(x.mosque || "")}</div></td><td class="num" dir="ltr">${esc(displayPhone(x.phone))}</td>
+        <td><a class="btn sm ${x.sent ? "" : "primary"}" data-send="${i}" href="${esc(waLink(x.phone, fillVars(b.body, x)))}" target="_blank" rel="noopener">${I.wa} ${x.sent ? "أُرسلت ✓" : "إرسال"}</a></td>
+        <td><label class="small"><input type="checkbox" data-mark="${i}" ${x.sent ? "checked" : ""}> تم</label></td></tr>`).join("")}</tbody></table></div>`;
+  };
+  body.onclick = (e) => {
+    const s = e.target.closest("[data-send]");
+    if (s) { rec[+s.dataset.send].sent = true; save(); setTimeout(draw, 50); return; }
+    const mk = e.target.closest("[data-mark]");
+    if (mk) { rec[+mk.dataset.mark].sent = mk.checked; save(); draw(); return; }
+    if (e.target.closest("[data-next]")) { const i = rec.findIndex((x) => !x.sent); if (i >= 0) { window.open(waLink(rec[i].phone, fillVars(b.body, rec[i])), "_blank", "noopener"); rec[i].sent = true; save(); draw(); } }
+    if (e.target.closest("[data-copy]")) { navigator.clipboard.writeText(rec.map((x) => "+" + x.phone).join("\n")).then(() => toast("تم نسخ الأرقام")); }
+    if (e.target.closest("[data-xls]")) exportXlsx(rec.map((x) => ({ "الاسم": x.name, "الجوال": displayPhone(x.phone), "المسجد": x.mosque, "الحي": x.district, "الرسالة": fillVars(b.body, x), "أُرسلت": x.sent ? "نعم" : "لا" })), "قائمة-الإرسال.xlsx", "الإرسال");
+  };
+  draw();
+  await modal({ title: "قائمة الإرسال عبر واتساب", body, wide: true, actions: [{ label: "إغلاق" }] });
+  clearTimeout(saveT);
+  await sb.from("broadcasts").update({ recipients: rec }).eq("id", b.id);
+}
+
+// ───────────────────────── الجمعيات ─────────────────────────
+route("associations", {
+  title: "الجمعيات المشرفة",
+  async render(v) {
+    await Promise.all([loadAssociations(), loadMosques()]);
+    const count = (id, fn = () => true) => S.mosques.filter((m) => m.association_id === id && fn(m)).length;
+    v.innerHTML = `<div class="row" style="margin-bottom:14px"><span class="muted small">${S.associations.length} جمعية</span><button class="btn primary right" id="add">${I.plus} إضافة جمعية</button></div>
+      <div class="grid g3">${S.associations.map((a) => `<div class="card" style="${a.active ? "" : "opacity:.6"}"><div class="bd stack" style="gap:8px">
+        <div class="row"><div class="mic" style="width:42px;height:42px;border-radius:12px;background:var(--gold-soft);color:var(--gold);display:grid;place-items:center">${I.org}</div>
+          <div class="grow"><b>${esc(a.name)}</b><div class="muted small">${esc(a.district || "")}</div></div>${a.active ? "" : `<span class="chip plain">موقوفة</span>`}</div>
+        <div class="row small" style="gap:14px"><span><b class="num">${count(a.id)}</b> مسجد</span><span><b class="num">${count(a.id, (m) => m.stage === "active")}</b> مُركّب</span><span><b class="num">${count(a.id, (m) => ["assigned", "data_done"].includes(m.stage))}</b> قيد الاستكمال</span></div>
+        <div class="bar"><i style="width:${count(a.id) ? count(a.id, (m) => m.stage === "active") / count(a.id) * 100 : 0}%"></i></div>
+        <div class="row small">${a.contact_name ? `<span>${esc(a.contact_name)}</span>` : ""}<span class="right">${contactBtns({ phone: a.phone, email: a.email, name: a.contact_name || a.name, text: `السلام عليكم ${a.contact_name || ""}، ` })}</span></div>
+        <div class="row"><button class="btn sm" data-edit="${a.id}">${I.edit} تعديل</button><a class="btn sm" href="#/mosques?assoc=${a.id}">${I.mosque} المساجد</a></div>
+      </div></div>`).join("") || `<div class="card empty" style="grid-column:1/-1">${I.org}لا توجد جمعيات — أضف أول جمعية مشرفة</div>`}</div>`;
+    $("#add", v).onclick = async () => { if (await assocForm()) render(); };
+    $$("[data-edit]", v).forEach((b) => b.onclick = async () => { if (await assocForm(S.associations.find((a) => a.id === b.dataset.edit))) render(); });
+  },
+});
+async function assocForm(a = null) {
+  return modal({
+    title: a ? "تعديل الجمعية" : "إضافة جمعية مشرفة",
+    body: `<form class="form" onsubmit="return false">${fld("name", "اسم الجمعية", { value: a?.name, req: true, full: true })}${fld("district", "النطاق / الأحياء", { value: a?.district })}
+      ${fld("contact_name", "اسم المسؤول", { value: a?.contact_name })}${fld("phone", "جوال المسؤول", { type: "tel", value: a?.phone })}${fld("email", "البريد الإلكتروني", { type: "email", value: a?.email })}
+      ${a ? fld("active", "الحالة", { value: a.active ? "1" : "0", opts: [["1", "نشطة"], ["0", "موقوفة"]] }) : ""}${fld("notes", "ملاحظات", { type: "textarea", value: a?.notes, full: true })}</form>`,
+    actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: async (mb) => {
+      const d = formData(mb);
+      if (!d.name) { toast("الاسم مطلوب", "err"); return false; }
+      if (d.active !== undefined) d.active = d.active === "1";
+      if (d.phone) d.phone = displayPhone(d.phone);
+      const q = a ? sb.from("associations").update(d).eq("id", a.id) : sb.from("associations").insert(d);
+      const ok = await run(q, "تم الحفظ");
+      if (ok) await loadAssociations();
+      return ok ? true : false;
+    } }, { label: "إلغاء" }],
+  });
+}
+
+// ───────────────────────── الحسابات ─────────────────────────
+const siteUrl = () => location.origin + location.pathname;
+const inviteText = (a) => `السلام عليكم ${a.name}،\nتم إنشاء حسابك في منصة «${S.settings.platform_name || "طيب"}» لمشروع تعطير المساجد بصفة: ${ROLES[a.role]}${a.role === "association" ? ` (${assocName(a.association_id)})` : ""}.\n\nرابط المنصة: ${siteUrl()}\nالبريد: ${a.email}\nرمز التفعيل: ${a.invite_code}\n\nاختر «تفعيل حساب جديد» وأدخل بريدك ورمز التفعيل واختر كلمة مرور.`;
+
+route("accounts", {
+  title: "الحسابات",
+  async render(v) {
+    await loadAssociations();
+    const { data: list, error } = await sb.from("accounts").select("*").order("created_at");
+    if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
+    let f = "";
+    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
+      <button class="btn primary right" id="add">${I.plus} إنشاء حساب</button></div>
+      <div class="card"><div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>الاسم</th><th>الصلاحية</th><th>البريد</th><th>الجوال</th><th>الحالة</th><th>آخر دخول</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
+      <div class="hint" style="margin-top:12px">💡 بعد إنشاء الحساب أرسل للمستخدم رابط المنصة ورمز التفعيل (زر واتساب). يدخل المستخدم بريده والرمز ويختار كلمة مروره. لنسيان كلمة المرور استخدم «إعادة تعيين الدخول».</div>`;
+    const draw = () => {
+      $("#rows", v).innerHTML = list.filter((a) => !f || a.role === f).map((a) => `<tr>
+        <td><div class="t-name">${esc(a.name)}</div><div class="small muted">${esc(a.title || "")}${a.role === "association" ? ` · ${esc(assocName(a.association_id))}` : ""}</div></td>
+        <td><span class="chip ${a.role === "admin" ? "gold" : a.role === "company" ? "info" : a.role === "viewer" ? "plain" : "ok"}">${ROLES[a.role]}</span></td>
+        <td data-hide-sm class="small" dir="ltr" style="text-align:end">${esc(a.email)}</td><td data-hide-sm class="num small">${esc(displayPhone(a.phone) || "—")} ${contactBtns({ phone: a.phone, email: a.email, name: a.name })}</td>
+        <td>${!a.active ? `<span class="chip bad">معطل</span>` : a.user_id ? `<span class="chip ok">مفعّل</span>` : `<span class="chip warn" title="رمز التفعيل">بانتظار التفعيل · <b class="num">${esc(a.invite_code)}</b></span>`}</td>
+        <td data-hide-sm class="small muted">${a.last_seen_at ? ago(a.last_seen_at) : "—"}</td>
+        <td data-hide-sm><div class="row" style="gap:4px;flex-wrap:nowrap">
+          ${!a.user_id && a.active ? `<a class="btn sm" title="إرسال الدعوة عبر واتساب" ${a.phone ? `href="${esc(waLink(a.phone, inviteText(a)))}" target="_blank" rel="noopener"` : `data-copyinv="${a.id}"`}>${a.phone ? I.wa : I.copy} الدعوة</a>` : ""}
+          <button class="btn sm ghost" data-edit="${a.id}" title="تعديل">${I.edit}</button>
+          ${a.user_id && a.user_id !== S.me.user_id ? `<button class="btn sm ghost" data-reset="${a.id}" title="إعادة تعيين الدخول">${I.key}</button>` : ""}</div></td></tr>`).join("") || `<tr><td colspan="7" class="empty">لا توجد حسابات</td></tr>`;
+    };
+    $("#seg", v).onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; f = b.dataset.f; $$("#seg button", v).forEach((x) => x.classList.toggle("on", x === b)); draw(); };
+    $("#rows", v).onclick = async (e) => {
+      const ed = e.target.closest("[data-edit]"), rs = e.target.closest("[data-reset]"), cp = e.target.closest("[data-copyinv]");
+      if (ed && await accountForm(list.find((a) => a.id === ed.dataset.edit))) render();
+      if (cp) { navigator.clipboard.writeText(inviteText(list.find((a) => a.id === cp.dataset.copyinv))).then(() => toast("تم نسخ نص الدعوة")); }
+      if (rs) {
+        const a = list.find((x) => x.id === rs.dataset.reset);
+        if (!(await confirmBox(`إعادة تعيين دخول «${a.name}»؟ سيُلغى دخوله الحالي ويحصل على رمز تفعيل جديد ليختار كلمة مرور جديدة.`, "إعادة التعيين"))) return;
+        const code = await run(sb.rpc("reset_account_login", { p_account: a.id }));
+        if (code) { toast(`رمز التفعيل الجديد: ${code}`, "", { ms: 12000 }); render(); }
+      }
+    };
+    $("#add", v).onclick = async () => { const a = await accountForm(); if (a) { render(); inviteDialog(a); } };
+    draw();
+  },
+});
+async function accountForm(a = null) {
+  const body = document.createElement("div");
+  body.innerHTML = `<form class="form" onsubmit="return false">${fld("name", "الاسم", { value: a?.name, req: true })}${fld("title", "المسمى", { value: a?.title, ph: "مثال: مشرف ميداني" })}
+    ${fld("email", "البريد الإلكتروني (اسم الدخول)", { type: "email", value: a?.email, req: true, attrs: a?.user_id ? "readonly" : "" })}${fld("phone", "الجوال", { type: "tel", value: a?.phone, ph: "05xxxxxxxx" })}
+    ${fld("role", "الصلاحية", { value: a?.role || "association", opts: Object.entries(ROLES), attrs: a?.user_id === S.me.user_id ? "disabled" : "" })}
+    <div data-aw>${fld("association_id", "الجمعية", { value: a?.association_id || "", opts: [["", "— اختر —"], ...S.associations.filter((x) => x.active || x.id === a?.association_id).map((x) => [x.id, x.name])] })}</div>
+    ${a ? fld("active", "الحالة", { value: a.active ? "1" : "0", opts: [["1", "نشط"], ["0", "معطل"]], attrs: a.user_id === S.me.user_id ? "disabled" : "" }) : ""}</form>
+    <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء · الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) · الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة · حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
+  const sync = () => { $("[data-aw]", body).hidden = $('[name="role"]', body).value !== "association"; };
+  $('[name="role"]', body).onchange = sync; sync();
+  return modal({
+    title: a ? "تعديل الحساب" : "إنشاء حساب", body, wide: true,
+    actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: async (mb) => {
+      const d = formData(mb);
+      if (!d.name || !d.email) { toast("الاسم والبريد مطلوبان", "err"); return false; }
+      d.email = d.email.toLowerCase();
+      if (d.role !== "association") d.association_id = null;
+      else if (!d.association_id) { toast("اختر الجمعية", "err"); return false; }
+      if (d.active !== undefined) d.active = d.active === "1";
+      if (d.phone) d.phone = displayPhone(d.phone);
+      if (a?.user_id === S.me.user_id) { delete d.role; delete d.active; }
+      Object.keys(d).forEach((k) => { if (d[k] === "") d[k] = null; });
+      const { data, error } = a ? await sb.from("accounts").update(d).eq("id", a.id).select().single() : await sb.from("accounts").insert(d).select().single();
+      if (error) { toast(errMsg(error), "err"); return false; }
+      toast("تم الحفظ"); return data;
+    } }, { label: "إلغاء" }],
+  });
+}
+function inviteDialog(a) {
+  modal({ title: "تم إنشاء الحساب", body: `<div class="stack"><p style="margin:0">أرسل للمستخدم بيانات التفعيل:</p>
+    <div class="card pad" style="background:var(--surface-2);white-space:pre-wrap;font-size:14px">${esc(inviteText(a))}</div>
+    <div class="row">${a.phone ? `<a class="btn primary" href="${esc(waLink(a.phone, inviteText(a)))}" target="_blank" rel="noopener">${I.wa} إرسال عبر واتساب</a>` : ""}
+    <a class="btn" href="mailto:${esc(a.email)}?subject=${encodeURIComponent("دعوة منصة " + (S.settings.platform_name || "طيب"))}&body=${encodeURIComponent(inviteText(a))}">${I.mail} إرسال بالبريد</a>
+    <button class="btn" data-cp>${I.copy} نسخ</button></div></div>`,
+    onOpen: (mb) => { $("[data-cp]", mb).onclick = () => navigator.clipboard.writeText(inviteText(a)).then(() => toast("تم النسخ")); } });
+}
+
+// ───────────────────────── الإعدادات ─────────────────────────
+route("settings", {
+  title: "الإعدادات",
+  async render(v) {
+    const s = S.settings;
+    v.innerHTML = `<div class="grid g2">
+      <div class="card"><div class="hd"><h3>هوية المنصة</h3></div><div class="bd">
+        <div class="row" style="margin-bottom:16px"><div style="width:72px;height:72px" class="brand-prev">${logoHtml()}</div>
+          <div class="stack" style="gap:6px"><input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" id="logo" hidden>
+          <button class="btn sm" id="logo-btn">${I.upload} رفع شعار المؤسسة</button>${s.logo_path ? `<button class="btn sm danger" id="logo-rm">إزالة الشعار</button>` : ""}<div class="hint">PNG أو SVG مربع، حتى ٥ ميقابايت</div></div></div>
+        <form class="form" id="f1" onsubmit="return false">${fld("platform_name", "اسم المنصة", { value: s.platform_name })}${fld("org_name", "اسم المشروع / المؤسسة", { value: s.org_name })}
+          ${fld("company_name", "اسم الشركة المنفذة", { value: s.company_name, full: true })}</form></div></div>
+      <div class="card"><div class="hd"><h3>التشغيل والتذكيرات</h3></div><div class="bd">
+        <form class="form" id="f2" onsubmit="return false">${fld("refill_cycle_days", "دورة التعبئة الافتراضية (يوم)", { type: "number", value: s.refill_cycle_days })}
+          ${fld("reminder_hours", "التذكير قبل موعد التعبئة (ساعة)", { type: "number", value: s.reminder_hours })}
+          ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}</form>
+        <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
+      </div><button class="btn primary" style="margin-top:16px" id="save">${I.check} حفظ الإعدادات</button>`;
+    $("#save", v).onclick = async () => {
+      const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
+      ["refill_cycle_days", "reminder_hours", "visit_every_days"].forEach((k) => d[k] = Math.max(1, +d[k] || 1));
+      if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }
+    };
+    $("#logo-btn", v).onclick = () => $("#logo", v).click();
+    $("#logo", v).onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      const path = `logo-${Date.now()}.${(f.name.split(".").pop() || "png").toLowerCase()}`;
+      const { error } = await sb.storage.from("brand").upload(path, f, { contentType: f.type });
+      if (error) return toast(errMsg(error), "err");
+      if (await run(sb.from("settings").update({ logo_path: path }).eq("id", 1), "تم تحديث الشعار")) { await loadSettings(); paintShell(); render(); }
+    };
+    $("#logo-rm", v)?.addEventListener("click", async () => { if (await run(sb.from("settings").update({ logo_path: null }).eq("id", 1), "تمت إزالة الشعار")) { await loadSettings(); paintShell(); render(); } });
+  },
+});
+
+// ───────────────────────── الهيكل والدخول ─────────────────────────
+const NAV = [
+  { r: "dashboard", l: "لوحة المؤشرات", i: "dash", roles: ["admin", "association", "company", "viewer"] },
+  { r: "mosques", l: "المساجد", i: "mosque", roles: ["admin", "association", "company"] },
+  { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
+  { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
+  { r: "reports", l: "التقارير", i: "report", roles: ["admin", "association", "company"] },
+  { r: "achievements", l: "المنجزات", i: "sparkle", roles: ["admin", "association", "company", "viewer"] },
+  { r: "notifications", l: "الإشعارات", i: "bell", roles: ["admin", "association", "company", "viewer"], badge: true },
+  { r: "messages", l: "الرسائل الجماعية", i: "send", roles: ["admin", "association"], sec: "التواصل" },
+  { r: "associations", l: "الجمعيات", i: "org", roles: ["admin"], sec: "الإدارة" },
+  { r: "accounts", l: "الحسابات", i: "users", roles: ["admin"] },
+  { r: "settings", l: "الإعدادات", i: "gear", roles: ["admin"] },
+];
+const BNAV = { admin: ["dashboard", "mosques", "tasks", "refills", "notifications"], association: ["dashboard", "mosques", "tasks", "refills", "notifications"],
+  company: ["dashboard", "mosques", "refills", "tasks", "notifications"], viewer: ["dashboard", "achievements", "notifications"] };
+
+function paintShell() {
+  const app = $("#app");
+  app.classList.remove("auth");
+  const items = NAV.filter((n) => n.roles.includes(role()));
+  let lastSec = null;
+  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div><div class="name">${esc(S.settings.platform_name || "طيب")}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div></div>
+    <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}">${I[n.i]}<span>${n.l}</span>${n.badge ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}</nav>
+    <div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
+      <div class="row" style="gap:6px"><button id="theme">${document.documentElement.dataset.theme === "dark" ? "☀️ فاتح" : "🌙 داكن"}</button><button id="logout">${"تسجيل الخروج"}</button></div></div>`;
+  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div><div class="crumbs">${esc(S.settings.platform_name || "طيب")}</div><h1></h1></div>
+    <div class="right row" style="gap:8px">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
+  $(".bnav").innerHTML = (BNAV[role()] || []).map((r) => { const n = NAV.find((x) => x.r === r); return `<a href="#/${r}" data-r="${r}">${I[n.i]}<span>${n.l.split(" ")[0]}</span></a>`; }).join("");
+  $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
+  $("#theme").onclick = () => {
+    const dark = document.documentElement.dataset.theme !== "dark" && !(document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    try { localStorage.setItem("tayyib.theme", document.documentElement.dataset.theme); } catch {}
+    paintShell(); render();
+  };
+  $("#menu").onclick = () => app.classList.toggle("menu");
+  $("#bell").onclick = toggleNotifPanel;
+  $("#search-btn")?.addEventListener("click", quickSearch);
+  app.addEventListener("click", (e) => { if (e.target.closest(".nav a")) app.classList.remove("menu"); if (app.classList.contains("menu") && !e.target.closest(".side") && !e.target.closest("#menu")) app.classList.remove("menu"); });
+  paintBell();
+}
+
+async function quickSearch() {
+  await loadMosques();
+  const body = document.createElement("div");
+  body.innerHTML = `<div class="search">${I.search}<input class="input" placeholder="اسم المسجد، الرمز، الحي، اسم أو جوال الإمام…"></div><div class="stack" style="margin-top:12px;gap:4px" data-res></div>`;
+  const inp = $("input", body), res = $("[data-res]", body);
+  inp.oninput = () => {
+    const q = inp.value.trim().toLowerCase();
+    if (!q) { res.innerHTML = ""; return; }
+    const hits = S.mosques.filter((m) => [m.name, m.code, m.district, m.imam_name, normPhone(m.imam_phone), m.muezzin_name, m.servant_name].some((x) => String(x || "").toLowerCase().includes(q))).slice(0, 12);
+    res.innerHTML = hits.map((m) => `<a class="row" href="#/mosque/${m.id}" style="padding:8px 10px;border-radius:10px;color:var(--ink)" data-hit><b>${esc(m.name)}</b><span class="muted small">${esc(m.code)} · ${esc(m.district || "")}</span><span class="right">${stageChip(m.stage)}</span></a>`).join("") || `<div class="muted small">لا نتائج</div>`;
+  };
+  modal({ title: "بحث سريع", body, onOpen: (mb, close) => { mb.addEventListener("click", (e) => { if (e.target.closest("[data-hit]")) close(); }); } });
+}
+
+let current = null;
+async function render() {
+  if (!S.me) return;
+  parseHash();
+  const allowed = NAV.find((n) => n.r === S.route)?.roles || (S.route === "mosque" ? ["admin", "association", "company"] : null);
+  if (!ROUTES[S.route] || (allowed && !allowed.includes(role()))) { location.hash = "/dashboard"; return; }
+  current?.leave?.();
+  current = ROUTES[S.route];
+  const navKey = S.route === "mosque" ? "mosques" : S.route;
+  $$(".nav a, .bnav a").forEach((a) => a.classList.toggle("on", a.dataset.r === navKey));
+  $(".topbar h1").textContent = current.title;
+  const v = $("#view");
+  v.scrollTop = 0; window.scrollTo(0, 0);
+  try { await current.render(v); } catch (e) { console.error(e); v.innerHTML = `<div class="empty">${I.alert}حدث خطأ: ${esc(errMsg(e))}</div>`; }
+}
+
+// ───── شاشة الدخول والتفعيل ─────
+function paintLogin(msg = "") {
+  const app = $("#app");
+  app.classList.add("auth");
+  $(".side").innerHTML = ""; $(".topbar").innerHTML = ""; $(".bnav").innerHTML = "";
+  $("#view").innerHTML = `<div class="login">
+    <div class="art"><div class="pattern"></div>
+      <div style="position:relative"><div style="width:76px;height:76px;margin-bottom:22px">${logoHtml()}</div>
+        <h1>${esc(S.settings.platform_name || "طيب")}</h1><div class="tag">${esc(S.settings.org_name || "مشروع تعطير مساجد الرياض")}</div>
+        <p>منصة متكاملة لإدارة تعطير بيوت الله: من اختيار المساجد وإسنادها للجمعيات المشرفة، إلى دراسة الاحتياج والتركيب والتعبئة الدورية وقياس رضا المصلين.</p></div>
+      <div class="feat">${[["mosque", "ملف متكامل لكل مسجد وفريقه"], ["drop", "تذكير آلي قبل موعد التعبئة بـ ٧٢ ساعة"], ["report", "تقارير الزيارات والرضا والأداء الشهري"], ["wa", "تواصل مباشر عبر واتساب والبريد"]].map(([i, t]) => `<div>${I[i]}${t}</div>`).join("")}</div>
+      <div class="small" style="position:relative;color:#9fc1b5">﴿ فِي بُيُوتٍ أَذِنَ اللَّهُ أَن تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ ﴾</div></div>
+    <div class="panel"><div class="box">
+      <div class="seg" id="mode" style="margin-bottom:22px"><button data-m="in" class="on">تسجيل الدخول</button><button data-m="up">تفعيل حساب جديد</button></div>
+      <h2 id="lt">مرحبًا بك</h2><p class="muted small" id="ls" style="margin-top:0">سجّل الدخول بالبريد وكلمة المرور</p>
+      <form class="stack" id="lf">
+        ${fld("email", "البريد الإلكتروني", { type: "email", req: true, attrs: 'autocomplete="email"' })}
+        ${fld("password", "كلمة المرور", { type: "password", req: true, attrs: 'autocomplete="current-password" minlength="8"' })}
+        <div data-code hidden>${fld("code", "رمز التفعيل", { hint: "يصلك من مدير النظام عند إنشاء حسابك", attrs: 'dir="ltr" autocomplete="one-time-code" style="letter-spacing:3px;text-transform:uppercase"' })}</div>
+        <button class="btn primary" style="padding:11px" id="lb">دخول</button>
+        <div class="hint" id="lh">نسيت كلمة المرور؟ تواصل مع مدير النظام لإعادة تعيين الدخول.</div>
+        ${msg ? `<div class="chip bad plain" style="white-space:normal;padding:8px 12px">${esc(msg)}</div>` : ""}
+      </form></div></div></div>`;
+  let mode = "in";
+  $("#mode").onclick = (e) => {
+    const b = e.target.closest("[data-m]"); if (!b) return;
+    mode = b.dataset.m;
+    $$("#mode button").forEach((x) => x.classList.toggle("on", x === b));
+    $("[data-code]").hidden = mode !== "up";
+    $("#lt").textContent = mode === "in" ? "مرحبًا بك" : "تفعيل حساب جديد";
+    $("#ls").textContent = mode === "in" ? "سجّل الدخول بالبريد وكلمة المرور" : "أدخل بريدك ورمز التفعيل، واختر كلمة مرور (٨ أحرف على الأقل)";
+    $("#lb").textContent = mode === "in" ? "دخول" : "تفعيل الحساب";
+    $('[name="password"]').autocomplete = mode === "in" ? "current-password" : "new-password";
+  };
+  $("#lf").onsubmit = async (e) => {
+    e.preventDefault();
+    const d = formData($("#lf"));
+    const btn = $("#lb"); btn.disabled = true;
+    try {
+      const email = d.email.toLowerCase();
+      if (mode === "in") {
+        const { error } = await sb.auth.signInWithPassword({ email, password: d.password });
+        if (error) throw new Error(/invalid/i.test(error.message) ? "البريد أو كلمة المرور غير صحيحة" : error.message);
+      } else {
+        if (!d.code) throw new Error("أدخل رمز التفعيل");
+        if (d.password.length < 8) throw new Error("كلمة المرور ٨ أحرف على الأقل");
+        let { data, error } = await sb.auth.signUp({ email, password: d.password });
+        if (error && /already|registered|exists/i.test(error.message)) ({ data, error } = await sb.auth.signInWithPassword({ email, password: d.password }));
+        if (error) throw new Error(/already|registered|exists|invalid/i.test(error.message) ? "هذا البريد مسجل مسبقًا بكلمة مرور أخرى — اطلب من المدير إعادة تعيين الدخول" : error.message);
+        if (!data.session) throw new Error("يتطلب الخادم تأكيد البريد — يرجى إبلاغ مدير النظام بتعطيل «Confirm email» في إعدادات Supabase");
+        const { error: e2 } = await sb.rpc("claim_account", { p_code: d.code });
+        if (e2) { await sb.auth.signOut(); throw new Error(e2.message); }
+      }
+      await boot();
+    } catch (err) { toast(err.message, "err"); }
+    finally { btn.disabled = false; }
+  };
+}
+
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return paintLogin();
+  const { data: me, error } = await sb.rpc("me");
+  if (error || !me?.id) {
+    await sb.auth.signOut();
+    return paintLogin("حسابك غير مفعّل في المنصة. إن كان لديك رمز تفعيل فاختر «تفعيل حساب جديد»، وإلا تواصل مع مدير النظام.");
+  }
+  S.me = me;
+  await Promise.all([loadAssociations(), loadNotifications()]);
+  sb.rpc("touch_seen").then(() => {});
+  paintShell();
+  subscribeNotifications();
+  if (!location.hash) location.hash = "/dashboard";
+  render();
+}
+
+(function init() {
+  try { const t = localStorage.getItem("tayyib.theme"); if (t) document.documentElement.dataset.theme = t; } catch {}
+  window.addEventListener("hashchange", render);
+  sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_OUT" && S.me) location.reload(); });
+  loadSettings().then(boot).catch((e) => { console.error(e); paintLogin("تعذّر الاتصال بالخادم"); });
+})();
+
+</script>
+</body>
+</html>
