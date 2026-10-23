@@ -120,7 +120,13 @@ function paintLogin(msg = "") {
         let { data, error } = await sb.auth.signUp({ email, password: d.password });
         if (error && /already|registered|exists/i.test(error.message)) ({ data, error } = await sb.auth.signInWithPassword({ email, password: d.password }));
         if (error) throw new Error(/already|registered|exists|invalid/i.test(error.message) ? "هذا البريد مسجل مسبقًا بكلمة مرور أخرى — اطلب من المدير إعادة تعيين الدخول" : error.message);
-        if (!data.session) throw new Error("يتطلب الخادم تأكيد البريد — يرجى إبلاغ مدير النظام بتعطيل «Confirm email» في إعدادات Supabase");
+        if (!error && !data.session) {
+          // البريد مسجل ومؤكد مسبقًا (يعيد الخادم مستخدمًا بلا جلسة) أو ينتظر التأكيد: نجرب الدخول مباشرة
+          const r = await sb.auth.signInWithPassword({ email, password: d.password });
+          if (r.data?.session) data = r.data;
+          else if (/confirm/i.test(r.error?.message || "")) throw new Error("لم يُؤكَّد البريد بعد — يرجى إبلاغ مدير النظام بتعطيل «Confirm email» في إعدادات Supabase");
+          else throw new Error("هذا البريد مسجل مسبقًا بكلمة مرور أخرى — استخدم كلمة المرور نفسها أو اطلب من المدير إعادة تعيين الدخول");
+        }
         const { error: e2 } = await sb.rpc("claim_account", { p_code: d.code });
         if (e2) { await sb.auth.signOut(); throw new Error(e2.message); }
       }
