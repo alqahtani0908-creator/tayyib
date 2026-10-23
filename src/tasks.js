@@ -73,7 +73,7 @@ route("tasks", {
       done: ["المنجزة", (t) => t.status === "done"],
       all: ["الكل", () => true],
     };
-    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg">${Object.entries(groups).map(([k, [l, fn]]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l} <span class="num">${tasks.filter(fn).length}</span></button>`).join("")}</div>
+    v.innerHTML = `<div class="pagehead"><div class="seg" id="seg">${Object.entries(groups).map(([k, [l, fn]]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l} <span class="num">${tasks.filter(fn).length}</span></button>`).join("")}</div>
       ${r !== "viewer" ? `<button class="btn primary right" id="new">${I.plus} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}</div>
       <div class="card" id="list"></div>`;
     const draw = () => { $("#list", v).innerHTML = tasksTable(tasks.filter(groups[f][1])); bindTaskRows(v); };

@@ -3,6 +3,7 @@ async function loadSettings() {
   const { data } = await sb.from("settings").select("*").eq("id", 1).maybeSingle();
   S.settings = data || {};
   S.logoUrl = S.settings.logo_path ? sb.storage.from("brand").getPublicUrl(S.settings.logo_path).data.publicUrl : null;
+  loadBrandFonts();
   document.title = S.settings.platform_name ? `${S.settings.platform_name} — ${S.settings.org_name || ""}` : "طيب";
 }
 async function loadAssociations() {
@@ -80,8 +81,7 @@ function paintBell(ring = false) {
   dot.textContent = S.unread > 99 ? "99+" : S.unread;
   dot.hidden = !S.unread;
   if (ring) { b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); }
-  const nb = $('.nav a[data-r="notifications"] .badge');
-  if (nb) { nb.textContent = S.unread; nb.hidden = !S.unread; }
+  $$('.nav a[data-r="notifications"] .badge, .bnav .badge').forEach((nb) => { nb.textContent = S.unread > 99 ? "99+" : S.unread; nb.hidden = !S.unread; });
 }
 async function markRead(ids) {
   if (!ids.length) return;

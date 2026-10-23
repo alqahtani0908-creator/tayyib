@@ -14,30 +14,45 @@ route("mosques", {
     const r = role();
     const f = { q: p.q || "", stage: p.stage || "", assoc: p.assoc || "", district: p.district || "", missing: p.missing || "" };
     const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+    const mobile = isMobile();
+    const activeFilters = () => [f.stage, f.assoc, f.district, f.missing].filter(Boolean).length;
     v.innerHTML = `
       <div class="card">
-        <div class="hd" style="flex-wrap:wrap">
-          <div class="search grow" style="min-width:220px">${I.search}<input class="input" id="q" placeholder="بحث بالاسم أو الرمز أو الحي أو اسم/جوال الإمام…" value="${esc(f.q)}"></div>
-          <select class="input" id="f-stage" style="width:auto"><option value="">كل المراحل</option>${Object.entries(STAGES).map(([k, s]) => `<option value="${k}" ${f.stage === k ? "selected" : ""}>${esc(s.l)}</option>`).join("")}</select>
-          ${r === "admin" || r === "company" ? `<select class="input" id="f-assoc" style="width:auto"><option value="">كل الجمعيات</option><option value="none" ${f.assoc === "none" ? "selected" : ""}>غير مسند</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
-          <select class="input" id="f-district" style="width:auto"><option value="">كل الأحياء</option>${districts.map((d) => `<option ${f.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
-          ${r !== "company" ? `<label class="row small" style="gap:6px"><input type="checkbox" id="f-missing" ${f.missing ? "checked" : ""}> بيانات ناقصة</label>` : ""}
-        </div>
-        <div class="hd" style="background:var(--surface-2)">
-          <span class="muted small" id="count"></span>
-          <div class="right row">
-            ${r === "admin" ? `<button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد لجمعية</button>
-              <button class="btn sm" id="b-import">${I.upload} استيراد من Excel</button>
-              <button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>` : ""}
-            <button class="btn sm" id="b-export">${I.download} تصدير Excel</button>
+        <div class="toolbar">
+          <div class="search">${I.search}<input class="input" id="q" type="search" placeholder="بحث بالاسم أو الرمز أو الحي أو الإمام…" value="${esc(f.q)}"></div>
+          <button class="iconbtn filter-btn" id="f-toggle" aria-label="التصفية" title="التصفية">${svg('<path d="M3 5h18M6 12h12M10 19h4"/>')}<span class="dot" ${activeFilters() ? "" : "hidden"}>${activeFilters()}</span></button>
+          <div class="filters" id="filters">
+            <select class="input" id="f-stage"><option value="">كل المراحل</option>${Object.entries(STAGES).map(([k, s]) => `<option value="${k}" ${f.stage === k ? "selected" : ""}>${esc(s.l)}</option>`).join("")}</select>
+            ${r === "admin" || r === "company" ? `<select class="input" id="f-assoc"><option value="">كل الجمعيات</option><option value="none" ${f.assoc === "none" ? "selected" : ""}>غير مسند</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+            <select class="input" id="f-district"><option value="">كل الأحياء</option>${districts.map((d) => `<option ${f.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
+            ${r !== "company" ? `<label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="f-missing" ${f.missing ? "checked" : ""}> بيانات ناقصة فقط</label>` : ""}
           </div>
         </div>
-        <div class="tbl-wrap"><table class="tbl cards"><thead><tr>
-          ${r === "admin" ? `<th style="width:34px"><input type="checkbox" id="all"></th>` : ""}
+        <div class="actionsbar">
+          <span class="muted small nowrap" id="count"></span>
+          <div class="acts">
+            ${r === "admin" ? `<button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>
+              <button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد</button>
+              <button class="btn sm" id="b-import">${I.upload} استيراد Excel</button>` : ""}
+            <button class="btn sm" id="b-export">${I.download} تصدير</button>
+          </div>
+        </div>
+        ${mobile ? `<div class="mcards" id="rows"></div>` : `<div class="tbl-wrap"><table class="tbl"><thead><tr>
+          ${r === "admin" ? `<th style="width:34px"><input type="checkbox" id="all" aria-label="تحديد الكل"></th>` : ""}
           <th>المسجد</th>${r !== "association" ? "<th>الجمعية</th>" : ""}<th>المرحلة</th><th>فريق المسجد</th><th>التعبئة القادمة</th></tr></thead>
-          <tbody id="rows"></tbody></table></div>
+          <tbody id="rows"></tbody></table></div>`}
       </div>`;
+    $("#f-toggle", v).onclick = () => $("#filters", v).classList.toggle("open");
     const sel = new Set();
+    const person = (role, n, ph, label) => `<div class="prow"><span class="pr">${role}</span>${n || ph ? `<b>${esc(n || "—")}</b>${contactBtns({ phone: ph, name: n, text: `السلام عليكم ${label} ${n || ""}، ` })}` : `<span class="chip bad plain">ناقص</span>`}</div>`;
+    const team = (m) => person("إمام", m.imam_name, m.imam_phone, "فضيلة الشيخ") + person("مؤذن", m.muezzin_name, m.muezzin_phone, "الأخ") + person("خادم", m.servant_name, m.servant_phone, "الأخ");
+    // نسخة مختصرة للجوال: الأسماء المتوفرة مع أزرار التواصل، والناقص في سطر واحد
+    const teamCompact = (m) => {
+      const ppl = [["إمام", m.imam_name, m.imam_phone, "فضيلة الشيخ"], ["مؤذن", m.muezzin_name, m.muezzin_phone, "الأخ"], ["خادم", m.servant_name, m.servant_phone, "الأخ"]];
+      const have = ppl.filter(([, n, ph]) => n || ph), miss = ppl.filter(([, n, ph]) => !n && !ph).map(([r]) => r);
+      return `<div class="team">${have.map(([r, n, ph, l]) => person(r, n, ph, l)).join("")}${miss.length ? `<div class="prow"><span class="chip bad plain">ناقص: ${miss.join("، ")}</span></div>` : ""}</div>`;
+    };
+    const emptyMsg = `<div class="empty">${I.mosque}لا توجد مساجد مطابقة${r === "admin" && !S.mosques.length ? " — ابدأ بإضافة مسجد أو استيراد ملف Excel" : ""}</div>`;
     const apply = () => {
       const q = f.q.trim().toLowerCase();
       const list = S.mosques.filter((m) =>
@@ -47,16 +62,25 @@ route("mosques", {
         (!f.missing || missingData(m).length) &&
         (!q || [m.name, m.code, m.district, m.imam_name, m.imam_phone, m.muezzin_name, m.servant_name, m.address].some((x) => String(x || "").toLowerCase().includes(q))));
       $("#count", v).textContent = `${fmtNum(list.length)} من ${fmtNum(S.mosques.length)} مسجد`;
-      const person = (role, n, ph, label) => `<div class="prow"><span class="pr">${role}</span>${n || ph ? `<b>${esc(n || "—")}</b>${contactBtns({ phone: ph, name: n, text: `السلام عليكم ${label} ${n || ""}، ` })}` : `<span class="chip bad plain small">ناقص</span>`}</div>`;
-      $("#rows", v).innerHTML = list.slice(0, 600).map((m) => `<tr class="click" data-id="${m.id}">
-        ${r === "admin" ? `<td data-hide-sm onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""}></td>` : ""}
-        <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num nowrap" dir="ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}</div></td>
-        ${r !== "association" ? `<td data-hide-sm class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
-        <td>${stageChip(m.stage)}</td>
-        <td data-hide-sm style="min-width:230px">${person("إمام", m.imam_name, m.imam_phone, "فضيلة الشيخ")}${person("مؤذن", m.muezzin_name, m.muezzin_phone, "الأخ")}${person("خادم", m.servant_name, m.servant_phone, "الأخ")}</td>
-        <td data-hide-sm>${refillChip(m)}</td></tr>`).join("") || `<tr><td colspan="9"><div class="empty">${I.mosque}لا توجد مساجد مطابقة${r === "admin" && !S.mosques.length ? " — ابدأ بإضافة مسجد أو استيراد ملف Excel" : ""}</div></td></tr>`;
-      if (list.length > 600) $("#rows", v).insertAdjacentHTML("beforeend", `<tr><td colspan="9" class="muted small" style="text-align:center">يُعرض أول ٦٠٠ — استخدم البحث والتصفية</td></tr>`);
+      const shown = list.slice(0, mobile ? 200 : 600);
+      if (mobile) {
+        $("#rows", v).innerHTML = shown.map((m) => `<div class="mcard" data-id="${m.id}">
+          <div class="mt"><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` · ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
+            ${r === "admin" ? `<input type="checkbox" class="sel" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد" onclick="event.stopPropagation()">` : ""}</div>
+          <div class="foot">${stageChip(m.stage)}${m.stage === "active" ? refillChip(m) : ""}</div>
+          ${teamCompact(m)}</div>`).join("") || emptyMsg;
+      } else {
+        $("#rows", v).innerHTML = shown.map((m) => `<tr class="click" data-id="${m.id}">
+          ${r === "admin" ? `<td onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد"></td>` : ""}
+          <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}</div></td>
+          ${r !== "association" ? `<td class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
+          <td>${stageChip(m.stage)}</td>
+          <td style="min-width:240px">${team(m)}</td>
+          <td>${refillChip(m)}</td></tr>`).join("") || `<tr><td colspan="9">${emptyMsg}</td></tr>`;
+      }
+      if (list.length > shown.length) $("#rows", v).insertAdjacentHTML("beforeend", `<div class="muted small" style="text-align:center;padding:10px">يُعرض أول ${shown.length} — استخدم البحث والتصفية</div>`);
       v._list = list;
+      const dot = $("#f-toggle .dot", v); dot.textContent = activeFilters(); dot.hidden = !activeFilters();
     };
     const setParam = () => { const qs = new URLSearchParams(Object.entries(f).filter(([, x]) => x)).toString(); history.replaceState(null, "", "#/mosques" + (qs ? "?" + qs : "")); };
     $("#q", v).oninput = (e) => { f.q = e.target.value; apply(); setParam(); };
@@ -69,8 +93,9 @@ route("mosques", {
       if (cb) { cb.checked ? sel.add(cb.dataset.sel) : sel.delete(cb.dataset.sel); $("#b-assign", v).disabled = !sel.size; $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد (${sel.size})`; }
     };
     $("#rows", v).onclick = (e) => {
-      const tr = e.target.closest("tr[data-id]");
-      if (tr) go("/mosque/" + tr.dataset.id);
+      if (e.target.closest(".contact, [data-sel]")) return;
+      const it = e.target.closest("[data-id]");
+      if (it) go("/mosque/" + it.dataset.id);
     };
     $("#all", v)?.addEventListener("change", (e) => {
       (v._list || []).slice(0, 600).forEach((m) => e.target.checked ? sel.add(m.id) : sel.delete(m.id));
@@ -297,12 +322,12 @@ route("mosque", {
           <div class="muted small" style="margin-top:4px">${esc(m.code)} · ${esc(m.kind)} · ${esc(m.district || "الحي غير محدد")}${m.association_id ? ` · ${esc(assocName(m.association_id))}` : ""}
             ${m.map_url ? ` · <a href="${esc(m.map_url)}" target="_blank" rel="noopener">${I.map.replace("<svg", '<svg style="width:14px;vertical-align:-2px"')} الموقع</a>` : ""}</div>
         </div>
-        <div class="row no-print">
+        <div class="btn-row no-print">
           ${canEdit ? `<button class="btn sm" data-edit>${I.edit} تعديل البيانات</button>` : ""}
           ${r === "admin" ? `<button class="btn sm" data-assign>${I.org} ${m.association_id ? "تغيير الجمعية" : "إسناد"}</button>` : ""}
           ${r !== "viewer" ? `<button class="btn sm" data-task>${I.tasks} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}
           <button class="btn sm" data-print-m>${I.print} ملف المسجد</button>
-          ${r === "admin" ? `<button class="btn sm ghost" data-more title="المزيد">⋯</button>` : ""}
+          ${r === "admin" ? `<button class="btn sm" data-more title="إجراءات المدير">${I.gear} إجراءات</button>` : ""}
         </div>
       </div></div>
 
@@ -311,7 +336,7 @@ route("mosque", {
         ${!act.waiting ? `<button class="btn primary" data-act="${act.action}">${act.action === "decide" ? "مراجعة واعتماد" : act.action === "assign" ? "إسناد الآن" : act.action === "complete" ? (missingData(m).length ? "استكمال البيانات" : "اعتماد اكتمال البيانات") : "رفع التقرير"}</button>` : ""}</div>` : ""}
       ${ops.length ? `<div class="action-card" style="margin-top:14px"><div class="ic">${I.drop}</div><div class="grow"><h4>المسجد قيد التشغيل</h4>
         <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) · آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
-        <div class="row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
+        <div class="btn-row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
 
       <div class="tabs" style="margin-top:18px">${[["overview", "نظرة عامة"], ["reports", "التقارير", (reports || []).length], ["tasks", "المهام والطلبات", (tasks || []).length], ["files", "الملفات", (atts || []).length], ["log", "السجل"]]
         .map(([k, l, n]) => `<button data-tab="${k}" class="${tab === k ? "on" : ""}">${l}${n ? `<span class="n">${n}</span>` : ""}</button>`).join("")}</div>

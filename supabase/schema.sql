@@ -15,6 +15,7 @@ create table public.settings (
   refill_cycle_days int not null default 30,
   reminder_hours int not null default 72,
   visit_every_days int not null default 7,
+  font_files jsonb not null default '{}',
   updated_at timestamptz not null default now()
 );
 insert into public.settings (id) values (1);
@@ -807,7 +808,7 @@ grant execute on function public.company_stage(text), public.stage_label(text) t
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('files', 'files', false, 52428800) on conflict (id) do update set file_size_limit = 52428800;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('brand', 'brand', true, 5242880, array['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']) on conflict (id) do nothing;
+values ('brand', 'brand', true, 5242880, array['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp', 'font/otf', 'font/ttf', 'font/woff', 'font/woff2']) on conflict (id) do nothing;
 
 -- المسار: m/{mosque_id}/... أو t/{task_id}/...
 create or replace function public.can_read_object(p_name text) returns boolean

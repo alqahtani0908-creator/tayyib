@@ -4,7 +4,7 @@ route("associations", {
   async render(v) {
     await Promise.all([loadAssociations(), loadMosques()]);
     const count = (id, fn = () => true) => S.mosques.filter((m) => m.association_id === id && fn(m)).length;
-    v.innerHTML = `<div class="row" style="margin-bottom:14px"><span class="muted small">${S.associations.length} جمعية</span><button class="btn primary right" id="add">${I.plus} إضافة جمعية</button></div>
+    v.innerHTML = `<div class="pagehead"><span class="muted small">${S.associations.length} جمعية</span><button class="btn primary right" id="add">${I.plus} إضافة جمعية</button></div>
       <div class="grid g3">${S.associations.map((a) => `<div class="card" style="${a.active ? "" : "opacity:.6"}"><div class="bd stack" style="gap:8px">
         <div class="row"><div class="mic" style="width:42px;height:42px;border-radius:12px;background:var(--gold-soft);color:var(--gold);display:grid;place-items:center">${I.org}</div>
           <div class="grow"><b>${esc(a.name)}</b><div class="muted small">${esc(a.district || "")}</div></div>${a.active ? "" : `<span class="chip plain">موقوفة</span>`}</div>
@@ -47,7 +47,7 @@ route("accounts", {
     const { data: list, error } = await sb.from("accounts").select("*").order("created_at");
     if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
     let f = "";
-    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
+    v.innerHTML = `<div class="pagehead"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
       <button class="btn primary right" id="add">${I.plus} إنشاء حساب</button></div>
       <div class="card"><div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>الاسم</th><th>الصلاحية</th><th>البريد</th><th>الجوال</th><th>الحالة</th><th>آخر دخول</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
       <div class="hint" style="margin-top:12px">💡 بعد إنشاء الحساب أرسل للمستخدم رابط المنصة ورمز التفعيل (زر واتساب). يدخل المستخدم بريده والرمز ويختار كلمة مروره. لنسيان كلمة المرور استخدم «إعادة تعيين الدخول».</div>`;
@@ -123,9 +123,9 @@ route("settings", {
     const s = S.settings;
     v.innerHTML = `<div class="grid g2">
       <div class="card"><div class="hd"><h3>هوية المنصة</h3></div><div class="bd">
-        <div class="row" style="margin-bottom:16px"><div style="width:72px;height:72px" class="brand-prev">${logoHtml()}</div>
+        <div class="row" style="margin-bottom:16px"><div style="width:56px;height:78px" class="brand-prev">${logoHtml()}</div>
           <div class="stack" style="gap:6px"><input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" id="logo" hidden>
-          <button class="btn sm" id="logo-btn">${I.upload} رفع شعار المؤسسة</button>${s.logo_path ? `<button class="btn sm danger" id="logo-rm">إزالة الشعار</button>` : ""}<div class="hint">PNG أو SVG مربع، حتى ٥ ميقابايت</div></div></div>
+          <button class="btn sm" id="logo-btn">${I.upload} استبدال شعار المنصة</button>${s.logo_path ? `<button class="btn sm danger" id="logo-rm">إزالة الشعار</button>` : ""}<div class="hint">PNG أو SVG مربع، حتى ٥ ميقابايت</div></div></div>
         <form class="form" id="f1" onsubmit="return false">${fld("platform_name", "اسم المنصة", { value: s.platform_name })}${fld("org_name", "اسم المشروع / المؤسسة", { value: s.org_name })}
           ${fld("company_name", "اسم الشركة المنفذة", { value: s.company_name, full: true })}</form></div></div>
       <div class="card"><div class="hd"><h3>التشغيل والتذكيرات</h3></div><div class="bd">
@@ -133,12 +133,27 @@ route("settings", {
           ${fld("reminder_hours", "التذكير قبل موعد التعبئة (ساعة)", { type: "number", value: s.reminder_hours })}
           ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}</form>
         <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
+      <div class="card span2"><div class="hd"><h3>خط الهوية (Brando Arabic)</h3></div><div class="bd stack">
+        <div class="hint">ملفات الخط لا تُنشر في المستودع العام؛ ارفعها هنا مرة واحدة (OTF/TTF/WOFF) لتظهر المنصة بخط هوية المؤسسة. تأكد أن ترخيص الخط يسمح باستخدامه على الويب.</div>
+        <div class="form" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${Object.entries({ regular: "العادي (Regular)", semibold: "شبه العريض (SemiBold)", bold: "العريض (Bold)" }).map(([k, l]) =>
+          `<div class="field"><label>${l}</label><div class="row"><span class="chip ${(s.font_files || {})[k] ? "ok" : "plain"}">${(s.font_files || {})[k] ? "مرفوع" : "غير مرفوع"}</span>
+            <input type="file" accept=".otf,.ttf,.woff,.woff2" data-font="${k}" hidden><button class="btn sm" data-fontbtn="${k}">${I.upload} رفع</button></div></div>`).join("")}</div></div></div>
       </div><button class="btn primary" style="margin-top:16px" id="save">${I.check} حفظ الإعدادات</button>`;
     $("#save", v).onclick = async () => {
       const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
       ["refill_cycle_days", "reminder_hours", "visit_every_days"].forEach((k) => d[k] = Math.max(1, +d[k] || 1));
       if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }
     };
+    $$("[data-fontbtn]", v).forEach((b) => b.onclick = () => $(`[data-font="${b.dataset.fontbtn}"]`, v).click());
+    $$("[data-font]", v).forEach((inp) => inp.onchange = async () => {
+      const f = inp.files[0]; if (!f) return;
+      const ext = (f.name.split(".").pop() || "otf").toLowerCase();
+      const path = `fonts/brando-${inp.dataset.font}-${Date.now()}.${ext}`;
+      const { error } = await sb.storage.from("brand").upload(path, f, { contentType: { otf: "font/otf", ttf: "font/ttf", woff: "font/woff", woff2: "font/woff2" }[ext] || "font/otf" });
+      if (error) return toast(errMsg(error), "err");
+      const files = { ...(S.settings.font_files || {}), [inp.dataset.font]: path };
+      if (await run(sb.from("settings").update({ font_files: files }).eq("id", 1), "تم رفع الخط")) { await loadSettings(); render(); }
+    });
     $("#logo-btn", v).onclick = () => $("#logo", v).click();
     $("#logo", v).onchange = async (e) => {
       const f = e.target.files[0]; if (!f) return;

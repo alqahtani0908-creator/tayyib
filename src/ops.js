@@ -45,12 +45,12 @@ route("reports", {
     const p = S.params;
     const f = { type: p.type || "", assoc: p.assoc || "", from: p.from || isoDay(new Date(Date.now() - 30 * 864e5)), to: p.to || isoDay() };
     const r = role();
-    v.innerHTML = `<div class="card"><div class="hd" style="flex-wrap:wrap">
+    v.innerHTML = `<div class="card"><div class="toolbar">
         <select class="input" id="t" style="width:auto"><option value="">كل أنواع التقارير</option>${Object.entries(REPORT_TYPES).filter(([k]) => k !== "note").map(([k, x]) => `<option value="${k}" ${f.type === k ? "selected" : ""}>${esc(x.l)}</option>`).join("")}</select>
         ${r === "admin" ? `<select class="input" id="a" style="width:auto"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
-        <label class="small">من</label><input type="date" class="input" id="from" style="width:auto" value="${f.from}">
-        <label class="small">إلى</label><input type="date" class="input" id="to" style="width:auto" value="${f.to}">
-        <div class="right row"><button class="btn sm" id="monthly">${I.report} التقرير الشهري المجمع</button><button class="btn sm" id="exp">${I.download} تصدير Excel</button></div>
+        <label class="row small" style="gap:6px;flex-wrap:nowrap">من <input type="date" class="input" id="from" style="width:auto" value="${f.from}"></label>
+        <label class="row small" style="gap:6px;flex-wrap:nowrap">إلى <input type="date" class="input" id="to" style="width:auto" value="${f.to}"></label>
+        <div class="btn-row right"><button class="btn sm" id="monthly">${I.report} التقرير الشهري المجمع</button><button class="btn sm" id="exp">${I.download} تصدير Excel</button></div>
       </div><div id="sum" class="bd" style="border-bottom:1px solid var(--line)"></div><div id="list"></div></div>`;
     let rows = [];
     const load = async () => {
@@ -120,7 +120,7 @@ route("achievements", {
           <div><div class="val">${st?.satisfaction ? Number(st.satisfaction).toFixed(1) : "—"}<small style="color:#cfe7de"> / 5</small></div><div class="sub">متوسط رضا المصلين</div></div>
         </div></div>
       <div class="grid g3" id="gal">${list.map((x) => `<div class="card" style="overflow:hidden">
-        <div style="aspect-ratio:16/10;background:var(--surface-2);display:grid;place-items:center;color:var(--gold)">${x.photos?.length ? `<img data-img="${esc(x.photos[0])}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" alt="">` : I.mosque.replace("<svg", '<svg style="width:54px;height:54px"')}</div>
+        <div class="arch" style="aspect-ratio:16/10;background:var(--surface-2);display:grid;place-items:center;color:var(--gold);margin:10px 10px 0;border-radius:14px;overflow:hidden">${x.photos?.length ? `<img data-img="${esc(x.photos[0])}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" alt="">` : I.mosque.replace("<svg", '<svg style="width:54px;height:54px"')}</div>
         <div class="bd"><div class="row"><b>${esc(x.name)}</b><span class="chip ok right">مُركّب</span></div>
           <div class="muted small">${esc(x.district || "")}${x.association ? ` · ${esc(x.association)}` : ""}</div>
           <div class="row small" style="margin-top:10px;gap:14px"><span>التركيب: ${fmtDate(x.installed_at)}</span><span><b>${x.devices ?? "—"}</b> أجهزة</span><span><b>${x.refills}</b> تعبئة</span><span><b>${x.visits}</b> زيارة</span></div>
@@ -138,7 +138,7 @@ route("notifications", {
     await loadNotifications();
     let f = "all";
     const kinds = { all: "الكل", unread: "غير المقروءة", reminder: "التذكيرات", alert: "التنبيهات", approval: "الاعتمادات", task: "المهام", report: "التقارير" };
-    v.innerHTML = `<div class="row" style="margin-bottom:14px"><div class="seg" id="seg">${Object.entries(kinds).map(([k, l]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l}</button>`).join("")}</div>
+    v.innerHTML = `<div class="pagehead"><div class="seg" id="seg">${Object.entries(kinds).map(([k, l]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l}</button>`).join("")}</div>
       <div class="right row"><button class="btn sm" id="mute">${localStorage.getItem("tayyib.mute") === "1" ? "🔕 الصوت متوقف" : "🔔 الصوت مفعّل"}</button>
       ${"Notification" in window && Notification.permission !== "granted" ? `<button class="btn sm" id="perm">تفعيل تنبيهات المتصفح</button>` : ""}
       <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div class="card" id="list"></div>`;

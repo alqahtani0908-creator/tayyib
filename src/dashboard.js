@@ -20,7 +20,7 @@ route("dashboard", {
       <div class="row" style="margin-bottom:16px">
         <div><div class="muted small">${esc(hello || "")}</div><h2 style="margin:0;font-size:22px">أهلًا ${esc(S.me.name)} 👋</h2></div>
         <div class="right row no-print">
-          ${r !== "viewer" ? `<button class="btn" data-print>${I.print} طباعة اللوحة</button>` : ""}
+          ${r !== "viewer" ? `<button class="btn hide-sm" data-print>${I.print} طباعة اللوحة</button>` : ""}
         </div>
       </div>
       <div class="kpis">

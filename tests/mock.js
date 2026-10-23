@@ -13,7 +13,7 @@
     viewer: { id: id(), name: "حساب العرض", email: "view@test.local", role: "viewer", user_id: "u-view", active: true, invite_code: "DDDD1111", created_at: iso(now) },
   };
   const db = {
-    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "شركة الاختبار", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7 }],
+    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "شركة الاختبار", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
     associations: [{ id: A1, name: "جمعية اختبار أ", district: "شمال الرياض", contact_name: "مسؤول أ", phone: "0500000001", active: true }, { id: A2, name: "جمعية اختبار ب", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
     mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [],
@@ -38,7 +38,8 @@
     { id: id(), mosque_id: m8.id, type: "satisfaction", data: { overall: 4 }, summary: "الرضا العام 4/5", author_role: "association", created_at: iso(now - 60 * day) },
   );
   db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "مهمة اختبار للشركة", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
-  const me = acc[as];
+  const me = acc[as] || acc.admin;
+  const loggedOut = as === "none"; // لمعاينة شاشة الدخول
   db.notifications.push({ id: id(), account_id: me.id, kind: "reminder", title: "إشعار اختبار: موعد تعبئة", body: "جامع اختبار ٧", mosque_id: m7.id, created_at: iso(now - 3600e3) },
     { id: id(), account_id: me.id, kind: "approval", title: "إشعار اختبار مقروء", created_at: iso(now - 2 * day), read_at: iso(now - day) });
 
@@ -161,7 +162,7 @@
   window.TAYYIB_CLIENT = {
     from: (t) => new Q(t),
     rpc: (n, args = {}) => ({ then(res, rej) { return Promise.resolve().then(() => { try { return { data: RPC[n](args), error: null }; } catch (e) { return { data: null, error: { message: String(e) } }; } }).then(res, rej); } }),
-    auth: { getSession: async () => ({ data: { session: { user: { id: me.user_id, email: me.email } } } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), signOut: async () => ({}), signInWithPassword: async () => ({ data: {}, error: null }), signUp: async () => ({ data: {}, error: null }) },
+    auth: { getSession: async () => ({ data: { session: loggedOut ? null : { user: { id: me.user_id, email: me.email } } } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), signOut: async () => ({}), signInWithPassword: async () => ({ data: {}, error: null }), signUp: async () => ({ data: {}, error: null }) },
     storage: { from: () => ({ upload: async (p, f) => { blobs.set(p, URL.createObjectURL(f)); return { data: { path: p }, error: null }; }, createSignedUrl: async (p) => ({ data: { signedUrl: blobs.get(p) || "data:," }, error: null }), getPublicUrl: (p) => ({ data: { publicUrl: blobs.get(p) || "" } }) }) },
     channel: () => { const c = { handlers: [], on(_, __, fn) { this.handlers.push(fn); return this; }, subscribe() { chans.push(this); return this; } }; return c; },
   };

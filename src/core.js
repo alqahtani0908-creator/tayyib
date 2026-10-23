@@ -114,8 +114,15 @@ const I = {
   logout: svg('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
   copy: svg('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
 };
-const LOGO_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="16" fill="#0b5d4b"/><path d="M32 9c-6.5 8.2-12 14.6-12 22a12 12 0 0 0 24 0c0-7.4-5.5-13.8-12-22z" fill="#c39a4b"/><path d="M32 22c-3.6 2.6-6 5-6 8v2h12v-2c0-3-2.4-5.4-6-8z" fill="#063a2f"/><rect x="25" y="33" width="14" height="7" rx="1" fill="#063a2f"/><path d="M14 52h36" stroke="#c39a4b" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="19.5" r="1.4" fill="#063a2f"/></svg>`;
-const logoHtml = () => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : LOGO_SVG;
+// شعار «طيب» على هوية مؤسسة أبناء علي الماجد: «طيب» بالخط الكوفي الهندسي، وطرف الطاء قطرة عطر
+const ASSETS = window.TAYYIB_ASSETS || "assets/";
+const LOGO_GLYPH = `<g transform="translate(0 4)"><g fill="none" stroke="#ceb26b" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"><path d="M62 44 V90 H75 a10 10 0 0 0 0 -20 H62"/><path d="M62 90 H50 V79 M50 90 H20 V78"/></g><g fill="#ceb26b"><path d="M62 22 c-5.5 7.5 -8 11 -8 15 a8 8 0 0 0 16 0 c0 -4 -2.5 -7.5 -8 -15z"/><path d="M45.5 101 l4 4 -4 4 -4 -4z"/><path d="M55.5 101 l4 4 -4 4 -4 -4z"/><path d="M31 101 l4 4 -4 4 -4 -4z"/></g></g>`;
+// onDark: على الخلفيات البنية يُرسم الإطار بحد ذهبي بدل التعبئة
+const logoSvg = (onDark = false) => `<svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب">${onDark
+  ? `<rect x="1.5" y="1.5" width="97" height="137" rx="17" fill="rgba(0,0,0,.18)" stroke="#ceb26b" stroke-opacity=".55" stroke-width="2"/>`
+  : `<rect width="100" height="140" rx="18" fill="#563331"/>`}${LOGO_GLYPH}</svg>`;
+const logoHtml = (onDark = false) => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : logoSvg(onDark);
+const foundationLogo = (white = false) => `${ASSETS}foundation-${white ? "white" : "primary"}.png`;
 
 // ───── الأدوار والمراحل ─────
 const ROLES = { admin: "مدير النظام", association: "جمعية مشرفة", company: "الشركة المنفذة", viewer: "حساب عرض" };
@@ -318,9 +325,9 @@ function exportXlsx(rows, filename, sheet = "البيانات") {
 function printDoc(title, inner) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:54px;height:54px">${logoHtml()}</div>
-    <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div></div>
-    <div style="margin-inline-start:auto;text-align:end"><b>${esc(title)}</b><div class="s">${fmtDateTime(new Date())}</div></div></div>
+  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:40px;height:56px">${logoHtml()}</div>
+    <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> · ${fmtDateTime(new Date())}</div></div>
+    <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
     ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
   document.body.classList.add("printing-doc");
   const done = () => { document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", done); };

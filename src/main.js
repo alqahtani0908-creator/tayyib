@@ -12,34 +12,51 @@ const NAV = [
   { r: "accounts", l: "الحسابات", i: "users", roles: ["admin"] },
   { r: "settings", l: "الإعدادات", i: "gear", roles: ["admin"] },
 ];
-const BNAV = { admin: ["dashboard", "mosques", "tasks", "refills", "notifications"], association: ["dashboard", "mosques", "tasks", "refills", "notifications"],
-  company: ["dashboard", "mosques", "refills", "tasks", "notifications"], viewer: ["dashboard", "achievements", "notifications"] };
+// شريط الجوال السفلي: أربع وجهات + «المزيد» يفتح القائمة الكاملة
+const BNAV = { admin: ["dashboard", "mosques", "tasks", "refills"], association: ["dashboard", "mosques", "tasks", "refills"],
+  company: ["dashboard", "mosques", "refills", "tasks"], viewer: ["dashboard", "achievements", "notifications"] };
+const BNAV_LABEL = { dashboard: "الرئيسية", mosques: "المساجد", tasks: "المهام", refills: "التعبئة", achievements: "المنجزات", notifications: "الإشعارات" };
+const isDark = () => document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
 
+let shellBound = false;
 function paintShell() {
   const app = $("#app");
   app.classList.remove("auth");
   const items = NAV.filter((n) => n.roles.includes(role()));
   let lastSec = null;
-  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div><div class="name">${esc(S.settings.platform_name || "طيب")}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div></div>
-    <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}">${I[n.i]}<span>${n.l}</span>${n.badge ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}</nav>
-    <div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
-      <div class="row" style="gap:6px"><button id="theme">${document.documentElement.dataset.theme === "dark" ? "☀️ فاتح" : "🌙 داكن"}</button><button id="logout">${"تسجيل الخروج"}</button></div></div>`;
-  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div><div class="crumbs">${esc(S.settings.platform_name || "طيب")}</div><h1></h1></div>
-    <div class="right row" style="gap:8px">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
-  $(".bnav").innerHTML = (BNAV[role()] || []).map((r) => { const n = NAV.find((x) => x.r === r); return `<a href="#/${r}" data-r="${r}">${I[n.i]}<span>${n.l.split(" ")[0]}</span></a>`; }).join("");
+  $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml(true)}</div><div><div class="name">${esc(S.settings.platform_name || "طيب")}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div></div>
+    <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}</nav>
+    <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
+      <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
+      <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
+  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoSvg()}</div>
+    <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} · ${esc(S.settings.org_name || "")}</div><h1></h1></div>
+    <div class="right row" style="gap:8px;flex-wrap:nowrap">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع" aria-label="بحث">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات" aria-label="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
+  const bn = BNAV[role()] || [];
+  const more = role() !== "viewer";
+  $(".bnav").style.gridTemplateColumns = `repeat(${bn.length + (more ? 1 : 0)}, minmax(0, 1fr))`;
+  $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
+    (more ? `<button type="button" id="more">${I.menu}<span>المزيد</span><span class="badge" hidden></span></button>` : "");
   $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
   $("#theme").onclick = () => {
-    const dark = document.documentElement.dataset.theme !== "dark" && !(document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    document.documentElement.dataset.theme = isDark() ? "light" : "dark";
     try { localStorage.setItem("tayyib.theme", document.documentElement.dataset.theme); } catch {}
     paintShell(); render();
   };
   $("#menu").onclick = () => app.classList.toggle("menu");
+  $("#more")?.addEventListener("click", () => app.classList.add("menu"));
   $("#bell").onclick = toggleNotifPanel;
   $("#search-btn")?.addEventListener("click", quickSearch);
-  app.addEventListener("click", (e) => { if (e.target.closest(".nav a")) app.classList.remove("menu"); if (app.classList.contains("menu") && !e.target.closest(".side") && !e.target.closest("#menu")) app.classList.remove("menu"); });
+  if (!shellBound) {
+    shellBound = true;
+    app.addEventListener("click", (e) => { if (e.target.closest(".nav a") || e.target.closest(".scrim")) app.classList.remove("menu"); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") app.classList.remove("menu"); });
+    // إعادة رسم الصفحة عند تجاوز حد الجوال (لتبديل الجداول والبطاقات)
+    matchMedia("(max-width: 860px)").addEventListener("change", () => render());
+  }
   paintBell();
 }
+const isMobile = () => matchMedia("(max-width: 860px)").matches;
 
 async function quickSearch() {
   await loadMosques();
@@ -77,20 +94,21 @@ function paintLogin(msg = "") {
   app.classList.add("auth");
   $(".side").innerHTML = ""; $(".topbar").innerHTML = ""; $(".bnav").innerHTML = "";
   $("#view").innerHTML = `<div class="login">
-    <div class="art"><div class="pattern"></div>
-      <div style="position:relative"><div style="width:76px;height:76px;margin-bottom:22px">${logoHtml()}</div>
+    <div class="art">
+      <div><div class="mark">${logoHtml(true)}</div>
         <h1>${esc(S.settings.platform_name || "طيب")}</h1><div class="tag">${esc(S.settings.org_name || "مشروع تعطير مساجد الرياض")}</div>
         <p>منصة متكاملة لإدارة تعطير بيوت الله: من اختيار المساجد وإسنادها للجمعيات المشرفة، إلى دراسة الاحتياج والتركيب والتعبئة الدورية وقياس رضا المصلين.</p></div>
-      <div class="feat">${[["mosque", "ملف متكامل لكل مسجد وفريقه"], ["drop", "تذكير آلي قبل موعد التعبئة بـ ٧٢ ساعة"], ["report", "تقارير الزيارات والرضا والأداء الشهري"], ["wa", "تواصل مباشر عبر واتساب والبريد"]].map(([i, t]) => `<div>${I[i]}${t}</div>`).join("")}</div>
-      <div class="small" style="position:relative;color:#9fc1b5">﴿ فِي بُيُوتٍ أَذِنَ اللَّهُ أَن تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ ﴾</div></div>
+      <div class="feat">${[["mosque", "ملف متكامل لكل مسجد وفريقه"], ["drop", "تذكير آلي قبل التعبئة بـ ٧٢ ساعة"], ["report", "تقارير الزيارات والرضا والأداء"], ["wa", "تواصل مباشر عبر واتساب والبريد"]].map(([i, t]) => `<div>${I[i]}${t}</div>`).join("")}</div>
+      <div class="stack" style="gap:14px"><div class="verse">﴿ فِي بُيُوتٍ أَذِنَ اللَّهُ أَن تُرْفَعَ وَيُذْكَرَ فِيهَا اسْمُهُ ﴾</div>
+        <div class="by"><span>مبادرة من</span><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div></div>
     <div class="panel"><div class="box">
-      <div class="seg" id="mode" style="margin-bottom:22px"><button data-m="in" class="on">تسجيل الدخول</button><button data-m="up">تفعيل حساب جديد</button></div>
+      <div class="seg" id="mode"><button data-m="in" class="on">تسجيل الدخول</button><button data-m="up">تفعيل حساب جديد</button></div>
       <h2 id="lt">مرحبًا بك</h2><p class="muted small" id="ls" style="margin-top:0">سجّل الدخول بالبريد وكلمة المرور</p>
       <form class="stack" id="lf">
         ${fld("email", "البريد الإلكتروني", { type: "email", req: true, attrs: 'autocomplete="email"' })}
         ${fld("password", "كلمة المرور", { type: "password", req: true, attrs: 'autocomplete="current-password" minlength="8"' })}
         <div data-code hidden>${fld("code", "رمز التفعيل", { hint: "يصلك من مدير النظام عند إنشاء حسابك", attrs: 'dir="ltr" autocomplete="one-time-code" style="letter-spacing:3px;text-transform:uppercase"' })}</div>
-        <button class="btn primary" style="padding:11px" id="lb">دخول</button>
+        <button class="btn primary" id="lb">دخول</button>
         <div class="hint" id="lh">نسيت كلمة المرور؟ تواصل مع مدير النظام لإعادة تعيين الدخول.</div>
         ${msg ? `<div class="chip bad plain" style="white-space:normal;padding:8px 12px">${esc(msg)}</div>` : ""}
       </form></div></div></div>`;
