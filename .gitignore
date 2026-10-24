@@ -2,3 +2,5 @@
 tests/index.html
 .claude/
 tests/fonts/
+tests/validate_palette.js
+tests/palette.html

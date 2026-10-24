@@ -30,7 +30,7 @@ function paintShell() {
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
   $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml()}</div>
-    <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} · ${esc(S.settings.org_name || "")}</div><h1></h1></div>
+    <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} • ${esc(S.settings.org_name || "")}</div><h1></h1></div>
     <div class="right row" style="gap:8px;flex-wrap:nowrap">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع" aria-label="بحث">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات" aria-label="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
   const bn = BNAV[role()] || [];
   const more = role() !== "viewer";
@@ -67,7 +67,7 @@ async function quickSearch() {
     const q = inp.value.trim().toLowerCase();
     if (!q) { res.innerHTML = ""; return; }
     const hits = S.mosques.filter((m) => [m.name, m.code, m.district, m.imam_name, normPhone(m.imam_phone), m.muezzin_name, m.servant_name].some((x) => String(x || "").toLowerCase().includes(q))).slice(0, 12);
-    res.innerHTML = hits.map((m) => `<a class="row" href="#/mosque/${m.id}" style="padding:8px 10px;border-radius:10px;color:var(--ink)" data-hit><b>${esc(m.name)}</b><span class="muted small">${esc(m.code)} · ${esc(m.district || "")}</span><span class="right">${stageChip(m.stage)}</span></a>`).join("") || `<div class="muted small">لا نتائج</div>`;
+    res.innerHTML = hits.map((m) => `<a class="row" href="#/mosque/${m.id}" style="padding:8px 10px;border-radius:10px;color:var(--ink)" data-hit><b>${esc(m.name)}</b><span class="muted small">${esc(m.code)} • ${esc(m.district || "")}</span><span class="right">${stageChip(m.stage)}</span></a>`).join("") || `<div class="muted small">لا نتائج</div>`;
   };
   modal({ title: "بحث سريع", body, onOpen: (mb, close) => { mb.addEventListener("click", (e) => { if (e.target.closest("[data-hit]")) close(); }); } });
 }

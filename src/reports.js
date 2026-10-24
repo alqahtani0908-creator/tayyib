@@ -109,7 +109,7 @@ function reportCard(r, atts = [], authors = {}) {
     <div class="th"><b>${esc(T.l)}</b>${T.step ? `<span class="chip plain">الخطوة ${T.step}</span>` : ""}
       ${r.type === "visit" && r.data?.status === "issue" ? `<span class="chip bad">ملاحظة فنية</span>` : ""}
       ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : "warn"}">${r.data?.approved ? "معتمد" : "أعيدت الدراسة"}</span>` : ""}
-      <span class="muted small right">${esc(authors[r.author_id] || ROLES[r.author_role] || "")} · ${fmtDateTime(r.created_at)}</span>
+      <span class="muted small right">${esc(authors[r.author_id] || ROLES[r.author_role] || "")} • ${fmtDateTime(r.created_at)}</span>
       <button class="btn ghost sm no-print" data-print-report="${r.id}" title="طباعة">${I.print}</button></div>
     ${rows.length ? `<dl>${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd style="white-space:pre-wrap">${esc(v)}</dd></div>`).join("")}</dl>` : r.summary ? `<div class="small">${esc(r.summary)}</div>` : ""}
     ${filesHtml(atts)}</div></div>`;

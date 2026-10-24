@@ -65,14 +65,14 @@ route("mosques", {
       const shown = list.slice(0, mobile ? 200 : 600);
       if (mobile) {
         $("#rows", v).innerHTML = shown.map((m) => `<div class="mcard" data-id="${m.id}">
-          <div class="mt"><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` · ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
+          <div class="mt"><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` • ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
             ${r === "admin" ? `<input type="checkbox" class="sel" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد" onclick="event.stopPropagation()">` : ""}</div>
           <div class="foot">${stageChip(m.stage)}${m.stage === "active" ? refillChip(m) : ""}</div>
           ${teamCompact(m)}</div>`).join("") || emptyMsg;
       } else {
         $("#rows", v).innerHTML = shown.map((m) => `<tr class="click" data-id="${m.id}">
           ${r === "admin" ? `<td onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد"></td>` : ""}
-          <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> · ${esc(m.district || "الحي غير محدد")}</div></td>
+          <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}</div></td>
           ${r !== "association" ? `<td class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
           <td>${stageChip(m.stage)}</td>
           <td style="min-width:240px">${team(m)}</td>
@@ -319,8 +319,8 @@ route("mosque", {
         <div class="mic">${I.mosque}</div>
         <div class="grow" style="min-width:220px">
           <div class="row" style="gap:8px"><h2>${esc(m.name)}</h2>${stageChip(m.stage)}</div>
-          <div class="muted small" style="margin-top:4px">${esc(m.code)} · ${esc(m.kind)} · ${esc(m.district || "الحي غير محدد")}${m.association_id ? ` · ${esc(assocName(m.association_id))}` : ""}
-            ${m.map_url ? ` · <a href="${esc(m.map_url)}" target="_blank" rel="noopener">${I.map.replace("<svg", '<svg style="width:14px;vertical-align:-2px"')} الموقع</a>` : ""}</div>
+          <div class="muted small" style="margin-top:4px">${esc(m.code)} • ${esc(m.kind)} • ${esc(m.district || "الحي غير محدد")}${m.association_id ? ` • ${esc(assocName(m.association_id))}` : ""}
+            ${m.map_url ? ` • <a href="${esc(m.map_url)}" target="_blank" rel="noopener">${I.map.replace("<svg", '<svg style="width:14px;vertical-align:-2px"')} الموقع</a>` : ""}</div>
         </div>
         <div class="btn-row no-print">
           ${canEdit ? `<button class="btn sm" data-edit>${I.edit} تعديل البيانات</button>` : ""}
@@ -335,7 +335,7 @@ route("mosque", {
         <div class="grow"><h4>${act.waiting ? "بانتظار: " : "الإجراء التالي: "}${esc(act.title)}</h4><p>${esc(act.waiting ? `هذه الخطوة من مهام ${STAGES[m.stage].who}` : act.desc)}</p></div>
         ${!act.waiting ? `<button class="btn primary" data-act="${act.action}">${act.action === "decide" ? "مراجعة واعتماد" : act.action === "assign" ? "إسناد الآن" : act.action === "complete" ? (missingData(m).length ? "استكمال البيانات" : "اعتماد اكتمال البيانات") : "رفع التقرير"}</button>` : ""}</div>` : ""}
       ${ops.length ? `<div class="action-card" style="margin-top:14px"><div class="ic">${I.drop}</div><div class="grow"><h4>المسجد قيد التشغيل</h4>
-        <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) · آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
+        <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) • آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
         <div class="btn-row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
 
       <div class="tabs" style="margin-top:18px">${[["overview", "نظرة عامة"], ["reports", "التقارير", (reports || []).length], ["tasks", "المهام والطلبات", (tasks || []).length], ["files", "الملفات", (atts || []).length], ["log", "السجل"]]

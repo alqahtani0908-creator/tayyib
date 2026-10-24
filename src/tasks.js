@@ -109,7 +109,7 @@ async function taskDetail(v, id) {
     <div><div class="muted small">الأولوية</div><span class="chip ${T_PRIO[t.priority][1]}">${T_PRIO[t.priority][0]}</span></div>
     <div><div class="muted small">الاستحقاق</div><b>${t.due_date ? fmtDate(t.due_date) : "—"}</b></div>
     <div><div class="muted small">المسجد</div>${m ? `<a href="#/mosque/${m.id}"><b>${esc(m.name)}</b></a>` : "<b>عام</b>"}</div>
-    <div><div class="muted small">أنشأها</div><b>${esc(who(t.created_by))}</b> <span class="muted small">(${ROLES[t.creator_role] || ""}) · ${fmtDateTime(t.created_at)}</span></div>
+    <div><div class="muted small">أنشأها</div><b>${esc(who(t.created_by))}</b> <span class="muted small">(${ROLES[t.creator_role] || ""}) • ${fmtDateTime(t.created_at)}</span></div>
     ${t.closed_at ? `<div><div class="muted small">أُغلقت</div><b>${fmtDateTime(t.closed_at)}</b></div>` : ""}
     ${isAdmin() ? `<button class="btn danger sm" id="del">${I.trash} حذف</button>` : ""}
   </div></div>`;

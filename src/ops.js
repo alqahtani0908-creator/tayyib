@@ -122,7 +122,7 @@ route("achievements", {
       <div class="grid g3" id="gal">${list.map((x) => `<div class="card" style="overflow:hidden">
         <div class="arch" style="aspect-ratio:16/10;background:var(--surface-2);display:grid;place-items:center;color:var(--gold);margin:10px 10px 0;border-radius:14px;overflow:hidden">${x.photos?.length ? `<img data-img="${esc(x.photos[0])}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in" alt="">` : I.mosque.replace("<svg", '<svg style="width:54px;height:54px"')}</div>
         <div class="bd"><div class="row"><b>${esc(x.name)}</b><span class="chip ok right">مُركّب</span></div>
-          <div class="muted small">${esc(x.district || "")}${x.association ? ` · ${esc(x.association)}` : ""}</div>
+          <div class="muted small">${esc(x.district || "")}${x.association ? ` • ${esc(x.association)}` : ""}</div>
           <div class="row small" style="margin-top:10px;gap:14px"><span>التركيب: ${fmtDate(x.installed_at)}</span><span><b>${x.devices ?? "—"}</b> أجهزة</span><span><b>${x.refills}</b> تعبئة</span><span><b>${x.visits}</b> زيارة</span></div>
           <div style="margin-top:6px">${stars(x.satisfaction)}</div>
           ${x.photos?.length > 1 ? `<div class="files">${x.photos.slice(1, 5).map((p) => `<img class="thumb" style="width:60px;height:60px" data-img="${esc(p)}" alt="">`).join("")}</div>` : ""}</div></div>`).join("") ||

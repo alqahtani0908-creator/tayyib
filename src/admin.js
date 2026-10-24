@@ -53,10 +53,10 @@ route("accounts", {
       <div class="hint" style="margin-top:12px">💡 بعد إنشاء الحساب أرسل للمستخدم رابط المنصة ورمز التفعيل (زر واتساب). يدخل المستخدم بريده والرمز ويختار كلمة مروره. لنسيان كلمة المرور استخدم «إعادة تعيين الدخول».</div>`;
     const draw = () => {
       $("#rows", v).innerHTML = list.filter((a) => !f || a.role === f).map((a) => `<tr>
-        <td><div class="t-name">${esc(a.name)}</div><div class="small muted">${esc(a.title || "")}${a.role === "association" ? ` · ${esc(assocName(a.association_id))}` : ""}</div></td>
+        <td><div class="t-name">${esc(a.name)}</div><div class="small muted">${esc(a.title || "")}${a.role === "association" ? ` • ${esc(assocName(a.association_id))}` : ""}</div></td>
         <td><span class="chip ${a.role === "admin" ? "gold" : a.role === "company" ? "info" : a.role === "viewer" ? "plain" : "ok"}">${ROLES[a.role]}</span></td>
         <td data-hide-sm class="small" dir="ltr" style="text-align:end">${esc(a.email)}</td><td data-hide-sm class="num small">${esc(displayPhone(a.phone) || "—")} ${contactBtns({ phone: a.phone, email: a.email, name: a.name })}</td>
-        <td>${!a.active ? `<span class="chip bad">معطل</span>` : a.user_id ? `<span class="chip ok">مفعّل</span>` : `<span class="chip warn" title="رمز التفعيل">بانتظار التفعيل · <b class="num">${esc(a.invite_code)}</b></span>`}</td>
+        <td>${!a.active ? `<span class="chip bad">معطل</span>` : a.user_id ? `<span class="chip ok">مفعّل</span>` : `<span class="chip warn" title="رمز التفعيل">بانتظار التفعيل • <b class="num">${esc(a.invite_code)}</b></span>`}</td>
         <td data-hide-sm class="small muted">${a.last_seen_at ? ago(a.last_seen_at) : "—"}</td>
         <td data-hide-sm><div class="row" style="gap:4px;flex-wrap:nowrap">
           ${!a.user_id && a.active ? `<a class="btn sm" title="إرسال الدعوة عبر واتساب" ${a.phone ? `href="${esc(waLink(a.phone, inviteText(a)))}" target="_blank" rel="noopener"` : `data-copyinv="${a.id}"`}>${a.phone ? I.wa : I.copy} الدعوة</a>` : ""}
@@ -86,7 +86,7 @@ async function accountForm(a = null) {
     ${fld("role", "الصلاحية", { value: a?.role || "association", opts: Object.entries(ROLES), attrs: a?.user_id === S.me.user_id ? "disabled" : "" })}
     <div data-aw>${fld("association_id", "الجمعية", { value: a?.association_id || "", opts: [["", "— اختر —"], ...S.associations.filter((x) => x.active || x.id === a?.association_id).map((x) => [x.id, x.name])] })}</div>
     ${a ? fld("active", "الحالة", { value: a.active ? "1" : "0", opts: [["1", "نشط"], ["0", "معطل"]], attrs: a.user_id === S.me.user_id ? "disabled" : "" }) : ""}</form>
-    <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء · الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) · الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة · حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
+    <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء • الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) • الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة • حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
   const sync = () => { $("[data-aw]", body).hidden = $('[name="role"]', body).value !== "association"; };
   $('[name="role"]', body).onchange = sync; sync();
   return modal({

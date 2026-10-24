@@ -23,7 +23,7 @@
 ## التقنية
 - الواجهة: HTML/CSS/JS بدون إطار، تُجمع بـ `python3 -X utf8 build.py` إلى `docs/index.html` (GitHub Pages).
 - الخادم: Supabase (‏Postgres + Auth + Storage حتى ٥٠ ميقابايت للملف + Realtime للإشعارات + pg_cron كل ساعة للتذكيرات).
-- المخطط الكامل: `supabase/schema.sql`. اختبار المسار بانتحال الأدوار: `tests/workflow_test.sql`.
+- المخطط الكامل: `supabase/schema.sql`، ثم `supabase/10_dashboard.sql` (دالة لوحة المؤشرات `dashboard(p_days, p_assoc)`). اختبار المسار بانتحال الأدوار: `tests/workflow_test.sql`.
 - اختبار الواجهة محليًا بعميل وهمي: `python3 -m http.server` ثم افتح `tests/index.html?as=admin` (أو association / company / viewer).
 
 ## الحسابات
@@ -33,3 +33,6 @@
 - شعار المشروع المعتمد: «طيب» بخط هندسي، قائم الطاء ذهبي متموج كالرائحة الصاعدة، ونقاط معيّنة ذهبية (`logoSvg` في `src/core.js`، و`docs/icon.svg`).
 - شعار المؤسسة: `docs/assets/foundation-*.png`.
 - خط Brando Arabic لا يُنشر في المستودع؛ يرفعه المدير من الإعدادات إلى مخزن `brand` (‏`settings.font_files`).
+
+## لوحة المؤشرات
+مؤشرات للفترة المختارة (7/30/90 يومًا/سنة) مع المقارنة بالفترة السابقة، وتصفية بالجمعية، وخطوط اتجاه 12 أسبوعًا، ولوحة «يحتاج انتباهك»، ومسار تحويلي للمراحل، والتعبئات القادمة 14 يومًا، وتوزيع الرضا، وجدول أداء الجمعيات قابل للترتيب، والأحياء. لكل رسم عرض جدولي. ألوان الرسوم مفحوصة لعمى الألوان والتباين (فاتح وداكن).

@@ -37,6 +37,26 @@
     { id: id(), mosque_id: m8.id, type: "refill", data: { date: iso(now - 33 * day), quantity: "500" }, summary: "تعبئة", author_role: "company", created_at: iso(now - 33 * day) },
     { id: id(), mosque_id: m8.id, type: "satisfaction", data: { overall: 4 }, summary: "الرضا العام 4/5", author_role: "association", created_at: iso(now - 60 * day) },
   );
+
+  // بيانات اختبار إضافية لملء اللوحة
+  const rnd = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
+  const DIST = ["حي أ", "حي ب", "حي ج", "حي د", "حي هـ", "حي و", "حي ز"];
+  const STG = ["selected", "assigned", "assigned", "data_done", "feasible", "study_done", "approved", "active", "active", "active", "active", "not_feasible"];
+  for (let i = 0; i < 46; i++) {
+    const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
+    const inst = now - (20 + rnd() * 70) * day;
+    const m = M({ name: "جامع تجريبي " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : (rnd() > .45 ? A1 : A2), stage: st, ...(st !== "assigned" ? full : {}),
+      ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عطر اختبار", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
+    m.created_at = iso(inst - (10 + rnd() * 30) * day);
+    if (act) for (let w = 0; w < 12; w++) {
+      const t = now - w * 7 * day - rnd() * 6 * day;
+      if (t < inst) continue;
+      if (rnd() > .25) db.reports.push({ id: id(), mosque_id: m.id, type: "visit", data: { date: iso(t), status: rnd() > .9 ? "issue" : "ok" }, author_role: "association", created_at: iso(t) });
+      if (w % 4 === 0) db.reports.push({ id: id(), mosque_id: m.id, type: "refill", data: { date: iso(t), due: iso(t + (rnd() > .2 ? 1 : -3) * day) }, author_role: "company", created_at: iso(t) });
+      if (rnd() > .7) db.reports.push({ id: id(), mosque_id: m.id, type: "satisfaction", data: { overall: rnd() > .2 ? 4 + Math.round(rnd()) : 3 - Math.round(rnd()) }, author_role: "association", created_at: iso(t) });
+    }
+    if (act) db.reports.push({ id: id(), mosque_id: m.id, type: "installation", data: { date: iso(inst) }, author_role: "company", created_at: iso(inst) });
+  }
   db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "مهمة اختبار للشركة", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
   const me = acc[as] || acc.admin;
   const loggedOut = as === "none"; // لمعاينة شاشة الدخول
@@ -137,6 +157,48 @@
       if (p_type === "visit") m.last_visit_at = iso(d);
       if (p_type === "satisfaction") m.satisfaction_avg = avg(db.reports.filter((x) => x.mosque_id === m.id && x.type === "satisfaction").map((x) => +x.data.overall));
       log(m.id, "تقرير: " + p_type, p_summary); return r;
+    },
+    dashboard: ({ p_days = 30, p_assoc = null }) => {
+      const t0 = Date.now() - p_days * day, t1 = Date.now() - 2 * p_days * day;
+      let vm = me.role === "viewer" ? db.mosques : db.mosques.filter(seeM);
+      if (p_assoc) vm = vm.filter((m) => m.association_id === p_assoc);
+      const ids = new Set(vm.map((m) => m.id));
+      const rp = db.reports.filter((r) => ids.has(r.mosque_id)).map((r) => ({ ...r, at: new Date(r.data?.date || r.created_at).getTime() }));
+      const act = vm.filter((m) => m.stage === "active");
+      const sat = rp.filter((r) => r.type === "satisfaction" && r.data?.overall);
+      const inP = (r, a, b = Infinity) => r.at >= a && r.at < b;
+      const av = (rs) => rs.length ? +(rs.reduce((s, r) => s + +r.data.overall, 0) / rs.length).toFixed(2) : null;
+      const cnt = (t, a, b) => rp.filter((r) => r.type === t && inP(r, a, b)).length;
+      const ORD = { selected: 1, assigned: 2, data_done: 3, not_feasible: 3, feasible: 4, study_done: 5, approved: 6, active: 7, suspended: 7 };
+      const stages = {}; vm.forEach((m) => stages[m.stage] = (stages[m.stage] || 0) + 1);
+      const wk0 = new Date(); wk0.setHours(0, 0, 0, 0); wk0.setDate(wk0.getDate() - ((wk0.getDay() + 6) % 7));
+      const weeks = Array.from({ length: 12 }, (_, i) => wk0.getTime() - (11 - i) * 7 * day);
+      const complete = (m) => ["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].every((k) => m[k]);
+      const refP = rp.filter((r) => r.type === "refill" && inP(r, t0) && r.data?.due);
+      return { days: p_days, generated_at: iso(Date.now()), reminder_hours: 72, visit_every_days: 7, total: vm.length, active: act.length,
+        devices: act.reduce((a, m) => a + (m.devices_count || 0), 0), stages,
+        funnel: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ step: i, n: vm.filter((m) => ORD[m.stage] >= i).length })),
+        data_complete: vm.filter(complete).length,
+        refills: cnt("refill", t0), refills_prev: cnt("refill", t1, t0), visits: cnt("visit", t0), visits_prev: cnt("visit", t1, t0),
+        installs: cnt("installation", t0), installs_prev: cnt("installation", t1, t0),
+        sat: av(sat.filter((r) => inP(r, t0))), sat_prev: av(sat.filter((r) => inP(r, t1, t0))), sat_all: av(sat), sat_n: sat.filter((r) => inP(r, t0)).length,
+        ratings: [1, 2, 3, 4, 5].map((g) => ({ r: g, n: sat.filter((r) => inP(r, t0) && Math.round(r.data.overall) === g).length })),
+        ontime_n: refP.length, ontime_ok: refP.filter((r) => r.at <= new Date(r.data.due).getTime() + day).length,
+        visit_ok: act.filter((m) => Date.now() - new Date(m.last_visit_at || m.installed_at) <= 7 * day).length,
+        avg_install_days: act.length ? Math.round(act.reduce((a, m) => a + Math.max(0, (new Date(m.installed_at) - new Date(m.created_at)) / day), 0) / act.length) : null,
+        alerts: { overdue: act.filter((m) => new Date(m.next_refill_at) < Date.now()).length, due_soon: act.filter((m) => { const h = (new Date(m.next_refill_at) - Date.now()) / 36e5; return h >= 0 && h <= 72; }).length,
+          visit_overdue: act.filter((m) => Date.now() - new Date(m.last_visit_at || m.installed_at) > 8 * day).length, pending_approval: stages.study_done || 0,
+          issues: rp.filter((r) => r.type === "visit" && r.data?.status === "issue" && inP(r, t0)).length, missing_data: stages.assigned || 0, not_feasible: stages.not_feasible || 0,
+          open_tasks: db.tasks.filter((t) => t.status === "open").length, overdue_tasks: db.tasks.filter((t) => t.status === "open" && t.due_date < new Date().toISOString().slice(0, 10)).length },
+        weekly: weeks.map((w) => ({ w: new Date(w).toISOString().slice(0, 10), visits: rp.filter((r) => r.type === "visit" && inP(r, w, w + 7 * day)).length, refills: rp.filter((r) => r.type === "refill" && inP(r, w, w + 7 * day)).length, installs: rp.filter((r) => r.type === "installation" && inP(r, w, w + 7 * day)).length, sat: av(sat.filter((r) => inP(r, w, w + 7 * day))) })),
+        upcoming: Array.from({ length: 14 }, (_, i) => { const d0 = new Date(); d0.setHours(0, 0, 0, 0); const a = d0.getTime() + i * day; return { d: new Date(a).toISOString().slice(0, 10), n: act.filter((m) => { const t = new Date(m.next_refill_at).getTime(); return t >= a && t < a + day; }).length }; }),
+        by_association: db.associations.map((a) => { const ms = vm.filter((m) => m.association_id === a.id); const ac = ms.filter((m) => m.stage === "active");
+          return { id: a.id, name: a.name, total: ms.length, active: ac.length, pending: ms.filter((m) => ["assigned", "data_done"].includes(m.stage)).length,
+            visit_ok: ac.filter((m) => Date.now() - new Date(m.last_visit_at || m.installed_at) <= 7 * day).length, overdue: ac.filter((m) => new Date(m.next_refill_at) < Date.now()).length,
+            visits: rp.filter((r) => r.type === "visit" && inP(r, t0) && ms.some((m) => m.id === r.mosque_id)).length, open_tasks: db.tasks.filter((t) => t.association_id === a.id && t.status === "open").length }; }).filter((a) => a.total),
+        assoc_sat: Object.fromEntries(db.associations.map((a) => [a.id, av(sat.filter((r) => vm.find((m) => m.id === r.mosque_id)?.association_id === a.id))])),
+        by_district: Object.entries(vm.reduce((o, m) => (o[m.district || "غير محدد"] = (o[m.district || "غير محدد"] || 0) + 1, o), {})).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([district, total]) => ({ district, total, active: vm.filter((m) => (m.district || "غير محدد") === district && m.stage === "active").length })),
+        recent: db.activity.filter((a) => ids.has(a.mosque_id)).slice(-10).reverse().map((a) => ({ mosque: db.mosques.find((m) => m.id === a.mosque_id)?.name, mosque_id: a.mosque_id, action: a.action, at: a.created_at })) };
     },
     dashboard_stats: () => {
       const vm = me.role === "viewer" ? db.mosques : db.mosques.filter(seeM);
