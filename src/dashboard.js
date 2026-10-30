@@ -36,7 +36,7 @@ function sparkline(values, color) {
     <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"/></svg>`;
 }
 
-let dashState = { days: 30, assoc: "" };
+let dashState = { days: 30, assoc: "", cmp: "period", metric: "cp", dmetric: "cp", diff: false, pair: [] };
 try { dashState = { ...dashState, ...JSON.parse(localStorage.getItem("tayyib.dash") || "{}") }; } catch {}
 
 route("dashboard", {
@@ -48,10 +48,13 @@ route("dashboard", {
     if (!canFilterAssoc || !S.associations.some((a) => a.id === dashState.assoc)) dashState.assoc = "";
     if (!v.querySelector(".dash")) v.innerHTML = `<div class="dash"><div class="dash-skel">${Array.from({ length: 6 }, () => `<div class="card sk"></div>`).join("")}</div></div>`;
     else v.querySelector(".dash").classList.add("loading");
-    const [{ data: d, error }] = await Promise.all([
+    const [{ data: d, error }, cmpRes] = await Promise.all([
       sb.rpc("dashboard", { p_days: dashState.days, p_assoc: dashState.assoc || null }),
+      sb.rpc("dashboard_compare", { p_days: dashState.days, p_assoc: dashState.assoc || null }),
       r !== "viewer" ? loadMosques() : null,
     ]);
+    const cmp = cmpRes?.data || null;
+    if (S.params.cmp) dashState.cmp = S.params.cmp; // رابط مباشر لتبويب مقارنة
     if (error) { v.innerHTML = `<div class="empty">${I.alert}${esc(errMsg(error))}</div>`; return; }
     const P = viz();
     const A = d.alerts || {};
@@ -162,11 +165,17 @@ route("dashboard", {
           </div>
         </section>
 
+        ${cmp ? `<section class="card c-full cmp" id="cmp">
+          <div class="hd"><h3>${svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>')}<span>المقارنات</span></h3>
+            <div class="seg right no-print" id="cmp-tabs">${CMP_TABS.filter(([k]) => k !== "assoc" || (r !== "association" && (cmp.assoc || []).length > 1)).map(([k, l]) => `<button data-t="${k}" class="${k === dashState.cmp ? "on" : ""}">${l}</button>`).join("")}</div></div>
+          <div class="bd" id="cmp-body"></div>
+        </section>` : ""}
+
         ${r !== "association" && assocs.length ? `<section class="card c-full">
           <div class="hd"><h3>أداء الجمعيات المشرفة</h3><span class="muted small hide-sm">اضغط عنوان العمود للترتيب</span></div>
           <div class="tbl-wrap"><table class="tbl perf" id="perf"><thead><tr>
             <th data-k="name">الجمعية</th><th data-k="total" class="n">المساجد</th><th data-k="cp">نسبة التركيب</th><th data-k="pending" class="n">قيد الاستكمال</th>
-            <th data-k="vp">الالتزام بالزيارة</th><th data-k="visits" class="n">زيارات الفترة</th><th data-k="overdue" class="n">تعبئات متأخرة</th><th data-k="sat">الرضا</th><th data-k="open_tasks" class="n">مهام مفتوحة</th></tr></thead><tbody></tbody></table></div>
+            <th data-k="vp">الالتزام بالزيارة</th><th data-k="visits" class="n">زيارات الفترة</th><th data-k="overdue" class="n">تعبئات متأخرة</th><th data-k="sat">الرضا (إجمالي)</th><th data-k="open_tasks" class="n">مهام مفتوحة</th></tr></thead><tbody></tbody></table></div>
         </section>` : ""}
 
         <section class="card c-wide">
@@ -210,6 +219,13 @@ route("dashboard", {
     $("#d-refresh", v).onclick = () => render();
     $("#d-print", v).onclick = () => window.print();
     drawCharts(d);
+    if (cmp) {
+      const tabs = $$("#cmp-tabs button", v).map((b) => b.dataset.t);
+      if (!tabs.includes(dashState.cmp)) dashState.cmp = tabs[0];
+      const show = () => { $$("#cmp-tabs button", v).forEach((b) => b.classList.toggle("on", b.dataset.t === dashState.cmp)); drawCompare($("#cmp-body", v), cmp, dashState.cmp, periodLbl); };
+      $("#cmp-tabs", v).onclick = (e) => { const b = e.target.closest("[data-t]"); if (!b) return; dashState.cmp = b.dataset.t; saveDash(); show(); };
+      show();
+    }
   },
   leave: destroyCharts,
 });
@@ -255,4 +271,122 @@ function drawCharts(d) {
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip },
       scales: { ...axes, x: { ...axes.x, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } } } },
   }));
+}
+
+// ───────────────────────── المقارنات ─────────────────────────
+const CMP_TABS = [["period", "الفترة مقابل السابقة"], ["month", "شهر بشهر"], ["assoc", "الجمعيات"], ["district", "الأحياء"]];
+const MONTH_SHORT = (ym) => { const [y, m] = ym.split("-"); return new Date(+y, +m - 1, 1).toLocaleDateString(AR_LOCALE, { month: "short" }); };
+// تغيّر نسبي مع اتجاه جيد/سيئ
+function change(cur, prev, { goodUp = true, digits = 0 } = {}) {
+  if (cur == null || prev == null) return `<span class="chg flat">—</span>`;
+  const d = +(cur - prev).toFixed(digits === 0 ? 0 : 2);
+  if (!d) return `<span class="chg flat">بلا تغيير</span>`;
+  const rel = prev ? Math.round((d / prev) * 100) : null;
+  const good = (d > 0) === goodUp;
+  return `<span class="chg ${good ? "good" : "bad"}">${d > 0 ? "▲" : "▼"} ${Math.abs(d)}${rel != null ? ` <small>(${d > 0 ? "+" : "−"}${Math.abs(rel)}٪)</small>` : ""}</span>`;
+}
+function drawCompare(el, c, tab, periodLbl) {
+  const P = viz();
+  if (tab === "period") return drawComparePeriods(el, c, P, periodLbl);
+  if (tab === "month") return drawCompareMonths(el, c, P);
+  if (tab === "assoc") return drawCompareRank(el, c.assoc || [], P, "assoc");
+  if (tab === "district") return drawCompareRank(el, c.district || [], P, "district");
+}
+
+// ١) الفترة الحالية مقابل السابقة: صفوف المؤشرات بقضيبين متقابلين وتغيّر مطلق ونسبي
+function drawComparePeriods(el, c, P, periodLbl) {
+  const cur = c.periods?.cur || {}, prev = c.periods?.prev || {};
+  const rate = (o) => o.ontime_n ? Math.round(o.ontime_ok / o.ontime_n * 100) : null;
+  const rows = [
+    ["التعبئات", cur.refills, prev.refills, {}],
+    ["الزيارات الميدانية", cur.visits, prev.visits, {}],
+    ["التركيبات الجديدة", cur.installs, prev.installs, {}],
+    ["مساجد أضيفت للمشروع", cur.new_mosques, prev.new_mosques, {}],
+    ["التقارير الشهرية المرفوعة", cur.monthly_reports, prev.monthly_reports, {}],
+    ["الملاحظات الفنية", cur.issues, prev.issues, { goodUp: false }],
+    ["متوسط الرضا (من 5)", cur.sat, prev.sat, { digits: 2, max: 5 }],
+    ["التعبئة في موعدها ٪", rate(cur), rate(prev), { max: 100 }],
+  ];
+  const max = Math.max(1, ...rows.filter((r) => !r[3].max).flatMap((r) => [r[1] || 0, r[2] || 0]));
+  const bar = (v, m, color) => `<div class="pb"><i style="width:${v == null ? 0 : Math.max(v ? 2 : 0, (v / m) * 100)}%;background:${color}"></i><b>${v == null ? "—" : (Number.isInteger(v) ? fmtNum(v) : v)}</b></div>`;
+  el.innerHTML = `<div class="legend sm"><span><i style="background:${P.series[0]}"></i>الفترة الحالية (${esc(periodLbl)})</span><span><i style="background:var(--line-2)"></i>الفترة السابقة المماثلة</span></div>
+    <div class="pcmp">${rows.map(([l, a, b, o]) => `<div class="pcr"><div class="pl">${esc(l)}</div><div class="pbars">${bar(a, o.max || max, P.series[0])}${bar(b, o.max || max, "var(--line-2)")}</div><div class="pc">${change(a, b, o)}</div></div>`).join("")}</div>
+    <div class="hint" style="margin-top:10px">تُقارن كل فترة بالفترة التي قبلها مباشرة وبالطول نفسه. الأخضر تحسّن والأحمر تراجع (ارتفاع الملاحظات الفنية تراجع).</div>`;
+}
+
+// ٢) شهر بشهر: أعمدة مجمعة لستة أشهر + جدول التغير الشهري
+function drawCompareMonths(el, c, P) {
+  const ms = c.monthly || [];
+  const keys = [["visits", "الزيارات", P.series[0]], ["refills", "التعبئات", P.series[2]], ["installs", "التركيبات", P.series[1]]];
+  el.innerHTML = `<div class="legend">${keys.map(([, l, col]) => `<span><i style="background:${col}"></i>${l}</span>`).join("")}</div>
+    <div class="ch" style="height:240px"><canvas id="c-month" role="img" aria-label="مقارنة الزيارات والتعبئات والتركيبات في آخر ستة أشهر"></canvas></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table class="tbl mtbl"><thead><tr><th>الشهر</th>${keys.map(([, l]) => `<th>${l}</th><th class="muted">التغير</th>`).join("")}<th>الرضا</th></tr></thead>
+    <tbody>${ms.slice().reverse().map((m, i, arr) => { const pv = arr[i + 1];
+      return `<tr><td class="t-name">${esc(monthName(m.m))}</td>${keys.map(([k]) => `<td class="num">${fmtNum(m[k])}</td><td>${pv ? change(m[k], pv[k]) : `<span class="chg flat">—</span>`}</td>`).join("")}<td>${m.sat != null ? Number(m.sat).toFixed(1) : "—"}</td></tr>`; }).join("")}</tbody></table></div>`;
+  if (!window.Chart) {
+    if (document.readyState !== "complete") window.addEventListener("load", () => $("#c-month", el) && drawCompareMonths(el, c, P), { once: true });
+    return;
+  }
+  const monthChart = new Chart($("#c-month", el), {
+    type: "bar",
+    data: { labels: ms.map((m) => MONTH_SHORT(m.m)), datasets: keys.map(([k, l, col]) => ({ label: l, data: ms.map((m) => m[k]), backgroundColor: col, borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: "start", maxBarThickness: 18, categoryPercentage: .7, barPercentage: .9 })) },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: chartTooltip() },
+      scales: { x: { reverse: true, grid: { display: false }, border: { color: cssVar("--line") } }, y: { position: "right", beginAtZero: true, grid: { color: cssVar("--line") }, border: { display: false }, ticks: { precision: 0, maxTicksLimit: 5 } } } },
+  });
+  charts.push(monthChart);
+}
+const chartTooltip = () => ({ rtl: true, textDirection: "rtl", backgroundColor: cssVar("--ink"), titleColor: cssVar("--bg"), bodyColor: cssVar("--bg"), padding: 10, cornerRadius: 10, boxPadding: 4, usePointStyle: true });
+
+// ٣،٤) ترتيب الجمعيات أو الأحياء بمقياس مختار، بالقيم أو بالفرق عن المتوسط، مع مقارنة مباشرة بين جمعيتين
+const RANK_METRICS = {
+  assoc: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["vp", "الالتزام بالزيارة ٪", (x) => pct(x.visit_ok, x.active)], ["visits", "الزيارات", (x) => x.visits, (x) => x.visits_prev],
+    ["refills", "التعبئات", (x) => x.refills, (x) => x.refills_prev], ["sat", "الرضا خلال الفترة (من 5)", (x) => x.sat, (x) => x.sat_prev], ["issues", "الملاحظات الفنية", (x) => x.issues, null, true], ["total", "عدد المساجد", (x) => x.total]],
+  district: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["visits", "الزيارات", (x) => x.visits], ["sat", "الرضا الإجمالي (من 5)", (x) => x.sat], ["total", "عدد المساجد", (x) => x.total]],
+};
+function drawCompareRank(el, list, P, kind) {
+  const metrics = RANK_METRICS[kind];
+  const mkey = kind === "assoc" ? "metric" : "dmetric";
+  if (!metrics.some(([k]) => k === dashState[mkey])) dashState[mkey] = metrics[0][0];
+  const [mk, ml, get, getPrev, lowerBetter] = metrics.find(([k]) => k === dashState[mkey]);
+  const rows = list.map((x) => ({ x, name: x.name || x.district, v: get(x), pv: getPrev ? getPrev(x) : null })).filter((r) => r.v != null);
+  rows.sort((a, b) => lowerBetter ? a.v - b.v : b.v - a.v);
+  const avg = rows.length ? rows.reduce((s, r) => s + r.v, 0) / rows.length : 0;
+  const fmt = (v) => v == null ? "—" : (Number.isInteger(v) ? fmtNum(v) : (+v).toFixed(1));
+  const diff = dashState.diff;
+  const max = Math.max(1, ...rows.map((r) => diff ? Math.abs(r.v - avg) : r.v));
+  const pairOpts = kind === "assoc" ? list.map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join("") : "";
+  el.innerHTML = `<div class="rank-ctl">
+      <select class="input" id="rk-metric" aria-label="المقياس">${metrics.map(([k, l]) => `<option value="${k}" ${k === mk ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <div class="seg" id="rk-mode"><button data-m="0" class="${diff ? "" : "on"}">القيم</button><button data-m="1" class="${diff ? "on" : ""}">الفرق عن المتوسط</button></div>
+      <span class="muted small">المتوسط: <b>${fmt(+avg.toFixed(1))}</b>${lowerBetter ? " • الأقل أفضل" : ""}</span></div>
+    ${diff ? `<div class="legend sm"><span><i style="background:${P.series[1]}"></i>أعلى من المتوسط</span><span><i style="background:${P.series[0]}"></i>أدنى من المتوسط</span></div>` : ""}
+    <div class="rank ${diff ? "div" : ""}">${rows.map((r, i) => {
+      const dv = r.v - avg;
+      return `<div class="rk" title="${esc(r.name)}: ${fmt(r.v)}"><span class="rn"><b class="pos">${i + 1}</b>${esc(r.name)}</span>
+        ${diff ? `<div class="dtrack"><span class="mid"></span><i style="${dv >= 0 ? "inset-inline-start:50%" : "inset-inline-end:50%"};width:${(Math.abs(dv) / max) * 50}%;background:${dv >= 0 ? P.series[1] : P.series[0]}"></i></div>
+          <b class="rv">${dv >= 0 ? "+" : "−"}${fmt(+Math.abs(dv).toFixed(1))}</b>`
+        : `<div class="ft"><i style="width:${(r.v / max) * 100}%;background:${P.series[0]}"></i><span class="avgline" style="inset-inline-start:${(avg / max) * 100}%"></span></div>
+          <b class="rv">${fmt(r.v)}</b>`}
+        <span class="rc">${r.pv != null ? `${change(r.v, r.pv, { goodUp: !lowerBetter, digits: Number.isInteger(r.v) ? 0 : 2 })} <small class="muted">عن السابقة</small>` : ""}</span></div>`;
+    }).join("") || `<div class="empty">لا توجد بيانات كافية للمقارنة</div>`}</div>
+    ${!diff && rows.length ? `<div class="hint">الخط العمودي داخل كل شريط يمثّل متوسط ${kind === "assoc" ? "الجمعيات" : "الأحياء"}${rows.some((r) => r.pv != null) ? " • التغير مقارنة بالفترة السابقة" : ""}</div>` : ""}
+    ${kind === "assoc" && list.length > 1 ? `<div class="vs">
+      <div class="vs-head"><h4>مقارنة مباشرة</h4><select class="input" id="vs-a">${pairOpts}</select><span class="vs-x">مقابل</span><select class="input" id="vs-b">${pairOpts}</select></div>
+      <div id="vs-body"></div></div>` : ""}`;
+  $("#rk-metric", el).onchange = (e) => { dashState[mkey] = e.target.value; saveDash(); drawCompareRank(el, list, P, kind); };
+  $("#rk-mode", el).onclick = (e) => { const b = e.target.closest("[data-m]"); if (!b) return; dashState.diff = b.dataset.m === "1"; saveDash(); drawCompareRank(el, list, P, kind); };
+  if (kind === "assoc" && list.length > 1) {
+    const [a0, b0] = dashState.pair?.length === 2 && dashState.pair.every((id) => list.some((x) => x.id === id)) ? dashState.pair : [list[0].id, list[1].id];
+    $("#vs-a", el).value = a0; $("#vs-b", el).value = b0;
+    const drawVs = () => {
+      const A = list.find((x) => x.id === $("#vs-a", el).value), B = list.find((x) => x.id === $("#vs-b", el).value);
+      dashState.pair = [A.id, B.id]; saveDash();
+      $("#vs-body", el).innerHTML = `<table class="tbl vst"><thead><tr><th>المقياس</th><th>${esc(A.name)}</th><th>${esc(B.name)}</th></tr></thead><tbody>${RANK_METRICS.assoc.map(([k, l, g, , low]) => {
+        const va = g(A), vb = g(B); const win = va == null || vb == null || va === vb ? 0 : ((va > vb) !== !!low ? 1 : 2);
+        return `<tr><td>${l}</td><td class="${win === 1 ? "win" : ""}">${fmt(va)}${win === 1 ? " ✓" : ""}</td><td class="${win === 2 ? "win" : ""}">${fmt(vb)}${win === 2 ? " ✓" : ""}</td></tr>`;
+      }).join("")}</tbody></table>`;
+    };
+    $("#vs-a", el).onchange = drawVs; $("#vs-b", el).onchange = drawVs;
+    drawVs();
+  }
 }

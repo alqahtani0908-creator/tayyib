@@ -5,7 +5,7 @@
   const now = Date.now(), day = 864e5;
   const iso = (t) => new Date(t).toISOString();
   const id = () => crypto.randomUUID();
-  const A1 = id(), A2 = id();
+  const A1 = id(), A2 = id(), A3 = id();
   const acc = {
     admin: { id: id(), name: "مدير الاختبار", email: "admin@test.local", role: "admin", user_id: "u-admin", active: true, invite_code: "AAAA1111", created_at: iso(now) },
     association: { id: id(), name: "مشرف الجمعية", email: "assoc@test.local", role: "association", association_id: A1, user_id: "u-assoc", active: true, invite_code: "BBBB1111", phone: "0500000010", created_at: iso(now) },
@@ -14,7 +14,7 @@
   };
   const db = {
     settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "شركة الاختبار", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
-    associations: [{ id: A1, name: "جمعية اختبار أ", district: "شمال الرياض", contact_name: "مسؤول أ", phone: "0500000001", active: true }, { id: A2, name: "جمعية اختبار ب", active: true }],
+    associations: [{ id: A1, name: "جمعية اختبار أ", district: "شمال الرياض", contact_name: "مسؤول أ", phone: "0500000001", active: true }, { id: A2, name: "جمعية اختبار ب", active: true }, { id: A3, name: "جمعية اختبار ج", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
     mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [],
   };
@@ -45,7 +45,7 @@
   for (let i = 0; i < 46; i++) {
     const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
     const inst = now - (20 + rnd() * 70) * day;
-    const m = M({ name: "جامع تجريبي " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : (rnd() > .45 ? A1 : A2), stage: st, ...(st !== "assigned" ? full : {}),
+    const m = M({ name: "جامع تجريبي " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
       ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عطر اختبار", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
     m.created_at = iso(inst - (10 + rnd() * 30) * day);
     if (act) for (let w = 0; w < 12; w++) {
@@ -157,6 +157,35 @@
       if (p_type === "visit") m.last_visit_at = iso(d);
       if (p_type === "satisfaction") m.satisfaction_avg = avg(db.reports.filter((x) => x.mosque_id === m.id && x.type === "satisfaction").map((x) => +x.data.overall));
       log(m.id, "تقرير: " + p_type, p_summary); return r;
+    },
+    dashboard_compare: ({ p_days = 30, p_assoc = null }) => {
+      const t0 = Date.now() - p_days * day, t1 = Date.now() - 2 * p_days * day;
+      let vm = me.role === "viewer" ? db.mosques : db.mosques.filter(seeM);
+      if (p_assoc) vm = vm.filter((m) => m.association_id === p_assoc);
+      const mm = new Map(vm.map((m) => [m.id, m]));
+      const rp = db.reports.filter((r) => mm.has(r.mosque_id)).map((r) => ({ ...r, m: mm.get(r.mosque_id), at: new Date(r.data?.date || r.created_at).getTime() }));
+      const sat = rp.filter((r) => r.type === "satisfaction" && r.data?.overall);
+      const av = (rs) => rs.length ? +(rs.reduce((s, r) => s + +r.data.overall, 0) / rs.length).toFixed(2) : null;
+      const inP = (r, a, b) => r.at >= a && r.at < b;
+      const per = (a, b) => { const rf = rp.filter((r) => r.type === "refill" && inP(r, a, b) && r.data?.due);
+        return { refills: rp.filter((r) => r.type === "refill" && inP(r, a, b)).length, visits: rp.filter((r) => r.type === "visit" && inP(r, a, b)).length,
+          installs: rp.filter((r) => r.type === "installation" && inP(r, a, b)).length, issues: rp.filter((r) => r.type === "visit" && r.data?.status === "issue" && inP(r, a, b)).length,
+          monthly_reports: rp.filter((r) => r.type === "monthly" && inP(r, a, b)).length, new_mosques: vm.filter((m) => { const t = new Date(m.created_at).getTime(); return t >= a && t < b; }).length,
+          sat: av(sat.filter((r) => inP(r, a, b))), sat_n: sat.filter((r) => inP(r, a, b)).length, ontime_n: rf.length, ontime_ok: rf.filter((r) => r.at <= new Date(r.data.due).getTime() + day).length }; };
+      const months = Array.from({ length: 6 }, (_, i) => { const d0 = new Date(); d0.setDate(1); d0.setHours(0, 0, 0, 0); d0.setMonth(d0.getMonth() - (5 - i)); const e = new Date(d0); e.setMonth(e.getMonth() + 1); return [d0, e]; });
+      const ym = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const dists = [...new Set(vm.map((m) => m.district || "غير محدد"))];
+      return {
+        periods: { cur: per(t0, Infinity), prev: per(t1, t0) },
+        monthly: months.map(([a, b]) => ({ m: ym(a), visits: rp.filter((r) => r.type === "visit" && inP(r, +a, +b)).length, refills: rp.filter((r) => r.type === "refill" && inP(r, +a, +b)).length, installs: rp.filter((r) => r.type === "installation" && inP(r, +a, +b)).length, sat: av(sat.filter((r) => inP(r, +a, +b))) })),
+        assoc: db.associations.filter((a) => vm.some((m) => m.association_id === a.id)).map((a) => { const ms = vm.filter((m) => m.association_id === a.id), r2 = rp.filter((r) => r.m.association_id === a.id), s2 = sat.filter((r) => r.m.association_id === a.id);
+          return { id: a.id, name: a.name, total: ms.length, active: ms.filter((m) => m.stage === "active").length, visit_ok: ms.filter((m) => m.stage === "active" && Date.now() - new Date(m.last_visit_at || m.installed_at) <= 7 * day).length,
+            visits: r2.filter((r) => r.type === "visit" && r.at >= t0).length, visits_prev: r2.filter((r) => r.type === "visit" && inP(r, t1, t0)).length,
+            refills: r2.filter((r) => r.type === "refill" && r.at >= t0).length, refills_prev: r2.filter((r) => r.type === "refill" && inP(r, t1, t0)).length,
+            issues: r2.filter((r) => r.type === "visit" && r.data?.status === "issue" && r.at >= t0).length, sat: av(s2.filter((r) => r.at >= t0)), sat_prev: av(s2.filter((r) => inP(r, t1, t0))), sat_all: av(s2) }; }),
+        district: dists.map((d) => { const ms = vm.filter((m) => (m.district || "غير محدد") === d); return { district: d, total: ms.length, active: ms.filter((m) => m.stage === "active").length,
+          visits: rp.filter((r) => (r.m.district || "غير محدد") === d && r.type === "visit" && r.at >= t0).length, sat: av(sat.filter((r) => (r.m.district || "غير محدد") === d)) }; }).sort((a, b) => b.total - a.total).slice(0, 12),
+      };
     },
     dashboard: ({ p_days = 30, p_assoc = null }) => {
       const t0 = Date.now() - p_days * day, t1 = Date.now() - 2 * p_days * day;
