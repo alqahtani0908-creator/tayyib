@@ -794,6 +794,65 @@ a.fi[href]:hover { background: var(--surface-2); }
 .mcard .rowno { flex: none; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 9px; display: grid; place-items: center;
   background: var(--gold-soft); color: var(--brand); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
+/* خريطة الأحياء */
+.mapv { display: grid; gap: 14px; }
+.map-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; }
+.map-ctl select.input { width: auto; min-width: 170px; }
+.map-kpis { margin-inline-start: auto; display: flex; gap: 16px; font-size: 13px; color: var(--ink-3); }
+.map-kpis b { color: var(--ink); font-size: 16px; margin-inline-end: 3px; }
+.map-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; }
+.map-box { position: relative; padding: 0; overflow: hidden; }
+#lmap { height: min(72vh, 680px); min-height: 420px; background: var(--surface-2); z-index: 0; }
+.leaflet-container { font-family: inherit; }
+.mp-tiles { filter: grayscale(.75) sepia(.18) brightness(1.03) contrast(.92); }
+:root[data-theme="dark"] .mp-tiles { filter: invert(1) hue-rotate(180deg) grayscale(.7) sepia(.2) brightness(.78) contrast(.92); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mp-tiles { filter: invert(1) hue-rotate(180deg) grayscale(.7) sepia(.2) brightness(.78) contrast(.92); } }
+.leaflet-container img, .leaflet-container svg, .leaflet-container canvas { max-width: none !important; max-height: none !important; }
+.map-legend { position: absolute; z-index: 500; inset-block-end: 12px; inset-inline-start: 12px; padding: 10px 12px; border-radius: 12px; display: grid; gap: 7px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(0,0,0,.12); max-width: calc(100% - 24px); }
+@supports (backdrop-filter: blur(8px)) { .map-legend { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
+.lg-scale, .lg-pts { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--ink-2); }
+.lg-scale span, .lg-pts span { display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
+.lg-scale i { width: 16px; height: 10px; border-radius: 3px; display: inline-block; }
+.lg-pts i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1.5px var(--surface); }
+.map-side { padding: 0; display: flex; flex-direction: column; max-height: min(72vh, 680px); min-height: 420px; }
+.map-side .hd { padding: 14px 16px 10px; margin: 0; }
+.map-list { overflow-y: auto; padding: 0 8px 10px; display: grid; gap: 2px; align-content: start; }
+.mp-item { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; }
+.mp-item:hover, .mp-item:focus-visible { background: var(--surface-2); }
+.mp-item .sw { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.mp-item b { font-size: 13.5px; font-weight: 600; display: block; }
+.mp-bar { display: block; height: 4px; border-radius: 4px; background: var(--line); margin-top: 5px; overflow: hidden; }
+.mp-bar i { display: block; height: 100%; border-radius: 4px; background: var(--brand); opacity: .55; }
+.mp-v { text-align: end; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.mp-v small { display: block; font-size: 11px; font-weight: 400; color: var(--ink-3); }
+.mp-unmapped { margin: 10px 4px 0; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); display: grid; gap: 4px; }
+.mp-unmapped svg { width: 14px; vertical-align: -2px; color: var(--warn, #b7791f); }
+.mp-u { display: flex; justify-content: space-between; font-size: 13px; padding-top: 4px; border-top: 1px dashed var(--line); }
+.mp-pop { display: grid; gap: 6px; min-width: 190px; font-family: inherit; direction: rtl; text-align: right; }
+.mp-pop > b { font-size: 15px; }
+.mp-row { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; color: var(--ink-2); }
+.mp-row b { color: var(--ink); }
+.mp-sub { font-size: 12px; color: var(--ink-3); }
+.mp-pop .btn { justify-self: start; margin-top: 4px; }
+.mp-pop .chip { justify-self: start; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.leaflet-popup-content-wrapper { border-radius: 14px; border: 1px solid var(--line); }
+.leaflet-container a.leaflet-popup-close-button { color: var(--ink-3); }
+.leaflet-tooltip.mp-tip { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.leaflet-tooltip-top.mp-tip::before { border-top-color: var(--surface); }
+.leaflet-bar a { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent) !important; color: var(--ink-3); font-size: 10px; }
+.leaflet-control-attribution a { color: var(--ink-2); }
+@media (max-width: 1100px) { .map-wrap { grid-template-columns: 1fr; } .map-side { max-height: none; min-height: 0; } .map-list { max-height: 420px; } }
+@media (max-width: 860px) {
+  .map-kpis { margin-inline-start: 0; width: 100%; justify-content: space-between; }
+  .map-ctl .seg { width: 100%; } .map-ctl .seg button { flex: 1; }
+  .map-ctl select.input { flex: 1; }
+  #lmap { height: 58vh; min-height: 340px; }
+  .map-legend { inset-block-end: 8px; inset-inline-start: 8px; padding: 8px 10px; }
+}
+
 </style>
 <script src="config.js"></script>
 </head>
@@ -1672,7 +1731,7 @@ route("dashboard", {
         </section>` : ""}
 
         <section class="card c-wide">
-          <div class="hd"><h3>التوزيع حسب الأحياء</h3><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
+          <div class="hd"><h3>التوزيع حسب الأحياء</h3><a class="btn sm no-print" href="#/map">${I.map} الخريطة</a><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
           <div class="bd"><div class="dbars">${dist.map((x) => `<div class="db" title="${esc(x.district)}: ${x.active} مُركّب من ${x.total}"><span class="dn">${esc(x.district)}</span>
             <div class="dt"><div class="ft" style="width:${(x.total / dmax) * 100}%"><i style="width:${x.total ? (x.active / x.total) * 100 : 0}%;background:${P.series[0]}"></i></div></div><b>${x.active}<span class="muted">/${x.total}</span></b></div>`).join("") || `<div class="empty">لا توجد بيانات</div>`}</div></div>
         </section>
@@ -1883,6 +1942,176 @@ function drawCompareRank(el, list, P, kind) {
     drawVs();
   }
 }
+
+// ───────────────────────── خريطة الأحياء ─────────────────────────
+// حدود الأحياء من OpenStreetMap (docs/assets/riyadh-districts.json)، ومواقع المساجد من روابط خرائط Google عند توفر الإحداثيات
+const MAP_LIB = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/";
+let leafletReady = null, districtGeo = null;
+const loadLeaflet = () => leafletReady ||= new Promise((ok, fail) => {
+  const css = document.createElement("link"); css.rel = "stylesheet"; css.href = MAP_LIB + "leaflet.min.css"; document.head.appendChild(css);
+  const js = document.createElement("script"); js.src = MAP_LIB + "leaflet.min.js";
+  js.onload = ok; js.onerror = () => { leafletReady = null; fail(new Error("تعذر تحميل مكتبة الخريطة — تحقق من الاتصال")); };
+  document.head.appendChild(js);
+});
+const loadDistricts = async () => districtGeo ||= await fetch(ASSETS + "riyadh-districts.json").then((r) => { if (!r.ok) throw new Error("تعذر تحميل حدود الأحياء"); return r.json(); });
+
+// توحيد أسماء الأحياء للمطابقة: «حي النرجس» = «النرجس» = «نرجس»
+const normDist = (s) => String(s || "").replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي")
+  .replace(/^\s*حي\s+/, "").replace(/\s+/g, " ").trim().replace(/اء$/, "ا");
+const distKeys = (s) => { const n = normDist(s); return [n, n.replace(/^ال/, "")]; };
+
+// إحداثيات من رابط الموقع: @lat,lng أو q=lat,lng أو !3dlat!4dlng أو نص «lat, lng»
+function coordsOf(url) {
+  const s = decodeURIComponent(String(url || ""));
+  const m = s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || s.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/) ||
+    s.match(/[?&](?:q|query|ll|destination|center)=(?:loc:)?(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/) || s.match(/^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/);
+  if (!m) return null;
+  const lat = +m[1], lng = +m[2];
+  return lat > 16 && lat < 33 && lng > 34 && lng < 56 ? [lat, lng] : null;
+}
+
+const MAP_METRICS = [["total", "كل المساجد"], ["active", "قيد التشغيل"], ["progress", "تحت الإجراء"]];
+const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
+const mapState = { metric: "total", assoc: "", points: true };
+
+route("map", {
+  title: "خريطة الأحياء",
+  leave() { this.map?.remove(); this.map = null; },
+  async render(v) {
+    v.innerHTML = `<div class="empty">${I.map}جارٍ تحميل الخريطة…</div>`;
+    let mosques;
+    try {
+      const [, , res] = await Promise.all([loadLeaflet(), loadDistricts(), sb.rpc("map_data")]);
+      if (res.error) throw res.error;
+      mosques = res.data || [];
+    } catch (e) { v.innerHTML = `<div class="empty">${I.alert}${esc(errMsg(e))}</div>`; return; }
+    const r = role(), canOpen = r !== "viewer", dark = isDark();
+    const pal = dark ? ["#6a4034", "#80503f", "#97624f", "#ae7863", "#c48f7a", "#d6a895", "#e6c3b4"] : ["#cda796", "#b78874", "#a06c57", "#895643", "#714434", "#5a3428", "#40231b"];
+    const ptColor = (st) => st === "active" ? (dark ? "#b0902a" : "#a9831f") : PROGRESS.has(st) ? (dark ? "#4f86c6" : "#3b74a8") : st === "selected" ? (dark ? "#b04f45" : "#9a4a3a") : "#8e817e";
+    if (mapState.assoc && !S.associations.some((a) => a.id === mapState.assoc)) mapState.assoc = "";
+
+    // فهرس الأحياء: مضلع إن وُجد، وإلا نقطة مركز
+    const index = new Map();
+    districtGeo.polys.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "poly", i, name: p.n })));
+    districtGeo.pts.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "pt", i, name: p.n })));
+
+    v.innerHTML = `<div class="mapv">
+      <div class="card map-ctl">
+        <div class="seg" id="mp-metric">${MAP_METRICS.map(([k, l]) => `<button data-k="${k}" class="${mapState.metric === k ? "on" : ""}">${l}</button>`).join("")}</div>
+        ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+        <label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="mp-pts" ${mapState.points ? "checked" : ""}> مواقع المساجد</label>
+        <div class="map-kpis" id="mp-kpis"></div>
+      </div>
+      <div class="map-wrap">
+        <div class="card map-box"><div id="lmap"></div><div class="map-legend" id="mp-legend"></div></div>
+        <div class="card map-side"><div class="hd"><h3>الأحياء</h3><span class="muted small right" id="mp-n"></span></div><div class="map-list" id="mp-list"></div></div>
+      </div></div>`;
+
+    const map = this.map = L.map($("#lmap", v), { zoomControl: true, attributionControl: true, minZoom: 9, maxZoom: 18 }).setView([24.72, 46.68], 11);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, className: "mp-tiles", attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">مساهمو OpenStreetMap</a>',
+    }).addTo(map);
+    map.attributionControl.setPrefix(false);
+    const base = L.layerGroup().addTo(map), shade = L.layerGroup().addTo(map), dots = L.layerGroup().addTo(map);
+    districtGeo.polys.forEach((p) => L.polygon(p.r.map((ring) => ring.map(([x, y]) => [y, x])), { color: dark ? "#5a4743" : "#cbbfb3", weight: .8, fillOpacity: 0, interactive: false }).addTo(base));
+    const centerOf = (hit) => hit.kind === "pt" ? [districtGeo.pts[hit.i].c[1], districtGeo.pts[hit.i].c[0]] : null;
+
+    const paint = () => {
+      shade.clearLayers(); dots.clearLayers();
+      const list = mosques.filter((m) => !mapState.assoc || m.association_id === mapState.assoc);
+      const val = (m) => mapState.metric === "active" ? m.stage === "active" : mapState.metric === "progress" ? PROGRESS.has(m.stage) : true;
+      // تجميع حسب الحي
+      const groups = new Map();
+      list.forEach((m) => {
+        const raw = (m.district || "").trim() || "غير محدد";
+        const hit = distKeys(raw).map((k) => index.get(k)).find(Boolean) || null;
+        const key = hit ? hit.kind + hit.i : "?" + normDist(raw);
+        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set() };
+        g.raws.add(raw); g.all.push(m);
+        if (val(m)) g.n++;
+        if (m.stage === "active") { g.active++; g.devices += m.devices_count || 0; }
+        if (PROGRESS.has(m.stage)) g.progress++;
+        if (m.association_id) g.assocs.add(assocName(m.association_id));
+        groups.set(key, g);
+      });
+      const all = [...groups.values()].sort((a, b) => b.n - a.n || b.all.length - a.all.length);
+      const max = Math.max(1, ...all.map((g) => g.n));
+      const step = Math.max(1, Math.ceil(max / 5));
+      const cls = (n) => Math.min(4, Math.floor((n - 1) / step));
+      const color = (n) => pal[[0, 2, 3, 5, 6][cls(n)]];
+
+      const popup = (g) => `<div class="mp-pop"><b>${esc(g.label)}</b>
+        <div class="mp-row"><span>إجمالي المساجد</span><b class="num">${fmtNum(g.all.length)}</b></div>
+        <div class="mp-row"><span>قيد التشغيل</span><b class="num">${fmtNum(g.active)}</b></div>
+        <div class="mp-row"><span>تحت الإجراء</span><b class="num">${fmtNum(g.progress)}</b></div>
+        ${g.devices ? `<div class="mp-row"><span>أجهزة التعطير</span><b class="num">${fmtNum(g.devices)}</b></div>` : ""}
+        ${g.assocs.size ? `<div class="mp-sub">${[...g.assocs].map(esc).join("، ")}</div>` : ""}
+        ${canOpen ? `<a class="btn sm" href="#/mosques?district=${encodeURIComponent([...g.raws][0])}">${I.mosque} عرض المساجد</a>` : ""}</div>`;
+
+      const layers = new Map();
+      all.forEach((g) => {
+        if (!g.hit || !g.n) return;
+        let lay;
+        if (g.hit.kind === "poly") {
+          lay = L.polygon(districtGeo.polys[g.hit.i].r.map((ring) => ring.map(([x, y]) => [y, x])), { color: color(g.n), weight: 1.5, fillColor: color(g.n), fillOpacity: .62 });
+          lay.on("mouseover", () => lay.setStyle({ weight: 3, fillOpacity: .8 })).on("mouseout", () => lay.setStyle({ weight: 1.5, fillOpacity: .62 }));
+        } else {
+          lay = L.circleMarker(centerOf(g.hit), { radius: 9 + cls(g.n) * 3, color: dark ? "#15100f" : "#fff", weight: 2, fillColor: color(g.n), fillOpacity: .9 });
+        }
+        lay.bindTooltip(`${esc(g.label)} • ${fmtNum(g.n)}`, { direction: "top", sticky: g.hit.kind === "poly", className: "mp-tip" }).bindPopup(popup(g), { maxWidth: 260 }).addTo(shade);
+        layers.set(g.key, lay);
+      });
+
+      // مواقع المساجد (عند توفر إحداثيات في الرابط)
+      let located = 0;
+      list.forEach((m) => {
+        const c = coordsOf(m.map_url); if (!c) return;
+        located++;
+        if (!mapState.points) return;
+        L.circleMarker(c, { radius: 5, color: dark ? "#15100f" : "#fff", weight: 1.5, fillColor: ptColor(m.stage), fillOpacity: 1 })
+          .bindTooltip(esc(m.name), { direction: "top", className: "mp-tip" })
+          .bindPopup(`<div class="mp-pop"><b>${esc(m.name)}</b><div class="mp-sub">${esc(m.district || "")}</div>${stageChip(m.stage)}${canOpen ? `<a class="btn sm" href="#/mosque/${m.id}">${I.mosque} صفحة المسجد</a>` : ""}</div>`, { maxWidth: 240 })
+          .addTo(dots);
+      });
+
+      const present = all.filter((g) => g.n);
+      const unmapped = all.filter((g) => !g.hit);
+      $("#mp-kpis", v).innerHTML = `<span><b class="num">${fmtNum(present.length)}</b> حيًّا</span><span><b class="num">${fmtNum(list.filter(val).length)}</b> مسجدًا</span><span><b class="num">${fmtNum(located)}</b> بموقع محدد</span>`;
+      $("#mp-n", v).textContent = `${fmtNum(present.length)} حي`;
+      $("#mp-legend", v).innerHTML = `<div class="small"><b>${esc(MAP_METRICS.find((x) => x[0] === mapState.metric)[1])}</b> في الحي</div>
+        <div class="lg-scale">${[0, 1, 2, 3, 4].filter((c) => c * step + 1 <= max).map((c) => `<span><i style="background:${pal[[0, 2, 3, 5, 6][c]]}"></i><bdi dir="ltr">${step === 1 ? c + 1 : `${c * step + 1}${c === 4 || (c + 1) * step >= max ? "+" : `–${(c + 1) * step}`}`}</bdi></span>`).join("")}</div>
+        ${mapState.points && located ? `<div class="lg-pts"><span><i style="background:${ptColor("active")}"></i>قيد التشغيل</span><span><i style="background:${ptColor("assigned")}"></i>تحت الإجراء</span><span><i style="background:${ptColor("selected")}"></i>بانتظار الإسناد</span></div>` : ""}`;
+      $("#mp-list", v).innerHTML = present.length || unmapped.length ? present.filter((g) => g.hit).map((g) => `<button class="mp-item" data-k="${esc(g.key)}">
+          <span class="sw" style="background:${color(g.n)}"></span><span class="grow"><b>${esc(g.label)}</b><span class="mp-bar"><i style="width:${(g.n / max) * 100}%"></i></span></span>
+          <span class="num mp-v">${fmtNum(g.n)}<small>${mapState.metric === "total" ? `${fmtNum(g.active)} يعمل` : `من ${fmtNum(g.all.length)}`}</small></span></button>`).join("") +
+        (unmapped.length ? `<div class="mp-unmapped"><div class="small"><b>${I.alert} أحياء لم تُحدَّد على الخريطة</b></div><div class="muted small">تأكد من كتابة اسم الحي كما هو (مثل: النرجس، الملقا)</div>
+          ${unmapped.map((g) => `<div class="mp-u"><span>${esc(g.label)}</span><span class="num">${fmtNum(g.all.length)}</span></div>`).join("")}</div>` : "")
+        : `<div class="empty">${I.map}لا توجد مساجد بعد</div>`;
+      if (list.length && !located) $("#mp-list", v).insertAdjacentHTML("beforeend", `<div class="hint" style="margin:10px 6px 0">لإظهار نقطة لكل مسجد، اجعل «رابط الموقع» يحتوي الإحداثيات (من خرائط Google: اضغط مطولًا على الموقع وانسخ الإحداثيات أو رابط المكان).</div>`);
+      $$(".mp-item", v).forEach((b) => {
+        const lay = layers.get(b.dataset.k);
+        b.onclick = () => {
+          if (!lay) return;
+          lay.getBounds ? map.flyToBounds(lay.getBounds(), { maxZoom: 14, padding: [30, 30], duration: .6 }) : map.flyTo(lay.getLatLng(), 14, { duration: .6 });
+          setTimeout(() => lay.openPopup(), 650);
+          if (isMobile()) $("#lmap", v).scrollIntoView({ behavior: "smooth", block: "center" });
+        };
+        b.onmouseenter = () => lay?.setStyle?.({ weight: 3, fillOpacity: .85 });
+        b.onmouseleave = () => lay?.setStyle?.({ weight: lay.getBounds ? 1.5 : 2, fillOpacity: lay.getBounds ? .62 : .9 });
+      });
+      // تأطير الخريطة على الأحياء الموجودة
+      const fb = L.featureGroup([...layers.values()]);
+      if (layers.size && !this.fitted) { map.fitBounds(fb.getBounds(), { padding: [30, 30], maxZoom: 13 }); this.fitted = true; }
+    };
+    this.fitted = false;
+    paint();
+    setTimeout(() => map.invalidateSize(), 50);
+
+    $("#mp-metric", v).onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; mapState.metric = b.dataset.k; $$("#mp-metric button", v).forEach((x) => x.classList.toggle("on", x === b)); paint(); };
+    $("#mp-assoc", v)?.addEventListener("change", (e) => { mapState.assoc = e.target.value; this.fitted = false; paint(); });
+    $("#mp-pts", v).onchange = (e) => { mapState.points = e.target.checked; paint(); };
+  },
+});
 
 // ───────────────────────── المساجد ─────────────────────────
 const MOSQUE_FIELDS = [
@@ -2931,6 +3160,7 @@ const NAV = [
   { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
   { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
   { r: "reports", l: "التقارير", i: "report", roles: ["admin", "association", "company"] },
+  { r: "map", l: "خريطة الأحياء", i: "map", roles: ["admin", "association", "company", "viewer"] },
   { r: "achievements", l: "المنجزات", i: "sparkle", roles: ["admin", "association", "company", "viewer"] },
   { r: "notifications", l: "الإشعارات", i: "bell", roles: ["admin", "association", "company", "viewer"], badge: true },
   { r: "messages", l: "الرسائل الجماعية", i: "send", roles: ["admin", "association"], sec: "التواصل" },

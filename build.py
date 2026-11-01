@@ -4,7 +4,7 @@ import pathlib
 root = pathlib.Path(__file__).parent
 src = root / "src"
 read = lambda p: p.read_text(encoding="utf-8")
-order = ["core.js", "brand.js", "data.js", "reports.js", "dashboard.js", "mosques.js", "tasks.js", "ops.js", "messages.js", "admin.js", "main.js"]
+order = ["core.js", "brand.js", "data.js", "reports.js", "dashboard.js", "map.js", "mosques.js", "tasks.js", "ops.js", "messages.js", "admin.js", "main.js"]
 js = "\n".join(read(src / f) for f in order)
 head = f"""<!doctype html>
 <html lang="ar" dir="rtl">

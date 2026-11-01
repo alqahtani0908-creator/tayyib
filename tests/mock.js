@@ -21,14 +21,14 @@
   let seq = 0;
   const M = (o) => { const m = { id: id(), code: "M-" + String(++seq).padStart(4, "0"), kind: "جامع", stage: "selected", created_at: iso(now - seq * day), ...o }; db.mosques.push(m); return m; };
   const full = { imam_name: "إمام اختبار", imam_phone: "0501111111", muezzin_name: "مؤذن اختبار", muezzin_phone: "0502222222", servant_name: "خادم اختبار", servant_phone: "0503333333" };
-  M({ name: "جامع اختبار ١", district: "حي أ" });
-  M({ name: "جامع اختبار ٢", district: "حي ب", association_id: A1, stage: "assigned", imam_name: "إمام ناقص" });
-  M({ name: "جامع اختبار ٣", district: "حي أ", association_id: A1, stage: "data_done", ...full });
-  M({ name: "جامع اختبار ٤", district: "حي ج", association_id: A1, stage: "feasible", ...full });
-  const m5 = M({ name: "جامع اختبار ٥", district: "حي ب", association_id: A2, stage: "study_done", ...full });
-  M({ name: "جامع اختبار ٦", district: "حي ج", association_id: A1, stage: "approved", ...full });
-  const m7 = M({ name: "جامع اختبار ٧", district: "حي أ", association_id: A1, stage: "active", ...full, devices_count: 4, fragrance: "عطر اختبار", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
-  const m8 = M({ name: "جامع اختبار ٨", district: "حي د", association_id: A2, stage: "active", ...full, devices_count: 2, fragrance: "عطر اختبار", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
+  M({ name: "جامع اختبار ١", district: "حي النرجس" });
+  M({ name: "جامع اختبار ٢", district: "الملقا", association_id: A1, stage: "assigned", imam_name: "إمام ناقص" });
+  M({ name: "جامع اختبار ٣", district: "حي النرجس", association_id: A1, stage: "data_done", ...full });
+  M({ name: "جامع اختبار ٤", district: "العليا", association_id: A1, stage: "feasible", ...full });
+  const m5 = M({ name: "جامع اختبار ٥", district: "الملقا", association_id: A2, stage: "study_done", ...full });
+  M({ name: "جامع اختبار ٦", district: "العليا", association_id: A1, stage: "approved", ...full });
+  const m7 = M({ name: "جامع اختبار ٧", district: "حي النرجس", association_id: A1, stage: "active", ...full, devices_count: 4, fragrance: "عطر اختبار", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
+  const m8 = M({ name: "جامع اختبار ٨", district: "حي الروضة", association_id: A2, stage: "active", ...full, devices_count: 2, fragrance: "عطر اختبار", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
   db.reports.push(
     { id: id(), mosque_id: m5.id, type: "needs_study", data: { date: "2026-10-01", devices: "3", fragrance: "عطر اختبار", placement: "المصلى الرئيسي" }, summary: "3 أجهزة", author_role: "company", created_at: iso(now - 5 * day) },
     { id: id(), mosque_id: m7.id, type: "installation", data: { date: iso(now - 40 * day), devices: "4", fragrance: "عطر اختبار" }, summary: "تركيب 4 أجهزة", author_role: "company", created_at: iso(now - 40 * day) },
@@ -40,7 +40,8 @@
 
   // بيانات اختبار إضافية لملء اللوحة
   const rnd = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
-  const DIST = ["حي أ", "حي ب", "حي ج", "حي د", "حي هـ", "حي و", "حي ز"];
+  const DIST = ["حي النرجس", "الملقا", "العليا", "حي الروضة", "الياسمين", "السليمانية", "النسيم الغربي", "حي التجربة"];
+  const LL = { "حي النرجس": [24.86, 46.66], "الملقا": [24.8, 46.61], "العليا": [24.69, 46.68], "حي الروضة": [24.73, 46.77], "الياسمين": [24.82, 46.64], "السليمانية": [24.7, 46.7], "النسيم الغربي": [24.73, 46.82] };
   const STG = ["selected", "assigned", "assigned", "data_done", "feasible", "study_done", "approved", "active", "active", "active", "active", "not_feasible"];
   for (let i = 0; i < 46; i++) {
     const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
@@ -48,6 +49,7 @@
     const m = M({ name: "جامع تجريبي " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
       ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عطر اختبار", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
     m.created_at = iso(inst - (10 + rnd() * 30) * day);
+    const ll = LL[m.district]; if (ll && rnd() > .3) m.map_url = `https://www.google.com/maps?q=${(ll[0] + (rnd() - .5) * .02).toFixed(5)},${(ll[1] + (rnd() - .5) * .02).toFixed(5)}`;
     if (act) for (let w = 0; w < 12; w++) {
       const t = now - w * 7 * day - rnd() * 6 * day;
       if (t < inst) continue;
@@ -140,6 +142,7 @@
     touch_seen: () => null,
     claim_account: () => me,
     activate_account: () => null,
+    map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, name, district, stage, association_id, devices_count, map_url }) => ({ id, name, district, stage, association_id, devices_count, map_url })),
     reset_account_login: () => "NEWC0DE1",
     assign_mosques: ({ p_ids, p_assoc }) => { if (me.role !== "admin") throw "صلاحية المدير فقط"; let n = 0; db.mosques.forEach((m) => { if (p_ids.includes(m.id)) { m.association_id = p_assoc; if (m.stage === "selected") m.stage = "assigned"; n++; log(m.id, "إسناد للجمعية"); } }); notify("association", p_assoc, null, "مساجد جديدة مسندة لجمعيتكم", `تم إسناد ${n}`, "assign"); return n; },
     complete_data: ({ p_mosque }) => { const m = db.mosques.find((x) => x.id === p_mosque); if (m.stage !== "assigned") throw "المسجد ليس في مرحلة استكمال البيانات"; if (["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].some((k) => !m[k])) throw "البيانات غير مكتملة"; m.stage = "data_done"; log(m.id, "اكتمال البيانات"); return null; },

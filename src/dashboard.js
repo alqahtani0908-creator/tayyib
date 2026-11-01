@@ -179,7 +179,7 @@ route("dashboard", {
         </section>` : ""}
 
         <section class="card c-wide">
-          <div class="hd"><h3>التوزيع حسب الأحياء</h3><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
+          <div class="hd"><h3>التوزيع حسب الأحياء</h3><a class="btn sm no-print" href="#/map">${I.map} الخريطة</a><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
           <div class="bd"><div class="dbars">${dist.map((x) => `<div class="db" title="${esc(x.district)}: ${x.active} مُركّب من ${x.total}"><span class="dn">${esc(x.district)}</span>
             <div class="dt"><div class="ft" style="width:${(x.total / dmax) * 100}%"><i style="width:${x.total ? (x.active / x.total) * 100 : 0}%;background:${P.series[0]}"></i></div></div><b>${x.active}<span class="muted">/${x.total}</span></b></div>`).join("") || `<div class="empty">لا توجد بيانات</div>`}</div></div>
         </section>
