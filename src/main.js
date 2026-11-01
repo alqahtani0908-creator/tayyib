@@ -30,7 +30,7 @@ function paintShell() {
     <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
-  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml()}</div>
+  $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml(true)}</div>
     <div class="ttl"><div class="crumbs">${esc(S.settings.platform_name || "طيب")} • ${esc(S.settings.org_name || "")}</div><h1></h1></div>
     <div class="right row" style="gap:8px;flex-wrap:nowrap">${role() !== "viewer" ? `<button class="iconbtn" id="search-btn" title="بحث سريع" aria-label="بحث">${I.search}</button>` : ""}<button class="iconbtn" id="bell" title="الإشعارات" aria-label="الإشعارات">${I.bell}<span class="dot" hidden></span></button></div>`;
   const bn = BNAV[role()] || [];

@@ -116,9 +116,12 @@ const I = {
 };
 // شعار «طيب» المعتمد: حروف بلون الحبر (currentColor) وقائم الطاء الذهبي المتموج ونقاط معيّنة ذهبية
 const ASSETS = window.TAYYIB_ASSETS || "assets/";
-const LOGO_GLYPH = `<g fill="none" stroke-width="27" stroke-linejoin="round"><path stroke="currentColor" d="M687 453 V516 A61.5 61.5 0 0 0 748.5 577.5 H1247 A62.5 62.5 0 0 0 1247 452.5 H1098 M962 453 V577.5"/><path stroke="#ceb26b" d="M1097.5 591 V380 C1097.5 345 1148.5 320 1148.5 275 C1148.5 235 1112 215 1112 182"/></g><g fill="#ceb26b"><path d="M810.5 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/><path d="M936.5 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/><path d="M988 637 l24.5 24.5 -24.5 24.5 -24.5 -24.5z"/></g>`;
-const logoSvg = () => `<svg viewBox="660 168 680 532" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب">${LOGO_GLYPH}</svg>`;
-const logoHtml = () => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="طيب">` : logoSvg();
+// شعار «طيب»: الحرف بالذهبي، ويوضع داخل مربع بني على الخلفيات الفاتحة (badge)
+const LOGO_GLYPH = `<g fill="#ceb26b"><path fill-rule="evenodd" d="M1655 53H1697V195H1830A115 115 0 0 1 1945 310A115 115 0 0 1 1830 425H1180A113 113 0 0 1 1067 312V240C1067 205 1050 184 1017 176L1029 133C1082 146 1110 185 1110 240V318A62 62 0 0 0 1172 380H1536V217H1578V380H1655ZM1697 238V310H1902A72 72 0 0 0 1830 238Z"/><path d="M1307 445l33 33-33 33-33-33zM1523 445l33 33-33 33-33-33zM1589 445l33 33-33 33-33-33z"/></g>`;
+const logoSvg = (badge = false) => badge
+  ? `<svg viewBox="952 0 1046 565" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب"><rect x="952" width="1046" height="565" rx="62" fill="#563331"/>${LOGO_GLYPH}</svg>`
+  : `<svg viewBox="1000 36 962 492" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="طيب">${LOGO_GLYPH}</svg>`;
+const logoHtml = (badge = false) => S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="طيب">` : logoSvg(badge);
 const foundationLogo = (white = false) => `${ASSETS}foundation-${white ? "white" : "primary"}.png`;
 
 // ───── الأدوار والمراحل ─────
@@ -322,7 +325,7 @@ function exportXlsx(rows, filename, sheet = "البيانات") {
 function printDoc(title, inner) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:84px;height:66px;color:#563331">${logoHtml()}</div>
+  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
     <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> • ${fmtDateTime(new Date())}</div></div>
     <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
     ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
