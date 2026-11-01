@@ -39,7 +39,7 @@ route("mosques", {
         </div>
         ${mobile ? `<div class="mcards" id="rows"></div>` : `<div class="tbl-wrap"><table class="tbl"><thead><tr>
           ${r === "admin" ? `<th style="width:34px"><input type="checkbox" id="all" aria-label="تحديد الكل"></th>` : ""}
-          <th>المسجد</th>${r !== "association" ? "<th>الجمعية</th>" : ""}<th>المرحلة</th><th>فريق المسجد</th><th>التعبئة القادمة</th></tr></thead>
+          <th class="rn-h">م</th><th>المسجد</th>${r !== "association" ? "<th>الجمعية</th>" : ""}<th>المرحلة</th><th>فريق المسجد</th><th>التعبئة القادمة</th></tr></thead>
           <tbody id="rows"></tbody></table></div>`}
       </div>`;
     $("#f-toggle", v).onclick = () => $("#filters", v).classList.toggle("open");
@@ -64,14 +64,15 @@ route("mosques", {
       $("#count", v).textContent = `${fmtNum(list.length)} من ${fmtNum(S.mosques.length)} مسجد`;
       const shown = list.slice(0, mobile ? 200 : 600);
       if (mobile) {
-        $("#rows", v).innerHTML = shown.map((m) => `<div class="mcard" data-id="${m.id}">
-          <div class="mt"><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` • ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
+        $("#rows", v).innerHTML = shown.map((m, i) => `<div class="mcard" data-id="${m.id}">
+          <div class="mt"><span class="rowno num">${fmtNum(i + 1)}</span><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` • ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
             ${r === "admin" ? `<input type="checkbox" class="sel" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد" onclick="event.stopPropagation()">` : ""}</div>
           <div class="foot">${stageChip(m.stage)}${m.stage === "active" ? refillChip(m) : ""}</div>
           ${teamCompact(m)}</div>`).join("") || emptyMsg;
       } else {
-        $("#rows", v).innerHTML = shown.map((m) => `<tr class="click" data-id="${m.id}">
+        $("#rows", v).innerHTML = shown.map((m, i) => `<tr class="click" data-id="${m.id}">
           ${r === "admin" ? `<td onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد"></td>` : ""}
+          <td class="rowno-c num">${fmtNum(i + 1)}</td>
           <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}</div></td>
           ${r !== "association" ? `<td class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
           <td>${stageChip(m.stage)}</td>
@@ -104,7 +105,7 @@ route("mosques", {
     $("#b-add", v)?.addEventListener("click", async () => { if (await mosqueForm()) render(); });
     $("#b-import", v)?.addEventListener("click", () => importDialog());
     $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
-    $("#b-export", v).onclick = () => exportXlsx((v._list || []).map(mosqueRow), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
+    $("#b-export", v).onclick = () => exportXlsx((v._list || []).map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
     apply();
   },
 });

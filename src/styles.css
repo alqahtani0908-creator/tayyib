@@ -771,3 +771,9 @@ a.fi[href]:hover { background: var(--surface-2); }
 }
 @media (hover: none) { .tbl tbody tr:hover { background: none; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ترقيم المساجد */
+.tbl th.rn-h { width: 44px; text-align: center; }
+.tbl td.rowno-c { width: 44px; text-align: center; color: var(--ink-3); font-weight: 600; font-variant-numeric: tabular-nums; }
+.mcard .rowno { flex: none; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 9px; display: grid; place-items: center;
+  background: var(--gold-soft); color: var(--brand); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
