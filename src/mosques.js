@@ -33,6 +33,7 @@ route("mosques", {
           <div class="acts">
             ${r === "admin" ? `<button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>
               <button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد</button>
+              <button class="btn sm danger" id="b-del" disabled>${I.trash} حذف المحدد</button>
               <button class="btn sm" id="b-import">${I.upload} استيراد Excel</button>` : ""}
             <button class="btn sm" id="b-export">${I.download} تصدير</button>
           </div>
@@ -89,9 +90,14 @@ route("mosques", {
     $("#f-assoc", v)?.addEventListener("change", (e) => { f.assoc = e.target.value; apply(); setParam(); });
     $("#f-district", v).onchange = (e) => { f.district = e.target.value; apply(); setParam(); };
     $("#f-missing", v)?.addEventListener("change", (e) => { f.missing = e.target.checked ? "1" : ""; apply(); setParam(); });
+    const paintSel = () => {
+      $("#b-assign", v).disabled = $("#b-del", v).disabled = !sel.size;
+      $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد${sel.size ? ` (${sel.size})` : ""}`;
+      $("#b-del", v).innerHTML = `${I.trash} حذف المحدد${sel.size ? ` (${sel.size})` : ""}`;
+    };
     $("#rows", v).onchange = (e) => {
       const cb = e.target.closest("[data-sel]");
-      if (cb) { cb.checked ? sel.add(cb.dataset.sel) : sel.delete(cb.dataset.sel); $("#b-assign", v).disabled = !sel.size; $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد (${sel.size})`; }
+      if (cb) { cb.checked ? sel.add(cb.dataset.sel) : sel.delete(cb.dataset.sel); paintSel(); }
     };
     $("#rows", v).onclick = (e) => {
       if (e.target.closest(".contact, [data-sel]")) return;
@@ -100,11 +106,12 @@ route("mosques", {
     };
     $("#all", v)?.addEventListener("change", (e) => {
       (v._list || []).slice(0, 600).forEach((m) => e.target.checked ? sel.add(m.id) : sel.delete(m.id));
-      $("#b-assign", v).disabled = !sel.size; $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد (${sel.size})`; apply();
+      paintSel(); apply();
     });
     $("#b-add", v)?.addEventListener("click", async () => { if (await mosqueForm()) render(); });
     $("#b-import", v)?.addEventListener("click", () => importDialog());
     $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
+    $("#b-del", v)?.addEventListener("click", async () => { if (await deleteMosques([...sel])) { sel.clear(); render(); } });
     $("#b-export", v).onclick = () => exportXlsx((v._list || []).map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
     apply();
   },
@@ -328,7 +335,8 @@ route("mosque", {
           ${r === "admin" ? `<button class="btn sm" data-assign>${I.org} ${m.association_id ? "تغيير الجمعية" : "إسناد"}</button>` : ""}
           ${r !== "viewer" ? `<button class="btn sm" data-task>${I.tasks} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}
           <button class="btn sm" data-print-m>${I.print} ملف المسجد</button>
-          ${r === "admin" ? `<button class="btn sm" data-more title="إجراءات المدير">${I.gear} إجراءات</button>` : ""}
+          ${r === "admin" ? `<button class="btn sm" data-more title="إجراءات المدير">${I.gear} إجراءات</button>
+          <button class="btn sm danger" data-del-m>${I.trash} حذف</button>` : ""}
         </div>
       </div></div>
 
@@ -406,6 +414,7 @@ route("mosque", {
     $("[data-assign]", v)?.addEventListener("click", async () => { if (await assignDialog([id])) render(); });
     $("[data-task]", v)?.addEventListener("click", async () => { if (await taskForm({ mosque_id: id })) render(); });
     $("[data-print-m]", v).onclick = () => printMosque(m, reports || []);
+    $("[data-del-m]", v)?.addEventListener("click", async () => { if (await deleteMosques([m.id])) go("/mosques"); });
     $("[data-more]", v)?.addEventListener("click", () => adminStageDialog(m));
     $$("[data-op]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(m, b.dataset.op)) render(); });
     $("[data-act]", v)?.addEventListener("click", async (e) => {
@@ -444,11 +453,32 @@ async function adminStageDialog(m) {
       const d = formData(mb);
       return (await run(sb.rpc("set_stage", { p_mosque: m.id, p_stage: d.stage, p_note: d.note || null }), "تم تغيير المرحلة")) ? "ok" : false;
     } }, { label: `${I.trash} حذف المسجد`, cls: "danger", value: "del" }, { label: "إغلاق" }] });
-  if (res === "del") {
-    if (!(await confirmBox(`حذف «${m.name}» نهائيًا مع جميع تقاريره ومهامه؟`, "حذف", "danger"))) return;
-    if (await run(sb.from("mosques").delete().eq("id", m.id), "تم حذف المسجد")) { await loadMosques(true); go("/mosques"); }
-  } else if (res) { await refreshMosque(m.id); render(); }
+  if (res === "del") { if (await deleteMosques([m.id])) go("/mosques"); }
+  else if (res) { await refreshMosque(m.id); render(); }
 }
+// حذف مسجد أو أكثر نهائيًا (للمدير): تُحذف التقارير والمهام والملفات المرتبطة معه
+async function deleteMosques(ids) {
+  if (!ids.length) return false;
+  const one = ids.length === 1 && S.mosques.find((x) => x.id === ids[0]);
+  const what = one ? `«${one.name}»` : `${fmtNum(ids.length)} ${ids.length <= 10 ? "مساجد" : "مسجدًا"}`;
+  if (!(await confirmBox(`حذف ${what} نهائيًا مع جميع التقارير والمهام والملفات المرتبطة؟ لا يمكن التراجع عن الحذف.`, "حذف نهائي", "danger"))) return false;
+  const paths = [];
+  for (let i = 0; i < ids.length; i += 100) {
+    const part = ids.slice(i, i + 100);
+    const { data: tasks } = await sb.from("tasks").select("id").in("mosque_id", part);
+    const { data: a1 } = await sb.from("attachments").select("path").in("mosque_id", part);
+    const { data: a2 } = tasks?.length ? await sb.from("attachments").select("path").in("task_id", tasks.map((t) => t.id)) : { data: [] };
+    paths.push(...(a1 || []), ...(a2 || []));
+    if (!(await run(sb.from("mosques").delete().in("id", part)))) { await loadMosques(true); return true; }
+  }
+  // الملفات المرفوعة: حذف أفضل جهد بعد حذف السجلات
+  const files = [...new Set(paths.map((p) => p.path))];
+  for (let i = 0; i < files.length; i += 100) await sb.storage.from("files").remove(files.slice(i, i + 100)).catch(() => {});
+  toast(one ? "تم حذف المسجد" : `تم حذف ${what}`);
+  await loadMosques(true);
+  return true;
+}
+
 function printMosque(m, reports) {
   const rows = [["الرمز", m.code], ["النوع", m.kind], ["الحي", m.district], ["العنوان", m.address], ["الجمعية المشرفة", assocName(m.association_id)], ["المرحلة", STAGES[m.stage]?.l],
     ["الإمام", `${m.imam_name || "—"} — ${displayPhone(m.imam_phone) || ""}`], ["المؤذن", `${m.muezzin_name || "—"} — ${displayPhone(m.muezzin_phone) || ""}`], ["خادم المسجد", `${m.servant_name || "—"} — ${displayPhone(m.servant_phone) || ""}`],

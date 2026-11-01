@@ -255,7 +255,7 @@
     from: (t) => new Q(t),
     rpc: (n, args = {}) => ({ then(res, rej) { return Promise.resolve().then(() => { try { return { data: RPC[n](args), error: null }; } catch (e) { return { data: null, error: { message: String(e) } }; } }).then(res, rej); } }),
     auth: { getSession: async () => ({ data: { session: loggedOut ? null : { user: { id: me.user_id, email: me.email } } } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }), signOut: async () => ({}), signInWithPassword: async () => ({ data: {}, error: null }), signUp: async () => ({ data: {}, error: null }) },
-    storage: { from: () => ({ upload: async (p, f) => { blobs.set(p, URL.createObjectURL(f)); return { data: { path: p }, error: null }; }, createSignedUrl: async (p) => ({ data: { signedUrl: blobs.get(p) || "data:," }, error: null }), getPublicUrl: (p) => ({ data: { publicUrl: blobs.get(p) || "" } }) }) },
+    storage: { from: () => ({ remove: async () => ({ data: [], error: null }), upload: async (p, f) => { blobs.set(p, URL.createObjectURL(f)); return { data: { path: p }, error: null }; }, createSignedUrl: async (p) => ({ data: { signedUrl: blobs.get(p) || "data:," }, error: null }), getPublicUrl: (p) => ({ data: { publicUrl: blobs.get(p) || "" } }) }) },
     channel: () => { const c = { handlers: [], on(_, __, fn) { this.handlers.push(fn); return this; }, subscribe() { chans.push(this); return this; } }; return c; },
   };
   // لاختبار الإشعار اللحظي من وحدة التحكم
