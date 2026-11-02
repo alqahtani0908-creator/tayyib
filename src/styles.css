@@ -792,17 +792,6 @@ a.fi[href]:hover { background: var(--surface-2); }
 .map-stats .ms small { color: var(--ink-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .map-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: stretch; }
 .map-box { position: relative; padding: 0; overflow: hidden; }
-#lmap { height: min(74vh, 700px); min-height: 440px; z-index: 0; background: #f4eee3; }
-#lmap.dk { background: #171110; }
-.leaflet-container { font-family: inherit; }
-.leaflet-container img, .leaflet-container svg, .leaflet-container canvas { max-width: none !important; max-height: none !important; }
-.leaflet-container .leaflet-interactive:focus { outline: none; }
-/* أسماء الأحياء على الخريطة */
-.dlbl { background: none; border: 0; }
-.dlbl span { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none;
-  padding: 3px 4px 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink);
-  background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line); box-shadow: 0 3px 10px rgba(0,0,0,.14); }
-.dlbl b { font-size: 11px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--brand); color: var(--on-brand, #fff); font-variant-numeric: tabular-nums; }
 /* مفتاح الخريطة */
 .map-legend { position: absolute; z-index: 500; inset-block-end: 14px; inset-inline-start: 14px; padding: 12px 14px; border-radius: 14px; display: grid; gap: 8px;
   background: color-mix(in srgb, var(--surface) 90%, transparent); border: 1px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.12); max-width: calc(100% - 28px); }
@@ -816,19 +805,6 @@ a.fi[href]:hover { background: var(--surface-2); }
 .lg-pts { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink-2); padding-top: 6px; border-top: 1px solid var(--line); }
 .lg-pts span { display: inline-flex; align-items: center; gap: 6px; }
 .lg-pts i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px var(--surface); }
-/* أزرار التكبير */
-.leaflet-touch .leaflet-bar, .leaflet-bar { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.1); }
-.leaflet-bar a, .leaflet-touch .leaflet-bar a { width: 36px; height: 36px; line-height: 36px; background: var(--surface); color: var(--ink); border-bottom-color: var(--line); font-weight: 400; }
-.leaflet-bar a:hover { background: var(--surface-2); color: var(--brand); }
-.leaflet-bar.mp-home { display: grid; place-items: center; width: 36px; height: 36px; background: var(--surface); color: var(--ink); }
-.leaflet-bar.mp-home svg { width: 18px; height: 18px; }
-.leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent) !important; color: var(--ink-3); font-size: 10px; border-start-start-radius: 8px; }
-.leaflet-control-attribution a { color: var(--ink-2); }
-/* البطاقة المنبثقة والتلميح */
-.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--ink); box-shadow: 0 14px 40px rgba(0,0,0,.2); }
-.leaflet-popup-content-wrapper { border-radius: 16px; border: 1px solid var(--line); }
-.leaflet-popup-content { margin: 14px 16px; }
-.leaflet-container a.leaflet-popup-close-button { color: var(--ink-3); inset-inline-start: 4px; right: auto; left: 4px; top: 4px; }
 .mp-pop { display: grid; gap: 10px; font-family: inherit; direction: rtl; text-align: right; }
 .mp-pop > b, .mp-pt b { font-size: 16px; }
 .mp-pt { display: flex; align-items: center; gap: 8px; padding-inline-end: 18px; }
@@ -840,9 +816,6 @@ a.fi[href]:hover { background: var(--surface-2); }
 .mp-sub svg { width: 13px; vertical-align: -2px; }
 .mp-pop .btn { justify-self: stretch; justify-content: center; color: var(--on-brand, #fff); }
 .mp-pop .chip { justify-self: start; }
-.leaflet-tooltip.mp-tip { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 12px; padding: 4px 8px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
-.leaflet-tooltip.mp-tip.quiet { font-weight: 500; color: var(--ink-2); }
-.leaflet-tooltip-top.mp-tip::before { border-top-color: var(--surface); }
 /* قائمة الأحياء */
 .map-side { padding: 0; display: flex; flex-direction: column; height: min(74vh, 700px); min-height: 440px; }
 .map-side .hd { padding: 14px 16px 10px; margin: 0; border-bottom: 1px solid var(--line); }
@@ -863,10 +836,73 @@ a.fi[href]:hover { background: var(--surface-2); }
   .map-ctl select.input { flex: 1; }
   .map-toggles { margin-inline-start: 0; }
   .map-stats { gap: 8px; } .map-stats .ms { padding: 10px 12px; gap: 10px; } .map-stats .ms > span { width: 34px; height: 34px; } .map-stats .ms b { font-size: 17px; }
-  #lmap { height: 60vh; min-height: 360px; }
+  .rmap { height: 62vh; min-height: 380px; }
   .map-legend { inset-block-end: 8px; inset-inline-start: 8px; padding: 9px 11px; } .lg-ramp i { width: 30px; }
 }
 
+/* الخريطة المتجهة للرياض */
+.rmap { --k: 1; position: relative; height: min(74vh, 700px); min-height: 460px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; direction: ltr; outline: none;
+  --land: #f3ece0; --cell: #fffdf8; --edge: #e4d9c7; --road1: #d6c39b; --road2: #e8dbc2; --ring: #ffffff;
+  background: radial-gradient(1200px 700px at 60% 40%, #f8f3ea, var(--land)); }
+.rmap.dk { --land: #140f0e; --cell: #201816; --edge: #382b28; --road1: #5a4535; --road2: #3c2f29; --ring: #140f0e; background: radial-gradient(1200px 700px at 60% 40%, #1c1513, var(--land)); }
+.rmap.grabbing { cursor: grabbing; }
+.rmap:focus-visible { box-shadow: inset 0 0 0 2px var(--gold); }
+.rm-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+.rm-cells path { fill: var(--cell); stroke: var(--edge); stroke-width: 1; vector-effect: non-scaling-stroke; transition: fill .15s; }
+.rm-cells path:hover { fill: color-mix(in srgb, var(--cell) 80%, var(--gold) 20%); }
+.rm-roads polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
+.rm-roads .m { stroke: var(--road1); stroke-width: 2.4; }
+.rm-roads .t { stroke: var(--road2); stroke-width: 1.3; }
+.rm-shade path, .rm-shade circle { fill: var(--f); stroke: var(--ring); stroke-width: 1.6; vector-effect: non-scaling-stroke; cursor: pointer; transition: stroke .12s, stroke-width .12s, filter .12s; }
+.rm-shade circle { r: calc(var(--r) * 1px / var(--k)); }
+.rm-shade .hov { stroke: var(--brand); stroke-width: 3; }
+.rm-shade .sel { stroke: var(--brand); stroke-width: 3.5; filter: drop-shadow(0 4px 10px rgba(43,26,24,.35)); }
+.rmap.dk .rm-shade .hov, .rmap.dk .rm-shade .sel { stroke: #ecd69c; }
+.rm-dots circle { r: calc(5.5px / var(--k)); fill: var(--f); stroke: var(--ring); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }
+.rm-dots circle:hover { r: calc(7.5px / var(--k)); }
+.rm-labels { position: absolute; inset: 0; pointer-events: none; }
+.rm-l { position: absolute; left: 0; top: 0; will-change: transform; }
+.rm-l.off { visibility: hidden; }
+.rm-l span { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; direction: rtl;
+  padding: 3px 4px 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line); box-shadow: 0 3px 10px rgba(0,0,0,.14); }
+.rm-l b { font-size: 11px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--brand); color: var(--on-brand, #fff); font-variant-numeric: tabular-nums; }
+.rm-tip { position: absolute; left: 0; top: 0; translate: -50% -100%; pointer-events: none; z-index: 6; direction: rtl; white-space: nowrap; display: grid; gap: 1px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
+.rm-tip b { font-size: 13px; } .rm-tip span { color: var(--ink-3); }
+.rm-zoom { position: absolute; top: 14px; left: 14px; z-index: 5; display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.1); background: var(--surface); }
+.rm-zoom button { all: unset; cursor: pointer; width: 38px; height: 38px; display: grid; place-items: center; font-size: 20px; color: var(--ink); }
+.rm-zoom button + button { border-top: 1px solid var(--line); }
+.rm-zoom button:hover { background: var(--surface-2); color: var(--brand); }
+.rm-zoom svg { width: 17px; height: 17px; }
+.rm-attr { position: absolute; right: 8px; bottom: 6px; font-size: 10px; color: var(--ink-3); opacity: .8; pointer-events: none; }
+.map-legend { z-index: 5; direction: rtl; right: 14px; left: auto; }
+.rm-card { position: absolute; z-index: 7; left: var(--x, 50%); top: var(--y, 50%); translate: -50% calc(-100% - 16px); width: 270px; direction: rtl; cursor: auto;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; box-shadow: 0 16px 44px rgba(0,0,0,.22); animation: rmIn .18s ease-out; }
+.rm-card.below { translate: -50% 16px; }
+.rm-card::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
+.rm-card.below::after { bottom: auto; top: -7px; transform: translateX(-50%) rotate(225deg); }
+.rm-x { all: unset; cursor: pointer; position: absolute; top: 8px; left: 10px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--ink-3); }
+.rm-x:hover { background: var(--surface-2); }
+@keyframes rmIn { from { opacity: 0; } to { opacity: 1; } }
+.mp-pop { display: grid; gap: 10px; text-align: right; }
+.mp-pop > b, .mp-pt b { font-size: 16px; }
+.mp-pt { display: flex; align-items: center; gap: 8px; padding-inline-end: 26px; flex-wrap: wrap; }
+.mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mp-grid div { background: var(--surface-2); border-radius: 10px; padding: 8px 6px; display: grid; gap: 2px; text-align: center; }
+.mp-grid span { font-size: 11px; color: var(--ink-3); }
+.mp-grid b { font-size: 17px; }
+.mp-sub { font-size: 12px; color: var(--ink-3); }
+.mp-sub svg { width: 13px; vertical-align: -2px; }
+.mp-pop .btn { justify-self: stretch; justify-content: center; color: var(--on-brand, #fff); }
+.mp-pop .chip { justify-self: start; }
+@media (max-width: 860px) {
+  .rm-card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; translate: none; }
+  .rm-card.below { translate: none; }
+  .rm-card::after { display: none; }
+  .rm-zoom { top: 10px; left: 10px; } .rm-zoom button { width: 40px; height: 40px; }
+  .map-legend { right: 8px; }
+}
 /* التوزيع حسب الجهة */
 .rgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
 @media (max-width: 860px) { .rgs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .rg { padding: 10px; } .rg b { font-size: 22px; } }
