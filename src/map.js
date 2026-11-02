@@ -43,7 +43,7 @@ function polyCenter(ring) {
 
 const MAP_METRICS = [["total", "كل المساجد"], ["active", "قيد التشغيل"], ["progress", "تحت الإجراء"]];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
-const mapState = { metric: "total", assoc: "", points: true, labels: true };
+const mapState = { metric: "total", assoc: "", region: "", points: true, labels: true };
 
 route("map", {
   title: "خريطة الأحياء",
@@ -74,6 +74,7 @@ route("map", {
       <div class="card map-ctl">
         <div class="seg" id="mp-metric">${MAP_METRICS.map(([k, l]) => `<button data-k="${k}" class="${mapState.metric === k ? "on" : ""}">${l}</button>`).join("")}</div>
         ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+        <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
         <div class="map-toggles">
           <label><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}> أسماء الأحياء</label>
           <label><input type="checkbox" id="mp-pts" ${mapState.points ? "checked" : ""}> مواقع المساجد</label>
@@ -111,7 +112,7 @@ route("map", {
 
     const paint = () => {
       shade.clearLayers(); labels.clearLayers(); dots.clearLayers();
-      const list = mosques.filter((m) => !mapState.assoc || m.association_id === mapState.assoc);
+      const list = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
       const val = (m) => mapState.metric === "active" ? m.stage === "active" : mapState.metric === "progress" ? PROGRESS.has(m.stage) : true;
       // تجميع حسب الحي
       const groups = new Map();
@@ -119,12 +120,13 @@ route("map", {
         const raw = (m.district || "").trim() || "غير محدد";
         const hit = distKeys(raw).map((k) => index.get(k)).find(Boolean) || null;
         const key = hit ? hit.kind + hit.i : "?" + normDist(raw);
-        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set() };
+        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set(), regions: {} };
         g.raws.add(raw); g.all.push(m);
         if (val(m)) g.n++;
         if (m.stage === "active") { g.active++; g.devices += m.devices_count || 0; }
         if (PROGRESS.has(m.stage)) g.progress++;
         if (m.association_id) g.assocs.add(assocName(m.association_id));
+        if (m.region) g.regions[m.region] = (g.regions[m.region] || 0) + 1;
         groups.set(key, g);
       });
       const all = [...groups.values()].sort((a, b) => b.n - a.n || b.all.length - a.all.length);
@@ -133,7 +135,7 @@ route("map", {
       const cls = (n) => Math.min(4, Math.floor((n - 1) / step));
       const color = (n) => C.scale[cls(n)];
 
-      const popup = (g) => `<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b><span class="chip ok">${fmtNum(g.all.length)} مسجد</span></div>
+      const popup = (g) => `<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b>${Object.keys(g.regions).length ? `<span class="chip plain">${Object.entries(g.regions).sort((a, b) => b[1] - a[1]).map(([k]) => regionName(k)).join("، ")}</span>` : ""}<span class="chip ok">${fmtNum(g.all.length)} مسجد</span></div>
         <div class="mp-grid">
           <div><span>قيد التشغيل</span><b class="num">${fmtNum(g.active)}</b></div>
           <div><span>تحت الإجراء</span><b class="num">${fmtNum(g.progress)}</b></div>
@@ -225,6 +227,7 @@ route("map", {
 
     $("#mp-metric", v).onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; mapState.metric = b.dataset.k; $$("#mp-metric button", v).forEach((x) => x.classList.toggle("on", x === b)); paint(); };
     $("#mp-assoc", v)?.addEventListener("change", (e) => { mapState.assoc = e.target.value; this.fitted = false; paint(); });
+    $("#mp-region", v).onchange = (e) => { mapState.region = e.target.value; this.fitted = false; paint(); };
     $("#mp-pts", v).onchange = (e) => { mapState.points = e.target.checked; paint(); };
     $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(); };
   },

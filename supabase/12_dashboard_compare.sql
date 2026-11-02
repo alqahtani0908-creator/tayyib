@@ -1,4 +1,4 @@
--- مقارنات لوحة المؤشرات: الفترة الحالية مقابل السابقة، الأشهر الستة، الجمعيات، الأحياء
+-- مقارنات لوحة المؤشرات: الفترة الحالية مقابل السابقة، الأشهر الستة، الجمعيات، الجهات، الأحياء
 create or replace function public.dashboard_compare(p_days int default 30, p_assoc uuid default null) returns jsonb
 language plpgsql stable security definer set search_path = public as $$
 declare res jsonb; st public.settings; role text := public.my_role(); t0 timestamptz; t1 timestamptz;
@@ -52,6 +52,13 @@ begin
           'sat_all', (select round(avg(v), 2) from sat where association_id = a.id)
         ) x
         from public.associations a where exists (select 1 from vm where vm.association_id = a.id)) y),
+    -- مقارنة الجهات (شمال، جنوب، شرق، غرب، وسط)
+    'region', (select coalesce(jsonb_agg(x order by x ->> 'k'), '[]') from (
+        select jsonb_build_object('k', g, 'total', count(*), 'active', count(*) filter (where stage = 'active'),
+          'visits', (select count(*) from rp join vm v2 on v2.id = rp.mosque_id where coalesce(v2.region, '') = z.g and rp.type = 'visit' and rp.at >= t0),
+          'refills', (select count(*) from rp join vm v2 on v2.id = rp.mosque_id where coalesce(v2.region, '') = z.g and rp.type = 'refill' and rp.at >= t0),
+          'sat', (select round(avg(sat.v), 2) from sat join vm v2 on v2.id = sat.mosque_id where coalesce(v2.region, '') = z.g)) x
+        from (select coalesce(region, '') g, stage from vm) z group by g) y),
     -- مقارنة الأحياء
     'district', (select coalesce(jsonb_agg(x order by (x ->> 'total')::int desc), '[]') from (
         select jsonb_build_object('district', d,

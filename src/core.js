@@ -137,6 +137,13 @@ const STAGES = {
   active: { l: "مُركّب — قيد التشغيل", s: "قيد التشغيل", c: "ok", who: "الجمعية والشركة" },
   suspended: { l: "موقوف", s: "موقوف", c: "bad", who: "—" },
 };
+// جهات الرياض
+const REGIONS = { north: "شمال", south: "جنوب", east: "شرق", west: "غرب", center: "وسط" };
+const regionName = (k) => REGIONS[k] || "";
+// قراءة الجهة من نص حر (استيراد Excel): «شمال الرياض» ← north
+const regionKey = (t) => { const s = String(t || "").trim().toLowerCase(); if (!s) return null; if (REGIONS[s]) return s;
+  const hit = Object.entries({ north: ["شمال", "north"], south: ["جنوب", "south"], east: ["شرق", "east"], west: ["غرب", "west"], center: ["وسط", "center", "centre"] }).find(([, w]) => w.some((x) => s.includes(x)));
+  return hit ? hit[0] : null; };
 const STAGE_ORDER = ["selected", "assigned", "data_done", "feasible", "study_done", "approved", "active"];
 const stageChip = (s) => `<span class="chip ${STAGES[s]?.c || ""}">${esc(STAGES[s]?.s || s)}</span>`;
 const isAdmin = () => S.me?.role === "admin";

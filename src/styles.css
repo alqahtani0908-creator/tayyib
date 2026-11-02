@@ -871,3 +871,20 @@ a.fi[href]:hover { background: var(--surface-2); }
   #lmap { height: 60vh; min-height: 360px; }
   .map-legend { inset-block-end: 8px; inset-inline-start: 8px; padding: 9px 11px; } .lg-ramp i { width: 30px; }
 }
+
+/* التوزيع حسب الجهة */
+.rgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+@media (max-width: 860px) { .rgs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .rg { padding: 10px; } .rg b { font-size: 22px; } }
+.rg { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; background: var(--surface); }
+.rg .rn { font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.rg b { font-size: 26px; line-height: 1.1; }
+.rg small { color: var(--ink-3); font-size: 12px; }
+.rg .bar { margin-top: 4px; }
+.rg.none { border-style: dashed; background: transparent; }
+.rg-tag { color: var(--ink-2); }
+.rg-pick { flex-wrap: wrap; }
+.rg-pick label { cursor: pointer; }
+.rg-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.rg-pick label span { display: inline-block; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
+.rg-pick input:focus-visible + span { outline: 2px solid var(--gold); }

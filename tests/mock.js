@@ -44,12 +44,14 @@
   const DIST = ["حي النرجس", "الملقا", "العليا", "حي الروضة", "الياسمين", "السليمانية", "النسيم الغربي", "حي الشهداء"];
   const LL = { "حي النرجس": [24.86, 46.66], "الملقا": [24.8, 46.61], "العليا": [24.69, 46.68], "حي الروضة": [24.73, 46.77], "الياسمين": [24.82, 46.64], "السليمانية": [24.7, 46.7], "النسيم الغربي": [24.73, 46.82] };
   const STG = ["selected", "assigned", "assigned", "data_done", "feasible", "study_done", "approved", "active", "active", "active", "active", "not_feasible"];
+  const RG = { "حي النرجس": "north", "الملقا": "north", "الياسمين": "north", "العليا": "center", "السليمانية": "center", "حي الروضة": "east", "النسيم الغربي": "east" };
   for (let i = 0; i < 46; i++) {
     const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
     const inst = now - (20 + rnd() * 70) * day;
     const m = M({ name: NAMES[i] || "جامع " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
       ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عود ملكي", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
     m.created_at = iso(inst - (10 + rnd() * 30) * day);
+    if (RG[m.district] && rnd() > .1) m.region = RG[m.district];
     const ll = LL[m.district]; if (ll && rnd() > .3) m.map_url = `https://www.google.com/maps?q=${(ll[0] + (rnd() - .5) * .02).toFixed(5)},${(ll[1] + (rnd() - .5) * .02).toFixed(5)}`;
     if (act) for (let w = 0; w < 12; w++) {
       const t = now - w * 7 * day - rnd() * 6 * day;
@@ -143,7 +145,7 @@
     touch_seen: () => null,
     claim_account: () => me,
     activate_account: () => null,
-    map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, name, district, stage, association_id, devices_count, map_url }) => ({ id, name, district, stage, association_id, devices_count, map_url })),
+    map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, name, district, region, stage, association_id, devices_count, map_url }) => ({ id, name, district, region, stage, association_id, devices_count, map_url })),
     reset_account_login: () => "NEWC0DE1",
     assign_mosques: ({ p_ids, p_assoc }) => { if (me.role !== "admin") throw "صلاحية المدير فقط"; let n = 0; db.mosques.forEach((m) => { if (p_ids.includes(m.id)) { m.association_id = p_assoc; if (m.stage === "selected") m.stage = "assigned"; n++; log(m.id, "إسناد للجمعية"); } }); notify("association", p_assoc, null, "مساجد جديدة مسندة لجمعيتكم", `تم إسناد ${n}`, "assign"); return n; },
     complete_data: ({ p_mosque }) => { const m = db.mosques.find((x) => x.id === p_mosque); if (m.stage !== "assigned") throw "المسجد ليس في مرحلة استكمال البيانات"; if (["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].some((k) => !m[k])) throw "البيانات غير مكتملة"; m.stage = "data_done"; log(m.id, "اكتمال البيانات"); return null; },
@@ -188,6 +190,8 @@
             visits: r2.filter((r) => r.type === "visit" && r.at >= t0).length, visits_prev: r2.filter((r) => r.type === "visit" && inP(r, t1, t0)).length,
             refills: r2.filter((r) => r.type === "refill" && r.at >= t0).length, refills_prev: r2.filter((r) => r.type === "refill" && inP(r, t1, t0)).length,
             issues: r2.filter((r) => r.type === "visit" && r.data?.status === "issue" && r.at >= t0).length, sat: av(s2.filter((r) => r.at >= t0)), sat_prev: av(s2.filter((r) => inP(r, t1, t0))), sat_all: av(s2) }; }),
+        region: [...new Set(vm.map((m) => m.region || ""))].map((k) => { const ms = vm.filter((m) => (m.region || "") === k); return { k, total: ms.length, active: ms.filter((m) => m.stage === "active").length,
+          visits: rp.filter((r) => (r.m.region || "") === k && r.type === "visit" && r.at >= t0).length, refills: rp.filter((r) => (r.m.region || "") === k && r.type === "refill" && r.at >= t0).length, sat: av(sat.filter((r) => (r.m.region || "") === k)) }; }),
         district: dists.map((d) => { const ms = vm.filter((m) => (m.district || "غير محدد") === d); return { district: d, total: ms.length, active: ms.filter((m) => m.stage === "active").length,
           visits: rp.filter((r) => (r.m.district || "غير محدد") === d && r.type === "visit" && r.at >= t0).length, sat: av(sat.filter((r) => (r.m.district || "غير محدد") === d)) }; }).sort((a, b) => b.total - a.total).slice(0, 12),
       };

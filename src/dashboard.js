@@ -36,7 +36,7 @@ function sparkline(values, color) {
     <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"/></svg>`;
 }
 
-let dashState = { days: 30, assoc: "", cmp: "period", metric: "cp", dmetric: "cp", diff: false, pair: [] };
+let dashState = { days: 30, assoc: "", cmp: "period", metric: "cp", dmetric: "cp", rmetric: "cp", diff: false, pair: [] };
 try { dashState = { ...dashState, ...JSON.parse(localStorage.getItem("tayyib.dash") || "{}") }; } catch {}
 
 route("dashboard", {
@@ -178,6 +178,13 @@ route("dashboard", {
             <th data-k="vp">الالتزام بالزيارة</th><th data-k="visits" class="n">زيارات الفترة</th><th data-k="overdue" class="n">تعبئات متأخرة</th><th data-k="sat">الرضا (إجمالي)</th><th data-k="open_tasks" class="n">مهام مفتوحة</th></tr></thead><tbody></tbody></table></div>
         </section>` : ""}
 
+        ${cmp && regionRows(cmp).length ? `<section class="card c-wide">
+          <div class="hd"><h3>التوزيع حسب الجهة</h3><a class="btn sm no-print right" href="#/dashboard?cmp=region">مقارنة الجهات</a></div>
+          <div class="bd"><div class="rgs">${regionRows(cmp).map((x) => `<div class="rg ${x.k ? "" : "none"}"><span class="rn">${esc(x.name)}</span>
+            <b class="num">${fmtNum(x.total)}</b><small>${fmtNum(x.active)} مُركّب • ${pct(x.active, x.total) || 0}٪</small>
+            <div class="bar"><i style="width:${pct(x.active, x.total) || 0}%;background:${P.series[0]}"></i></div></div>`).join("")}</div></div>
+        </section>` : ""}
+
         <section class="card c-wide">
           <div class="hd"><h3>التوزيع حسب الأحياء</h3><a class="btn sm no-print" href="#/map">${I.map} الخريطة</a><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
           <div class="bd"><div class="dbars">${dist.map((x) => `<div class="db" title="${esc(x.district)}: ${x.active} مُركّب من ${x.total}"><span class="dn">${esc(x.district)}</span>
@@ -274,7 +281,7 @@ function drawCharts(d) {
 }
 
 // ───────────────────────── المقارنات ─────────────────────────
-const CMP_TABS = [["period", "الفترة مقابل السابقة"], ["month", "شهر بشهر"], ["assoc", "الجمعيات"], ["district", "الأحياء"]];
+const CMP_TABS = [["period", "الفترة مقابل السابقة"], ["month", "شهر بشهر"], ["assoc", "الجمعيات"], ["region", "الجهات"], ["district", "الأحياء"]];
 const MONTH_SHORT = (ym) => { const [y, m] = ym.split("-"); return new Date(+y, +m - 1, 1).toLocaleDateString(AR_LOCALE, { month: "short" }); };
 // تغيّر نسبي مع اتجاه جيد/سيئ
 function change(cur, prev, { goodUp = true, digits = 0 } = {}) {
@@ -290,6 +297,7 @@ function drawCompare(el, c, tab, periodLbl) {
   if (tab === "period") return drawComparePeriods(el, c, P, periodLbl);
   if (tab === "month") return drawCompareMonths(el, c, P);
   if (tab === "assoc") return drawCompareRank(el, c.assoc || [], P, "assoc");
+  if (tab === "region") return drawCompareRank(el, regionRows(c).filter((x) => x.k && x.total), P, "region");
   if (tab === "district") return drawCompareRank(el, c.district || [], P, "district");
 }
 
@@ -338,14 +346,21 @@ function drawCompareMonths(el, c, P) {
 const chartTooltip = () => ({ rtl: true, textDirection: "rtl", backgroundColor: cssVar("--ink"), titleColor: cssVar("--bg"), bodyColor: cssVar("--bg"), padding: 10, cornerRadius: 10, boxPadding: 4, usePointStyle: true });
 
 // ٣،٤) ترتيب الجمعيات أو الأحياء بمقياس مختار، بالقيم أو بالفرق عن المتوسط، مع مقارنة مباشرة بين جمعيتين
+// صفوف الجهات بترتيبها الثابت، و«بدون جهة» إن وُجدت مساجد لم تُحدَّد جهتها
+const regionRows = (c) => [...Object.keys(REGIONS), ""].map((k) => {
+  const x = (c?.region || []).find((r) => (r.k || "") === k);
+  if (!x && !k) return null; // «بدون جهة» تظهر فقط إن وُجدت مساجد بلا جهة
+  return { k, total: 0, active: 0, visits: 0, refills: 0, sat: null, ...x, name: k ? REGIONS[k] : "بدون جهة" };
+}).filter(Boolean);
 const RANK_METRICS = {
   assoc: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["vp", "الالتزام بالزيارة ٪", (x) => pct(x.visit_ok, x.active)], ["visits", "الزيارات", (x) => x.visits, (x) => x.visits_prev],
     ["refills", "التعبئات", (x) => x.refills, (x) => x.refills_prev], ["sat", "الرضا خلال الفترة (من 5)", (x) => x.sat, (x) => x.sat_prev], ["issues", "الملاحظات الفنية", (x) => x.issues, null, true], ["total", "عدد المساجد", (x) => x.total]],
+  region: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["visits", "الزيارات", (x) => x.visits], ["refills", "التعبئات", (x) => x.refills], ["sat", "الرضا الإجمالي (من 5)", (x) => x.sat], ["total", "عدد المساجد", (x) => x.total], ["active", "المساجد المركّبة", (x) => x.active]],
   district: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["visits", "الزيارات", (x) => x.visits], ["sat", "الرضا الإجمالي (من 5)", (x) => x.sat], ["total", "عدد المساجد", (x) => x.total]],
 };
 function drawCompareRank(el, list, P, kind) {
   const metrics = RANK_METRICS[kind];
-  const mkey = kind === "assoc" ? "metric" : "dmetric";
+  const mkey = { assoc: "metric", region: "rmetric", district: "dmetric" }[kind];
   if (!metrics.some(([k]) => k === dashState[mkey])) dashState[mkey] = metrics[0][0];
   const [mk, ml, get, getPrev, lowerBetter] = metrics.find(([k]) => k === dashState[mkey]);
   const rows = list.map((x) => ({ x, name: x.name || x.district, v: get(x), pv: getPrev ? getPrev(x) : null })).filter((r) => r.v != null);
@@ -369,7 +384,7 @@ function drawCompareRank(el, list, P, kind) {
           <b class="rv">${fmt(r.v)}</b>`}
         <span class="rc">${r.pv != null ? `${change(r.v, r.pv, { goodUp: !lowerBetter, digits: Number.isInteger(r.v) ? 0 : 2 })} <small class="muted">عن السابقة</small>` : ""}</span></div>`;
     }).join("") || `<div class="empty">لا توجد بيانات كافية للمقارنة</div>`}</div>
-    ${!diff && rows.length ? `<div class="hint">الخط العمودي داخل كل شريط يمثّل متوسط ${kind === "assoc" ? "الجمعيات" : "الأحياء"}${rows.some((r) => r.pv != null) ? " • التغير مقارنة بالفترة السابقة" : ""}</div>` : ""}
+    ${!diff && rows.length ? `<div class="hint">الخط العمودي داخل كل شريط يمثّل متوسط ${{ assoc: "الجمعيات", region: "الجهات", district: "الأحياء" }[kind]}${rows.some((r) => r.pv != null) ? " • التغير مقارنة بالفترة السابقة" : ""}</div>` : ""}
     ${kind === "assoc" && list.length > 1 ? `<div class="vs">
       <div class="vs-head"><h4>مقارنة مباشرة</h4><select class="input" id="vs-a">${pairOpts}</select><span class="vs-x">مقابل</span><select class="input" id="vs-b">${pairOpts}</select></div>
       <div id="vs-body"></div></div>` : ""}`;

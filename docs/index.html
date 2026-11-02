@@ -888,6 +888,23 @@ a.fi[href]:hover { background: var(--surface-2); }
   .map-legend { inset-block-end: 8px; inset-inline-start: 8px; padding: 9px 11px; } .lg-ramp i { width: 30px; }
 }
 
+/* التوزيع حسب الجهة */
+.rgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+@media (max-width: 860px) { .rgs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .rg { padding: 10px; } .rg b { font-size: 22px; } }
+.rg { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; background: var(--surface); }
+.rg .rn { font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.rg b { font-size: 26px; line-height: 1.1; }
+.rg small { color: var(--ink-3); font-size: 12px; }
+.rg .bar { margin-top: 4px; }
+.rg.none { border-style: dashed; background: transparent; }
+.rg-tag { color: var(--ink-2); }
+.rg-pick { flex-wrap: wrap; }
+.rg-pick label { cursor: pointer; }
+.rg-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.rg-pick label span { display: inline-block; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
+.rg-pick input:focus-visible + span { outline: 2px solid var(--gold); }
+
 </style>
 <script src="config.js"></script>
 </head>
@@ -1037,6 +1054,13 @@ const STAGES = {
   active: { l: "مُركّب — قيد التشغيل", s: "قيد التشغيل", c: "ok", who: "الجمعية والشركة" },
   suspended: { l: "موقوف", s: "موقوف", c: "bad", who: "—" },
 };
+// جهات الرياض
+const REGIONS = { north: "شمال", south: "جنوب", east: "شرق", west: "غرب", center: "وسط" };
+const regionName = (k) => REGIONS[k] || "";
+// قراءة الجهة من نص حر (استيراد Excel): «شمال الرياض» ← north
+const regionKey = (t) => { const s = String(t || "").trim().toLowerCase(); if (!s) return null; if (REGIONS[s]) return s;
+  const hit = Object.entries({ north: ["شمال", "north"], south: ["جنوب", "south"], east: ["شرق", "east"], west: ["غرب", "west"], center: ["وسط", "center", "centre"] }).find(([, w]) => w.some((x) => s.includes(x)));
+  return hit ? hit[0] : null; };
 const STAGE_ORDER = ["selected", "assigned", "data_done", "feasible", "study_done", "approved", "active"];
 const stageChip = (s) => `<span class="chip ${STAGES[s]?.c || ""}">${esc(STAGES[s]?.s || s)}</span>`;
 const isAdmin = () => S.me?.role === "admin";
@@ -1626,7 +1650,7 @@ function sparkline(values, color) {
     <circle cx="${last[0]}" cy="${last[1]}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"/></svg>`;
 }
 
-let dashState = { days: 30, assoc: "", cmp: "period", metric: "cp", dmetric: "cp", diff: false, pair: [] };
+let dashState = { days: 30, assoc: "", cmp: "period", metric: "cp", dmetric: "cp", rmetric: "cp", diff: false, pair: [] };
 try { dashState = { ...dashState, ...JSON.parse(localStorage.getItem("tayyib.dash") || "{}") }; } catch {}
 
 route("dashboard", {
@@ -1768,6 +1792,13 @@ route("dashboard", {
             <th data-k="vp">الالتزام بالزيارة</th><th data-k="visits" class="n">زيارات الفترة</th><th data-k="overdue" class="n">تعبئات متأخرة</th><th data-k="sat">الرضا (إجمالي)</th><th data-k="open_tasks" class="n">مهام مفتوحة</th></tr></thead><tbody></tbody></table></div>
         </section>` : ""}
 
+        ${cmp && regionRows(cmp).length ? `<section class="card c-wide">
+          <div class="hd"><h3>التوزيع حسب الجهة</h3><a class="btn sm no-print right" href="#/dashboard?cmp=region">مقارنة الجهات</a></div>
+          <div class="bd"><div class="rgs">${regionRows(cmp).map((x) => `<div class="rg ${x.k ? "" : "none"}"><span class="rn">${esc(x.name)}</span>
+            <b class="num">${fmtNum(x.total)}</b><small>${fmtNum(x.active)} مُركّب • ${pct(x.active, x.total) || 0}٪</small>
+            <div class="bar"><i style="width:${pct(x.active, x.total) || 0}%;background:${P.series[0]}"></i></div></div>`).join("")}</div></div>
+        </section>` : ""}
+
         <section class="card c-wide">
           <div class="hd"><h3>التوزيع حسب الأحياء</h3><a class="btn sm no-print" href="#/map">${I.map} الخريطة</a><div class="legend sm right"><span><i style="background:${P.series[0]}"></i>مُركّب</span><span><i style="background:var(--line-2)"></i>لم يُركّب بعد</span></div></div>
           <div class="bd"><div class="dbars">${dist.map((x) => `<div class="db" title="${esc(x.district)}: ${x.active} مُركّب من ${x.total}"><span class="dn">${esc(x.district)}</span>
@@ -1864,7 +1895,7 @@ function drawCharts(d) {
 }
 
 // ───────────────────────── المقارنات ─────────────────────────
-const CMP_TABS = [["period", "الفترة مقابل السابقة"], ["month", "شهر بشهر"], ["assoc", "الجمعيات"], ["district", "الأحياء"]];
+const CMP_TABS = [["period", "الفترة مقابل السابقة"], ["month", "شهر بشهر"], ["assoc", "الجمعيات"], ["region", "الجهات"], ["district", "الأحياء"]];
 const MONTH_SHORT = (ym) => { const [y, m] = ym.split("-"); return new Date(+y, +m - 1, 1).toLocaleDateString(AR_LOCALE, { month: "short" }); };
 // تغيّر نسبي مع اتجاه جيد/سيئ
 function change(cur, prev, { goodUp = true, digits = 0 } = {}) {
@@ -1880,6 +1911,7 @@ function drawCompare(el, c, tab, periodLbl) {
   if (tab === "period") return drawComparePeriods(el, c, P, periodLbl);
   if (tab === "month") return drawCompareMonths(el, c, P);
   if (tab === "assoc") return drawCompareRank(el, c.assoc || [], P, "assoc");
+  if (tab === "region") return drawCompareRank(el, regionRows(c).filter((x) => x.k && x.total), P, "region");
   if (tab === "district") return drawCompareRank(el, c.district || [], P, "district");
 }
 
@@ -1928,14 +1960,21 @@ function drawCompareMonths(el, c, P) {
 const chartTooltip = () => ({ rtl: true, textDirection: "rtl", backgroundColor: cssVar("--ink"), titleColor: cssVar("--bg"), bodyColor: cssVar("--bg"), padding: 10, cornerRadius: 10, boxPadding: 4, usePointStyle: true });
 
 // ٣،٤) ترتيب الجمعيات أو الأحياء بمقياس مختار، بالقيم أو بالفرق عن المتوسط، مع مقارنة مباشرة بين جمعيتين
+// صفوف الجهات بترتيبها الثابت، و«بدون جهة» إن وُجدت مساجد لم تُحدَّد جهتها
+const regionRows = (c) => [...Object.keys(REGIONS), ""].map((k) => {
+  const x = (c?.region || []).find((r) => (r.k || "") === k);
+  if (!x && !k) return null; // «بدون جهة» تظهر فقط إن وُجدت مساجد بلا جهة
+  return { k, total: 0, active: 0, visits: 0, refills: 0, sat: null, ...x, name: k ? REGIONS[k] : "بدون جهة" };
+}).filter(Boolean);
 const RANK_METRICS = {
   assoc: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["vp", "الالتزام بالزيارة ٪", (x) => pct(x.visit_ok, x.active)], ["visits", "الزيارات", (x) => x.visits, (x) => x.visits_prev],
     ["refills", "التعبئات", (x) => x.refills, (x) => x.refills_prev], ["sat", "الرضا خلال الفترة (من 5)", (x) => x.sat, (x) => x.sat_prev], ["issues", "الملاحظات الفنية", (x) => x.issues, null, true], ["total", "عدد المساجد", (x) => x.total]],
+  region: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["visits", "الزيارات", (x) => x.visits], ["refills", "التعبئات", (x) => x.refills], ["sat", "الرضا الإجمالي (من 5)", (x) => x.sat], ["total", "عدد المساجد", (x) => x.total], ["active", "المساجد المركّبة", (x) => x.active]],
   district: [["cp", "نسبة التركيب ٪", (x) => pct(x.active, x.total)], ["visits", "الزيارات", (x) => x.visits], ["sat", "الرضا الإجمالي (من 5)", (x) => x.sat], ["total", "عدد المساجد", (x) => x.total]],
 };
 function drawCompareRank(el, list, P, kind) {
   const metrics = RANK_METRICS[kind];
-  const mkey = kind === "assoc" ? "metric" : "dmetric";
+  const mkey = { assoc: "metric", region: "rmetric", district: "dmetric" }[kind];
   if (!metrics.some(([k]) => k === dashState[mkey])) dashState[mkey] = metrics[0][0];
   const [mk, ml, get, getPrev, lowerBetter] = metrics.find(([k]) => k === dashState[mkey]);
   const rows = list.map((x) => ({ x, name: x.name || x.district, v: get(x), pv: getPrev ? getPrev(x) : null })).filter((r) => r.v != null);
@@ -1959,7 +1998,7 @@ function drawCompareRank(el, list, P, kind) {
           <b class="rv">${fmt(r.v)}</b>`}
         <span class="rc">${r.pv != null ? `${change(r.v, r.pv, { goodUp: !lowerBetter, digits: Number.isInteger(r.v) ? 0 : 2 })} <small class="muted">عن السابقة</small>` : ""}</span></div>`;
     }).join("") || `<div class="empty">لا توجد بيانات كافية للمقارنة</div>`}</div>
-    ${!diff && rows.length ? `<div class="hint">الخط العمودي داخل كل شريط يمثّل متوسط ${kind === "assoc" ? "الجمعيات" : "الأحياء"}${rows.some((r) => r.pv != null) ? " • التغير مقارنة بالفترة السابقة" : ""}</div>` : ""}
+    ${!diff && rows.length ? `<div class="hint">الخط العمودي داخل كل شريط يمثّل متوسط ${{ assoc: "الجمعيات", region: "الجهات", district: "الأحياء" }[kind]}${rows.some((r) => r.pv != null) ? " • التغير مقارنة بالفترة السابقة" : ""}</div>` : ""}
     ${kind === "assoc" && list.length > 1 ? `<div class="vs">
       <div class="vs-head"><h4>مقارنة مباشرة</h4><select class="input" id="vs-a">${pairOpts}</select><span class="vs-x">مقابل</span><select class="input" id="vs-b">${pairOpts}</select></div>
       <div id="vs-body"></div></div>` : ""}`;
@@ -2026,7 +2065,7 @@ function polyCenter(ring) {
 
 const MAP_METRICS = [["total", "كل المساجد"], ["active", "قيد التشغيل"], ["progress", "تحت الإجراء"]];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
-const mapState = { metric: "total", assoc: "", points: true, labels: true };
+const mapState = { metric: "total", assoc: "", region: "", points: true, labels: true };
 
 route("map", {
   title: "خريطة الأحياء",
@@ -2057,6 +2096,7 @@ route("map", {
       <div class="card map-ctl">
         <div class="seg" id="mp-metric">${MAP_METRICS.map(([k, l]) => `<button data-k="${k}" class="${mapState.metric === k ? "on" : ""}">${l}</button>`).join("")}</div>
         ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+        <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
         <div class="map-toggles">
           <label><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}> أسماء الأحياء</label>
           <label><input type="checkbox" id="mp-pts" ${mapState.points ? "checked" : ""}> مواقع المساجد</label>
@@ -2094,7 +2134,7 @@ route("map", {
 
     const paint = () => {
       shade.clearLayers(); labels.clearLayers(); dots.clearLayers();
-      const list = mosques.filter((m) => !mapState.assoc || m.association_id === mapState.assoc);
+      const list = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
       const val = (m) => mapState.metric === "active" ? m.stage === "active" : mapState.metric === "progress" ? PROGRESS.has(m.stage) : true;
       // تجميع حسب الحي
       const groups = new Map();
@@ -2102,12 +2142,13 @@ route("map", {
         const raw = (m.district || "").trim() || "غير محدد";
         const hit = distKeys(raw).map((k) => index.get(k)).find(Boolean) || null;
         const key = hit ? hit.kind + hit.i : "?" + normDist(raw);
-        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set() };
+        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set(), regions: {} };
         g.raws.add(raw); g.all.push(m);
         if (val(m)) g.n++;
         if (m.stage === "active") { g.active++; g.devices += m.devices_count || 0; }
         if (PROGRESS.has(m.stage)) g.progress++;
         if (m.association_id) g.assocs.add(assocName(m.association_id));
+        if (m.region) g.regions[m.region] = (g.regions[m.region] || 0) + 1;
         groups.set(key, g);
       });
       const all = [...groups.values()].sort((a, b) => b.n - a.n || b.all.length - a.all.length);
@@ -2116,7 +2157,7 @@ route("map", {
       const cls = (n) => Math.min(4, Math.floor((n - 1) / step));
       const color = (n) => C.scale[cls(n)];
 
-      const popup = (g) => `<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b><span class="chip ok">${fmtNum(g.all.length)} مسجد</span></div>
+      const popup = (g) => `<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b>${Object.keys(g.regions).length ? `<span class="chip plain">${Object.entries(g.regions).sort((a, b) => b[1] - a[1]).map(([k]) => regionName(k)).join("، ")}</span>` : ""}<span class="chip ok">${fmtNum(g.all.length)} مسجد</span></div>
         <div class="mp-grid">
           <div><span>قيد التشغيل</span><b class="num">${fmtNum(g.active)}</b></div>
           <div><span>تحت الإجراء</span><b class="num">${fmtNum(g.progress)}</b></div>
@@ -2208,6 +2249,7 @@ route("map", {
 
     $("#mp-metric", v).onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; mapState.metric = b.dataset.k; $$("#mp-metric button", v).forEach((x) => x.classList.toggle("on", x === b)); paint(); };
     $("#mp-assoc", v)?.addEventListener("change", (e) => { mapState.assoc = e.target.value; this.fitted = false; paint(); });
+    $("#mp-region", v).onchange = (e) => { mapState.region = e.target.value; this.fitted = false; paint(); };
     $("#mp-pts", v).onchange = (e) => { mapState.points = e.target.checked; paint(); };
     $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(); };
   },
@@ -2215,7 +2257,7 @@ route("map", {
 
 // ───────────────────────── المساجد ─────────────────────────
 const MOSQUE_FIELDS = [
-  ["name", "اسم المسجد/الجامع", true], ["kind", "النوع"], ["district", "الحي"], ["address", "العنوان"], ["map_url", "رابط الموقع (خرائط Google)"],
+  ["name", "اسم المسجد/الجامع", true], ["kind", "النوع"], ["district", "الحي"], ["region", "الجهة"], ["address", "العنوان"], ["map_url", "رابط الموقع (خرائط Google)"],
   ["imam_name", "اسم الإمام"], ["imam_phone", "جوال الإمام"], ["muezzin_name", "اسم المؤذن"], ["muezzin_phone", "جوال المؤذن"],
   ["servant_name", "اسم خادم المسجد"], ["servant_phone", "جوال خادم المسجد"], ["notes", "ملاحظات"],
 ];
@@ -2227,10 +2269,10 @@ route("mosques", {
     await loadMosques();
     const p = S.params;
     const r = role();
-    const f = { q: p.q || "", stage: p.stage || "", assoc: p.assoc || "", district: p.district || "", missing: p.missing || "" };
+    const f = { q: p.q || "", stage: p.stage || "", assoc: p.assoc || "", region: p.region || "", district: p.district || "", missing: p.missing || "" };
     const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
     const mobile = isMobile();
-    const activeFilters = () => [f.stage, f.assoc, f.district, f.missing].filter(Boolean).length;
+    const activeFilters = () => [f.stage, f.assoc, f.region, f.district, f.missing].filter(Boolean).length;
     v.innerHTML = `
       <div class="card">
         <div class="toolbar">
@@ -2239,6 +2281,7 @@ route("mosques", {
           <div class="filters" id="filters">
             <select class="input" id="f-stage"><option value="">كل المراحل</option>${Object.entries(STAGES).map(([k, s]) => `<option value="${k}" ${f.stage === k ? "selected" : ""}>${esc(s.l)}</option>`).join("")}</select>
             ${r === "admin" || r === "company" ? `<select class="input" id="f-assoc"><option value="">كل الجمعيات</option><option value="none" ${f.assoc === "none" ? "selected" : ""}>غير مسند</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+            <select class="input" id="f-region"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${f.region === k ? "selected" : ""}>${l}</option>`).join("")}<option value="none" ${f.region === "none" ? "selected" : ""}>بدون جهة</option></select>
             <select class="input" id="f-district"><option value="">كل الأحياء</option>${districts.map((d) => `<option ${f.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
             ${r !== "company" ? `<label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="f-missing" ${f.missing ? "checked" : ""}> بيانات ناقصة فقط</label>` : ""}
           </div>
@@ -2248,6 +2291,7 @@ route("mosques", {
           <div class="acts">
             ${r === "admin" ? `<button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>
               <button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد</button>
+              <button class="btn sm" id="b-region" disabled>${I.map} تحديد الجهة</button>
               <button class="btn sm danger" id="b-del" disabled>${I.trash} حذف المحدد</button>
               <button class="btn sm" id="b-import">${I.upload} استيراد Excel</button>` : ""}
             <button class="btn sm" id="b-export">${I.download} تصدير</button>
@@ -2274,6 +2318,7 @@ route("mosques", {
       const list = S.mosques.filter((m) =>
         (!f.stage || m.stage === f.stage) &&
         (!f.assoc || (f.assoc === "none" ? !m.association_id : m.association_id === f.assoc)) &&
+        (!f.region || (f.region === "none" ? !m.region : m.region === f.region)) &&
         (!f.district || m.district === f.district) &&
         (!f.missing || missingData(m).length) &&
         (!q || [m.name, m.code, m.district, m.imam_name, m.imam_phone, m.muezzin_name, m.servant_name, m.address].some((x) => String(x || "").toLowerCase().includes(q))));
@@ -2281,7 +2326,7 @@ route("mosques", {
       const shown = list.slice(0, mobile ? 200 : 600);
       if (mobile) {
         $("#rows", v).innerHTML = shown.map((m, i) => `<div class="mcard" data-id="${m.id}">
-          <div class="mt"><span class="rowno num">${fmtNum(i + 1)}</span><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${r !== "association" ? ` • ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
+          <div class="mt"><span class="rowno num">${fmtNum(i + 1)}</span><div class="grow"><b>${esc(m.name)}</b><div class="meta"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${m.region ? ` • ${regionName(m.region)}` : ""}${r !== "association" ? ` • ${m.association_id ? esc(assocName(m.association_id)) : "غير مسند"}` : ""}</div></div>
             ${r === "admin" ? `<input type="checkbox" class="sel" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد" onclick="event.stopPropagation()">` : ""}</div>
           <div class="foot">${stageChip(m.stage)}${m.stage === "active" ? refillChip(m) : ""}</div>
           ${teamCompact(m)}</div>`).join("") || emptyMsg;
@@ -2289,7 +2334,7 @@ route("mosques", {
         $("#rows", v).innerHTML = shown.map((m, i) => `<tr class="click" data-id="${m.id}">
           ${r === "admin" ? `<td onclick="event.stopPropagation()"><input type="checkbox" data-sel="${m.id}" ${sel.has(m.id) ? "checked" : ""} aria-label="تحديد"></td>` : ""}
           <td class="rowno-c num">${fmtNum(i + 1)}</td>
-          <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}</div></td>
+          <td style="min-width:170px"><div class="t-name">${esc(m.name)}</div><div class="muted small"><span class="num ltr">${esc(m.code)}</span> • ${esc(m.district || "الحي غير محدد")}${m.region ? ` • <span class="rg-tag">${regionName(m.region)}</span>` : ""}</div></td>
           ${r !== "association" ? `<td class="small">${m.association_id ? esc(assocName(m.association_id)) : `<span class="muted">غير مسند</span>`}</td>` : ""}
           <td>${stageChip(m.stage)}</td>
           <td style="min-width:240px">${team(m)}</td>
@@ -2303,10 +2348,12 @@ route("mosques", {
     $("#q", v).oninput = (e) => { f.q = e.target.value; apply(); setParam(); };
     $("#f-stage", v).onchange = (e) => { f.stage = e.target.value; apply(); setParam(); };
     $("#f-assoc", v)?.addEventListener("change", (e) => { f.assoc = e.target.value; apply(); setParam(); });
+    $("#f-region", v).onchange = (e) => { f.region = e.target.value; apply(); setParam(); };
     $("#f-district", v).onchange = (e) => { f.district = e.target.value; apply(); setParam(); };
     $("#f-missing", v)?.addEventListener("change", (e) => { f.missing = e.target.checked ? "1" : ""; apply(); setParam(); });
     const paintSel = () => {
-      $("#b-assign", v).disabled = $("#b-del", v).disabled = !sel.size;
+      $("#b-assign", v).disabled = $("#b-del", v).disabled = $("#b-region", v).disabled = !sel.size;
+      $("#b-region", v).innerHTML = `${I.map} تحديد الجهة${sel.size ? ` (${sel.size})` : ""}`;
       $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد${sel.size ? ` (${sel.size})` : ""}`;
       $("#b-del", v).innerHTML = `${I.trash} حذف المحدد${sel.size ? ` (${sel.size})` : ""}`;
     };
@@ -2326,6 +2373,7 @@ route("mosques", {
     $("#b-add", v)?.addEventListener("click", async () => { if (await mosqueForm()) render(); });
     $("#b-import", v)?.addEventListener("click", () => importDialog());
     $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
+    $("#b-region", v)?.addEventListener("click", async () => { if (await regionDialog([...sel])) { sel.clear(); render(); } });
     $("#b-del", v)?.addEventListener("click", async () => { if (await deleteMosques([...sel])) { sel.clear(); render(); } });
     $("#b-export", v).onclick = () => exportXlsx((v._list || []).map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
     apply();
@@ -2333,7 +2381,7 @@ route("mosques", {
 });
 
 const mosqueRow = (m) => ({
-  "الرمز": m.code, "اسم المسجد": m.name, "النوع": m.kind, "الحي": m.district || "", "العنوان": m.address || "", "رابط الموقع": m.map_url || "",
+  "الرمز": m.code, "اسم المسجد": m.name, "النوع": m.kind, "الحي": m.district || "", "الجهة": regionName(m.region), "العنوان": m.address || "", "رابط الموقع": m.map_url || "",
   "الجمعية المشرفة": m.association_id ? assocName(m.association_id) : "", "المرحلة": STAGES[m.stage]?.l || m.stage,
   "اسم الإمام": m.imam_name || "", "جوال الإمام": displayPhone(m.imam_phone), "اسم المؤذن": m.muezzin_name || "", "جوال المؤذن": displayPhone(m.muezzin_phone),
   "اسم الخادم": m.servant_name || "", "جوال الخادم": displayPhone(m.servant_phone), "عدد الأجهزة": m.devices_count ?? "", "العطر": m.fragrance || "",
@@ -2348,6 +2396,7 @@ async function mosqueForm(m = null) {
     ${fld("name", "اسم المسجد/الجامع", { value: m?.name, req: true, attrs: r !== "admin" ? "readonly" : "" })}
     ${fld("kind", "النوع", { value: m?.kind || "جامع", opts: ["جامع", "مسجد", "مصلى"] })}
     ${fld("district", "الحي", { value: m?.district, req: r === "association" })}
+    ${fld("region", "الجهة", { value: m?.region || "", opts: [["", "— اختر —"], ...Object.entries(REGIONS)] })}
     ${fld("address", "العنوان / أقرب معلم", { value: m?.address })}
     ${fld("map_url", "رابط الموقع على الخريطة", { value: m?.map_url, type: "url", full: true, ph: "https://maps.google.com/…" })}
     ${fld("imam_name", "اسم الإمام", { value: m?.imam_name, req: r === "association" })}${fld("imam_phone", "جوال الإمام", { type: "tel", value: m?.imam_phone, ph: "05xxxxxxxx", req: r === "association" })}
@@ -2401,6 +2450,7 @@ const IMPORT_MAP = {
   name: ["اسم المسجد", "المسجد", "اسم الجامع", "الجامع", "الاسم", "name", "mosque"],
   kind: ["النوع", "نوع", "kind", "type"],
   district: ["الحي", "حي", "district"],
+  region: ["الجهة", "جهة", "القطاع", "النطاق", "region", "sector"],
   address: ["العنوان", "الموقع الوصفي", "address"],
   map_url: ["رابط الموقع", "الموقع", "الخريطة", "رابط", "location", "map"],
   imam_name: ["اسم الإمام", "الإمام", "الامام", "اسم الامام", "imam"],
@@ -2426,7 +2476,7 @@ function guessColumn(header) {
   return best;
 }
 function downloadTemplate() {
-  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد");
+  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "الجهة": "شمال", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد");
 }
 async function importDialog() {
   const body = document.createElement("div");
@@ -2466,7 +2516,7 @@ async function importDialog() {
     const headers = Object.keys(rows[0]);
     mapping = Object.fromEntries(headers.map((h) => [h, guessColumn(h)]));
     $("[data-pick]", body).innerHTML = `${I.check} ${esc(file.name)} — ${rows.length} صف`;
-    const opts = [["", "— تجاهل —"], ...Object.keys(IMPORT_MAP).map((k) => [k, { name: "اسم المسجد", kind: "النوع", district: "الحي", address: "العنوان", map_url: "رابط الموقع", imam_name: "اسم الإمام", imam_phone: "جوال الإمام", muezzin_name: "اسم المؤذن", muezzin_phone: "جوال المؤذن", servant_name: "اسم الخادم", servant_phone: "جوال الخادم", association: "الجمعية", notes: "ملاحظات" }[k]])];
+    const opts = [["", "— تجاهل —"], ...Object.keys(IMPORT_MAP).map((k) => [k, { name: "اسم المسجد", kind: "النوع", district: "الحي", region: "الجهة", address: "العنوان", map_url: "رابط الموقع", imam_name: "اسم الإمام", imam_phone: "جوال الإمام", muezzin_name: "اسم المؤذن", muezzin_phone: "جوال المؤذن", servant_name: "اسم الخادم", servant_phone: "جوال الخادم", association: "الجمعية", notes: "ملاحظات" }[k]])];
     $("[data-map]", body).innerHTML = `<div class="small" style="font-weight:600;margin-bottom:6px">مطابقة الأعمدة</div><div class="form" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${headers.map((h) =>
       `<div class="field"><label>${esc(h)}</label><select class="input" data-col="${esc(h)}">${opts.map(([v, l]) => `<option value="${v}" ${mapping[h] === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></div>`).join("")}</div>`;
     $$("[data-col]", body).forEach((s) => s.onchange = () => { mapping[s.dataset.col] = s.value; preview(); });
@@ -2483,6 +2533,7 @@ async function importDialog() {
         const a = o.association && S.associations.find((x) => normH(x.name) === normH(o.association));
         const rec = { created_by: S.me.id };
         for (const k of Object.keys(IMPORT_MAP)) if (k !== "association" && o[k]) rec[k] = k.endsWith("_phone") ? displayPhone(o[k]) : o[k];
+        if (rec.region !== undefined) rec.region = regionKey(rec.region);
         if (rec.kind && !["جامع", "مسجد", "مصلى"].includes(rec.kind)) rec.kind = rec.kind.includes("مسجد") ? "مسجد" : rec.kind.includes("مصل") ? "مصلى" : "جامع";
         rec._assoc = a?.id;
         return rec;
@@ -2542,7 +2593,7 @@ route("mosque", {
         <div class="mic">${I.mosque}</div>
         <div class="grow" style="min-width:220px">
           <div class="row" style="gap:8px"><h2>${esc(m.name)}</h2>${stageChip(m.stage)}</div>
-          <div class="muted small" style="margin-top:4px">${esc(m.code)} • ${esc(m.kind)} • ${esc(m.district || "الحي غير محدد")}${m.association_id ? ` • ${esc(assocName(m.association_id))}` : ""}
+          <div class="muted small" style="margin-top:4px">${esc(m.code)} • ${esc(m.kind)} • ${esc(m.district || "الحي غير محدد")}${m.region ? ` • ${regionName(m.region)}` : ""}${m.association_id ? ` • ${esc(assocName(m.association_id))}` : ""}
             ${m.map_url ? ` • <a href="${esc(m.map_url)}" target="_blank" rel="noopener">${I.map.replace("<svg", '<svg style="width:14px;vertical-align:-2px"')} الموقع</a>` : ""}</div>
         </div>
         <div class="btn-row no-print">
@@ -2671,6 +2722,24 @@ async function adminStageDialog(m) {
   if (res === "del") { if (await deleteMosques([m.id])) go("/mosques"); }
   else if (res) { await refreshMosque(m.id); render(); }
 }
+// تحديد جهة عدة مساجد دفعة واحدة، مع خيار تطبيقها على كل مساجد الأحياء نفسها
+async function regionDialog(ids) {
+  const list = S.mosques.filter((m) => ids.includes(m.id));
+  const dists = [...new Set(list.map((m) => m.district).filter(Boolean))];
+  const extra = S.mosques.filter((m) => !ids.includes(m.id) && dists.includes(m.district));
+  const body = `<div class="stack">
+    <div class="small muted">${fmtNum(list.length)} ${list.length <= 10 ? "مساجد" : "مسجدًا"} محددة${dists.length ? ` في ${fmtNum(dists.length)} ${dists.length <= 10 ? "أحياء" : "حيًّا"}` : ""}</div>
+    <div class="seg rg-pick">${Object.entries(REGIONS).map(([k, l], i) => `<label><input type="radio" name="region" value="${k}" ${i === 0 ? "checked" : ""}><span>${l}</span></label>`).join("")}<label><input type="radio" name="region" value=""><span>بدون</span></label></div>
+    ${extra.length ? `<label class="row small" style="gap:8px;cursor:pointer"><input type="checkbox" name="same_district" checked> تطبيقها أيضًا على ${fmtNum(extra.length)} مسجد آخر في الأحياء نفسها</label>` : ""}
+  </div>`;
+  return modal({ title: "تحديد جهة المساجد", body, actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: async (mb) => {
+    const region = $('[name="region"]:checked', mb)?.value || null;
+    const all = [...ids, ...($('[name="same_district"]', mb)?.checked ? extra.map((m) => m.id) : [])];
+    for (let i = 0; i < all.length; i += 200) if (!(await run(sb.from("mosques").update({ region }).in("id", all.slice(i, i + 200))))) return false;
+    await loadMosques(true); toast(`تم تحديد الجهة لـ ${fmtNum(all.length)} مسجد`); return true;
+  } }, { label: "إلغاء" }] });
+}
+
 // حذف مسجد أو أكثر نهائيًا (للمدير): تُحذف التقارير والمهام والملفات المرتبطة معه
 async function deleteMosques(ids) {
   if (!ids.length) return false;
@@ -2695,7 +2764,7 @@ async function deleteMosques(ids) {
 }
 
 function printMosque(m, reports) {
-  const rows = [["الرمز", m.code], ["النوع", m.kind], ["الحي", m.district], ["العنوان", m.address], ["الجمعية المشرفة", assocName(m.association_id)], ["المرحلة", STAGES[m.stage]?.l],
+  const rows = [["الرمز", m.code], ["النوع", m.kind], ["الحي", m.district], ["الجهة", regionName(m.region)], ["العنوان", m.address], ["الجمعية المشرفة", assocName(m.association_id)], ["المرحلة", STAGES[m.stage]?.l],
     ["الإمام", `${m.imam_name || "—"} — ${displayPhone(m.imam_phone) || ""}`], ["المؤذن", `${m.muezzin_name || "—"} — ${displayPhone(m.muezzin_phone) || ""}`], ["خادم المسجد", `${m.servant_name || "—"} — ${displayPhone(m.servant_phone) || ""}`],
     ["عدد الأجهزة", m.devices_count], ["العطر", m.fragrance], ["تاريخ التركيب", fmtDate(m.installed_at)], ["آخر تعبئة", fmtDate(m.last_refill_at)], ["التعبئة القادمة", fmtDate(m.next_refill_at)],
     ["آخر زيارة", fmtDate(m.last_visit_at)], ["متوسط الرضا", m.satisfaction_avg ? `${m.satisfaction_avg} / 5` : "—"]];
@@ -3000,9 +3069,10 @@ route("messages", {
         <div><div class="small" style="font-weight:600;margin-bottom:6px">المستلمون</div><div class="row" id="aud">
           ${[["imam", "الأئمة"], ["muezzin", "المؤذنون"], ["servant", "خدام المساجد"], ...(r === "admin" ? [["assoc", "مسؤولو الجمعيات"], ["accounts", "حسابات المنصة"]] : [])]
             .map(([k, l], i) => `<label class="chip plain" style="cursor:pointer;padding:6px 12px"><input type="checkbox" value="${k}" ${i === 0 ? "checked" : ""}> ${l}</label>`).join("")}</div></div>
-        <div class="form" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
           ${r === "admin" ? fld("f_assoc", "الجمعية", { opts: [["", "كل الجمعيات"], ...S.associations.map((a) => [a.id, a.name])] }) : ""}
           ${fld("f_stage", "المرحلة", { opts: [["", "كل المراحل"], ...Object.entries(STAGES).map(([k, s]) => [k, s.l])] })}
+          ${fld("f_region", "الجهة", { opts: [["", "كل الجهات"], ...Object.entries(REGIONS)] })}
           ${fld("f_district", "الحي", { opts: [["", "كل الأحياء"], ...districts] })}
         </div>
         ${fld("extra", "أرقام إضافية (اختياري)", { type: "textarea", ph: "رقم في كل سطر — يمكن إضافة الاسم بعد فاصلة: 0500000000, أحمد", attrs: 'style="min-height:60px" dir="auto"' })}
@@ -3021,8 +3091,8 @@ route("messages", {
     $$("[data-var]", v).forEach((b) => b.onclick = () => { body.setRangeText(b.dataset.var, body.selectionStart, body.selectionEnd, "end"); body.focus(); });
     const collect = () => {
       const aud = $$("#aud input:checked", v).map((x) => x.value);
-      const fa = $('[name="f_assoc"]', v)?.value || "", fs = $('[name="f_stage"]', v).value, fd = $('[name="f_district"]', v).value;
-      const ms = S.mosques.filter((m) => (!fa || m.association_id === fa) && (!fs || m.stage === fs) && (!fd || m.district === fd));
+      const fa = $('[name="f_assoc"]', v)?.value || "", fs = $('[name="f_stage"]', v).value, fd = $('[name="f_district"]', v).value, fr = $('[name="f_region"]', v).value;
+      const ms = S.mosques.filter((m) => (!fa || m.association_id === fa) && (!fs || m.stage === fs) && (!fr || m.region === fr) && (!fd || m.district === fd));
       const out = new Map();
       const add = (phone, name, mosque = "", district = "") => { const n = normPhone(phone); if (n.length >= 11 && !out.has(n)) out.set(n, { phone: n, name: name || "", mosque, district, sent: false }); };
       for (const m of ms) {

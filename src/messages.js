@@ -13,9 +13,10 @@ route("messages", {
         <div><div class="small" style="font-weight:600;margin-bottom:6px">المستلمون</div><div class="row" id="aud">
           ${[["imam", "الأئمة"], ["muezzin", "المؤذنون"], ["servant", "خدام المساجد"], ...(r === "admin" ? [["assoc", "مسؤولو الجمعيات"], ["accounts", "حسابات المنصة"]] : [])]
             .map(([k, l], i) => `<label class="chip plain" style="cursor:pointer;padding:6px 12px"><input type="checkbox" value="${k}" ${i === 0 ? "checked" : ""}> ${l}</label>`).join("")}</div></div>
-        <div class="form" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="form" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
           ${r === "admin" ? fld("f_assoc", "الجمعية", { opts: [["", "كل الجمعيات"], ...S.associations.map((a) => [a.id, a.name])] }) : ""}
           ${fld("f_stage", "المرحلة", { opts: [["", "كل المراحل"], ...Object.entries(STAGES).map(([k, s]) => [k, s.l])] })}
+          ${fld("f_region", "الجهة", { opts: [["", "كل الجهات"], ...Object.entries(REGIONS)] })}
           ${fld("f_district", "الحي", { opts: [["", "كل الأحياء"], ...districts] })}
         </div>
         ${fld("extra", "أرقام إضافية (اختياري)", { type: "textarea", ph: "رقم في كل سطر — يمكن إضافة الاسم بعد فاصلة: 0500000000, أحمد", attrs: 'style="min-height:60px" dir="auto"' })}
@@ -34,8 +35,8 @@ route("messages", {
     $$("[data-var]", v).forEach((b) => b.onclick = () => { body.setRangeText(b.dataset.var, body.selectionStart, body.selectionEnd, "end"); body.focus(); });
     const collect = () => {
       const aud = $$("#aud input:checked", v).map((x) => x.value);
-      const fa = $('[name="f_assoc"]', v)?.value || "", fs = $('[name="f_stage"]', v).value, fd = $('[name="f_district"]', v).value;
-      const ms = S.mosques.filter((m) => (!fa || m.association_id === fa) && (!fs || m.stage === fs) && (!fd || m.district === fd));
+      const fa = $('[name="f_assoc"]', v)?.value || "", fs = $('[name="f_stage"]', v).value, fd = $('[name="f_district"]', v).value, fr = $('[name="f_region"]', v).value;
+      const ms = S.mosques.filter((m) => (!fa || m.association_id === fa) && (!fs || m.stage === fs) && (!fr || m.region === fr) && (!fd || m.district === fd));
       const out = new Map();
       const add = (phone, name, mosque = "", district = "") => { const n = normPhone(phone); if (n.length >= 11 && !out.has(n)) out.set(n, { phone: n, name: name || "", mosque, district, sent: false }); };
       for (const m of ms) {
