@@ -5,7 +5,7 @@ import io, pathlib, html
 root = pathlib.Path(__file__).parent
 out = root / "docs" / "guide"
 VERSION = "نوفمبر 2026"
-SITE = "https://alqahtani0908-creator.github.io/tayyib/"
+SITE = "https://tiyb.saom.sa/"
 
 GLYPH = '<g fill="#ceb26b"><path fill-rule="evenodd" d="M1655 53H1697V195H1830A115 115 0 0 1 1945 310A115 115 0 0 1 1830 425H1180A113 113 0 0 1 1067 312V240C1067 205 1050 184 1017 176L1029 133C1082 146 1110 185 1110 240V318A62 62 0 0 0 1172 380H1536V217H1578V380H1655ZM1697 238V310H1902A72 72 0 0 0 1830 238Z"/><path d="M1307 445l33 33-33 33-33-33zM1523 445l33 33-33 33-33-33zM1589 445l33 33-33 33-33-33z"/></g>'
 LOGO = f'<svg viewBox="1000 36 962 492" xmlns="http://www.w3.org/2000/svg">{GLYPH}</svg>'
