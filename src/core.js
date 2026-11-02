@@ -329,15 +329,17 @@ function exportXlsx(rows, filename, sheet = "البيانات") {
 }
 
 // ───── الطباعة ─────
-function printDoc(title, inner) {
+function printDoc(title, inner, { landscape = false, file = "" } = {}) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
+  el.innerHTML = `${landscape ? "<style>@page { size: A4 landscape; margin: 10mm; }</style>" : ""}<div class="doc${landscape ? " wide" : ""}" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
     <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> • ${fmtDateTime(new Date())}</div></div>
     <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
     ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
   document.body.classList.add("printing-doc");
-  const done = () => { document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", done); };
+  // عنوان الصفحة يصبح الاسم المقترح لملف PDF
+  const oldTitle = document.title; if (file) document.title = file;
+  const done = () => { document.body.classList.remove("printing-doc"); document.title = oldTitle; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
   setTimeout(() => window.print(), 250);
 }

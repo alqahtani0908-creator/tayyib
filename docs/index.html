@@ -636,7 +636,9 @@ a.fi[href]:hover { background: var(--surface-2); }
 .print-only { display: none; }
 @media print {
   @page { size: A4; margin: 14mm; }
-  body { background: #fff; color: #000; font-size: 12pt; }
+  html, body { background: #fff !important; }
+  body { color: #000; font-size: 12pt; min-height: 0; }
+  body.printing-doc #app, body.printing-doc #app::before, body.printing-doc #app::after { display: none !important; }
   .side, .topbar, .bnav, .toasts, .no-print, .modal-bg, .scrim { display: none !important; }
   #app { display: block; }
   .view { padding: 0; max-width: none; }
@@ -894,7 +896,8 @@ a.fi[href]:hover { background: var(--surface-2); }
 .rg-pick { flex-wrap: wrap; }
 .rg-pick label { cursor: pointer; }
 .rg-pick input { position: absolute; opacity: 0; pointer-events: none; }
-.rg-pick label span { display: inline-block; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick label span { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick label span svg { width: 17px; height: 17px; }
 .rg-pick input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
 .rg-pick input:focus-visible + span { outline: 2px solid var(--gold); }
 
@@ -951,6 +954,26 @@ a.fi[href]:hover { background: var(--surface-2); }
   .adv-groups { grid-template-columns: 1fr; gap: 10px; }
   .adv-sum { padding: 10px 12px; }
 }
+
+/* تصدير PDF لقائمة المساجد */
+.xcols { display: flex; flex-wrap: wrap; gap: 6px; }
+.xcols label { cursor: pointer; padding: 6px 12px; display: inline-flex; gap: 6px; align-items: center; }
+.doc .conds { font-size: 10.5pt; background: #faf6ec; border: 1px solid #ecdfc0; border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; }
+.doc .dstats { display: flex; gap: 10px; margin-bottom: 12px; }
+.doc .dstats div { border: 1px solid #e5dccd; border-radius: 6px; padding: 6px 14px; display: grid; }
+.doc .dstats b { font-size: 16pt; color: #563331; line-height: 1.1; }
+.doc .dstats span { font-size: 9pt; color: #777; }
+.doc table.list { font-size: 9.5pt; }
+.doc table.list th { width: auto; white-space: nowrap; font-size: 9.5pt; }
+.doc table.list td, .doc table.list th { padding: 4px 7px; vertical-align: top; }
+.doc table.list .n { width: 26px; text-align: center; color: #777; }
+.doc table.list tr { break-inside: avoid; }
+.doc table.list thead { display: table-header-group; }
+.doc table.list tbody tr:nth-child(even) td { background: #fbf9f4; }
+.doc table.list .ph { color: #777; font-size: 8.5pt; direction: ltr; text-align: right; }
+.doc table.list .miss { color: #a33; font-size: 8.5pt; }
+.doc.wide .dh .t { font-size: 22px; }
+.doc.wide .foot { margin-top: 8px; padding-top: 4px; break-before: avoid; }
 
 </style>
 <script src="config.js"></script>
@@ -1293,15 +1316,17 @@ function exportXlsx(rows, filename, sheet = "البيانات") {
 }
 
 // ───── الطباعة ─────
-function printDoc(title, inner) {
+function printDoc(title, inner, { landscape = false, file = "" } = {}) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `<div class="doc" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
+  el.innerHTML = `${landscape ? "<style>@page { size: A4 landscape; margin: 10mm; }</style>" : ""}<div class="doc${landscape ? " wide" : ""}" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
     <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> • ${fmtDateTime(new Date())}</div></div>
     <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
     ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
   document.body.classList.add("printing-doc");
-  const done = () => { document.body.classList.remove("printing-doc"); window.removeEventListener("afterprint", done); };
+  // عنوان الصفحة يصبح الاسم المقترح لملف PDF
+  const oldTitle = document.title; if (file) document.title = file;
+  const done = () => { document.body.classList.remove("printing-doc"); document.title = oldTitle; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
   setTimeout(() => window.print(), 250);
 }
@@ -2505,7 +2530,7 @@ route("mosques", {
     $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
     $("#b-region", v)?.addEventListener("click", async () => { if (await regionDialog([...sel])) { sel.clear(); render(); } });
     $("#b-del", v)?.addEventListener("click", async () => { if (await deleteMosques([...sel])) { sel.clear(); render(); } });
-    $("#b-export", v).onclick = () => exportXlsx((v._list || []).map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${isoDay()}.xlsx`, "المساجد");
+    $("#b-export", v).onclick = () => exportDialog(v._list || [], $("#adv-sum", v).hidden ? "" : [...$$("#adv-sum .sc", v)].map((x) => x.textContent.replace(/×$/, "").trim()).join(" • "), f.q);
     apply();
   },
 });
@@ -2852,6 +2877,55 @@ async function adminStageDialog(m) {
   if (res === "del") { if (await deleteMosques([m.id])) go("/mosques"); }
   else if (res) { await refreshMosque(m.id); render(); }
 }
+// تصدير قائمة المساجد المعروضة: Excel بكل البيانات، أو PDF بأعمدة يختارها المستخدم
+const PDF_COLS = [
+  ["district", "الحي", true, (m) => esc(m.district || "—")],
+  ["region", "الجهة", true, (m) => regionName(m.region) || "—"],
+  ["assoc", "الجمعية", true, (m) => m.association_id ? esc(assocName(m.association_id)) : "غير مسند"],
+  ["stage", "المرحلة", true, (m) => esc(STAGES[m.stage]?.s || m.stage)],
+  ["imam", "الإمام", true, (m) => personCell(m.imam_name, m.imam_phone)],
+  ["muezzin", "المؤذن", true, (m) => personCell(m.muezzin_name, m.muezzin_phone)],
+  ["servant", "الخادم", true, (m) => personCell(m.servant_name, m.servant_phone)],
+  ["next", "التعبئة القادمة", false, (m) => m.next_refill_at ? fmtDate(m.next_refill_at) : "—"],
+  ["devices", "الأجهزة", false, (m) => m.devices_count ?? "—"],
+  ["fragrance", "العطر", false, (m) => esc(m.fragrance || "—")],
+  ["address", "العنوان", false, (m) => esc(m.address || "—")],
+  ["notes", "ملاحظات", false, (m) => esc(m.notes || "")],
+];
+const personCell = (n, p) => n || p ? `${esc(n || "—")}${p ? `<div class="ph">${esc(displayPhone(p))}</div>` : ""}` : `<span class="miss">ناقص</span>`;
+async function exportDialog(list, conds, q) {
+  if (!list.length) return toast("لا توجد مساجد في النتائج للتصدير", "err");
+  let saved = null; try { saved = JSON.parse(localStorage.getItem("tayyib.pdfcols")); } catch {}
+  const on = (k, d) => saved ? saved.includes(k) : d;
+  const body = `<div class="stack">
+    <div class="muted small">سيُصدَّر <b>${fmtNum(list.length)}</b> ${list.length <= 10 ? "مساجد" : "مسجدًا"} — نتائج البحث الحالية${conds || q ? "" : " (كل المساجد)"}.</div>
+    <div class="seg rg-pick" id="xf"><label><input type="radio" name="fmt" value="pdf" checked><span>${I.print} PDF</span></label><label><input type="radio" name="fmt" value="xlsx"><span>${I.download} Excel</span></label></div>
+    <div id="xcols"><div class="small" style="font-weight:600;margin-bottom:6px">أعمدة PDF <span class="muted">(رقم المسجد واسمه ورمزه دائمًا)</span></div>
+      <div class="xcols">${PDF_COLS.map(([k, l, d]) => `<label class="chip plain"><input type="checkbox" value="${k}" ${on(k, d) ? "checked" : ""}> ${l}</label>`).join("")}</div>
+      <div class="hint" style="margin-top:8px">تفتح نافذة الطباعة: اختر <b>«حفظ كملف PDF»</b> من قائمة الطابعة.</div></div>
+    <div id="xnote" class="hint" hidden>ملف Excel يحتوي كل بيانات المساجد (الفريق والتشغيل والتعبئة والرضا).</div>
+  </div>`;
+  await modal({ title: "تصدير قائمة المساجد", body, onOpen: (mb) => {
+    const sync = () => { const pdf = $('[name="fmt"]:checked', mb).value === "pdf"; $("#xcols", mb).hidden = !pdf; $("#xnote", mb).hidden = pdf; };
+    $$('[name="fmt"]', mb).forEach((x) => x.onchange = sync);
+  }, actions: [{ label: `${I.download} تصدير`, cls: "primary", onClick: (mb) => {
+    const day = isoDay();
+    if ($('[name="fmt"]:checked', mb).value === "xlsx") { exportXlsx(list.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${day}.xlsx`, "المساجد"); return true; }
+    const keys = $$("#xcols input:checked", mb).map((x) => x.value);
+    try { localStorage.setItem("tayyib.pdfcols", JSON.stringify(keys)); } catch {}
+    const cols = PDF_COLS.filter(([k]) => keys.includes(k));
+    const by = (k) => list.filter((m) => m.stage === k).length;
+    const stats = [["إجمالي", list.length], ["قيد التشغيل", by("active")], ["تحت الإجراء", list.filter((m) => ["assigned", "data_done", "feasible", "study_done", "approved"].includes(m.stage)).length], ["بانتظار الإسناد", by("selected")]];
+    printDoc("قائمة المساجد", `
+      ${conds || q ? `<div class="conds"><b>شروط البحث:</b> ${esc([q ? `النص: ${q}` : "", conds].filter(Boolean).join(" • "))}</div>` : ""}
+      <div class="dstats">${stats.map(([l, n]) => `<div><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</div>
+      <table class="list"><thead><tr><th class="n">م</th><th>المسجد</th>${cols.map(([, l]) => `<th>${l}</th>`).join("")}</tr></thead>
+      <tbody>${list.map((m, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(m.name)}</b><div class="ph">${esc(m.code || "")}</div></td>${cols.map(([, , , fn]) => `<td>${fn(m)}</td>`).join("")}</tr>`).join("")}</tbody></table>`,
+      { landscape: cols.length > 4, file: `مساجد-طيب-${day}` });
+    return true;
+  } }, { label: "إلغاء" }] });
+}
+
 // تحديد جهة عدة مساجد دفعة واحدة، مع خيار تطبيقها على كل مساجد الأحياء نفسها
 async function regionDialog(ids) {
   const list = S.mosques.filter((m) => ids.includes(m.id));

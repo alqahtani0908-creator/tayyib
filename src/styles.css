@@ -620,7 +620,9 @@ a.fi[href]:hover { background: var(--surface-2); }
 .print-only { display: none; }
 @media print {
   @page { size: A4; margin: 14mm; }
-  body { background: #fff; color: #000; font-size: 12pt; }
+  html, body { background: #fff !important; }
+  body { color: #000; font-size: 12pt; min-height: 0; }
+  body.printing-doc #app, body.printing-doc #app::before, body.printing-doc #app::after { display: none !important; }
   .side, .topbar, .bnav, .toasts, .no-print, .modal-bg, .scrim { display: none !important; }
   #app { display: block; }
   .view { padding: 0; max-width: none; }
@@ -878,7 +880,8 @@ a.fi[href]:hover { background: var(--surface-2); }
 .rg-pick { flex-wrap: wrap; }
 .rg-pick label { cursor: pointer; }
 .rg-pick input { position: absolute; opacity: 0; pointer-events: none; }
-.rg-pick label span { display: inline-block; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick label span { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
+.rg-pick label span svg { width: 17px; height: 17px; }
 .rg-pick input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
 .rg-pick input:focus-visible + span { outline: 2px solid var(--gold); }
 
@@ -935,3 +938,23 @@ a.fi[href]:hover { background: var(--surface-2); }
   .adv-groups { grid-template-columns: 1fr; gap: 10px; }
   .adv-sum { padding: 10px 12px; }
 }
+
+/* تصدير PDF لقائمة المساجد */
+.xcols { display: flex; flex-wrap: wrap; gap: 6px; }
+.xcols label { cursor: pointer; padding: 6px 12px; display: inline-flex; gap: 6px; align-items: center; }
+.doc .conds { font-size: 10.5pt; background: #faf6ec; border: 1px solid #ecdfc0; border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; }
+.doc .dstats { display: flex; gap: 10px; margin-bottom: 12px; }
+.doc .dstats div { border: 1px solid #e5dccd; border-radius: 6px; padding: 6px 14px; display: grid; }
+.doc .dstats b { font-size: 16pt; color: #563331; line-height: 1.1; }
+.doc .dstats span { font-size: 9pt; color: #777; }
+.doc table.list { font-size: 9.5pt; }
+.doc table.list th { width: auto; white-space: nowrap; font-size: 9.5pt; }
+.doc table.list td, .doc table.list th { padding: 4px 7px; vertical-align: top; }
+.doc table.list .n { width: 26px; text-align: center; color: #777; }
+.doc table.list tr { break-inside: avoid; }
+.doc table.list thead { display: table-header-group; }
+.doc table.list tbody tr:nth-child(even) td { background: #fbf9f4; }
+.doc table.list .ph { color: #777; font-size: 8.5pt; direction: ltr; text-align: right; }
+.doc table.list .miss { color: #a33; font-size: 8.5pt; }
+.doc.wide .dh .t { font-size: 22px; }
+.doc.wide .foot { margin-top: 8px; padding-top: 4px; break-before: avoid; }
