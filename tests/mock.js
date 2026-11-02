@@ -145,7 +145,7 @@
     touch_seen: () => null,
     claim_account: () => me,
     activate_account: () => null,
-    map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, name, district, region, stage, association_id, devices_count, map_url }) => ({ id, name, district, region, stage, association_id, devices_count, map_url })),
+    map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, code, name, district, region, stage, association_id, devices_count, map_url, next_refill_at }) => ({ id, code, name, district, region, stage, association_id, devices_count, map_url, next_refill_at })),
     reset_account_login: () => "NEWC0DE1",
     assign_mosques: ({ p_ids, p_assoc }) => { if (me.role !== "admin") throw "صلاحية المدير فقط"; let n = 0; db.mosques.forEach((m) => { if (p_ids.includes(m.id)) { m.association_id = p_assoc; if (m.stage === "selected") m.stage = "assigned"; n++; log(m.id, "إسناد للجمعية"); } }); notify("association", p_assoc, null, "مساجد جديدة مسندة لجمعيتكم", `تم إسناد ${n}`, "assign"); return n; },
     complete_data: ({ p_mosque }) => { const m = db.mosques.find((x) => x.id === p_mosque); if (m.stage !== "assigned") throw "المسجد ليس في مرحلة استكمال البيانات"; if (["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].some((k) => !m[k])) throw "البيانات غير مكتملة"; m.stage = "data_done"; log(m.id, "اكتمال البيانات"); return null; },

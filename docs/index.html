@@ -791,133 +791,141 @@ a.fi[href]:hover { background: var(--surface-2); }
 .mcard .rowno { flex: none; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 9px; display: grid; place-items: center;
   background: var(--gold-soft); color: var(--brand); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-/* خريطة الأحياء */
-.mapv { display: grid; gap: 14px; }
-.map-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; }
-.map-ctl select.input { width: auto; min-width: 180px; }
-.map-toggles { margin-inline-start: auto; display: flex; gap: 6px; }
-.map-toggles label { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); font-size: 13px; cursor: pointer; color: var(--ink-2); user-select: none; }
-.map-toggles input { accent-color: var(--brand); width: 15px; height: 15px; margin: 0; }
-.map-toggles label:has(input:checked) { border-color: var(--gold); background: var(--gold-soft); color: var(--ink); }
-.map-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.map-stats .ms { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
-.map-stats .ms > span { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--gold-soft); color: var(--gold-ink, var(--brand)); }
-.map-stats .ms > span svg { width: 20px; height: 20px; }
-.map-stats .ms div { min-width: 0; display: grid; }
-.map-stats .ms b { font-size: 20px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.map-stats .ms small { color: var(--ink-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.map-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: stretch; }
-.map-box { position: relative; padding: 0; overflow: hidden; }
-/* مفتاح الخريطة */
-.map-legend { position: absolute; z-index: 500; inset-block-end: 14px; inset-inline-start: 14px; padding: 12px 14px; border-radius: 14px; display: grid; gap: 8px;
-  background: color-mix(in srgb, var(--surface) 90%, transparent); border: 1px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.12); max-width: calc(100% - 28px); }
-@supports (backdrop-filter: blur(8px)) { .map-legend { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } }
-.lg-t { font-size: 12.5px; font-weight: 700; }
-.lg-ramp { display: flex; gap: 2px; }
-.lg-ramp span { display: grid; gap: 4px; font-size: 11px; color: var(--ink-3); text-align: center; font-variant-numeric: tabular-nums; }
-.lg-ramp i { width: 40px; height: 9px; display: block; }
-.lg-ramp span:first-child i { border-start-start-radius: 5px; border-end-start-radius: 5px; }
-.lg-ramp span:last-child i { border-start-end-radius: 5px; border-end-end-radius: 5px; }
-.lg-pts { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink-2); padding-top: 6px; border-top: 1px solid var(--line); }
-.lg-pts span { display: inline-flex; align-items: center; gap: 6px; }
-.lg-pts i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px var(--surface); }
-.mp-pop { display: grid; gap: 10px; font-family: inherit; direction: rtl; text-align: right; }
-.mp-pop > b, .mp-pt b { font-size: 16px; }
-.mp-pt { display: flex; align-items: center; gap: 8px; padding-inline-end: 18px; }
-.mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.mp-grid div { background: var(--surface-2); border-radius: 10px; padding: 8px 6px; display: grid; gap: 2px; text-align: center; }
-.mp-grid span { font-size: 11px; color: var(--ink-3); }
-.mp-grid b { font-size: 17px; }
-.mp-sub { font-size: 12px; color: var(--ink-3); }
-.mp-sub svg { width: 13px; vertical-align: -2px; }
-.mp-pop .btn { justify-self: stretch; justify-content: center; color: var(--on-brand, #fff); }
-.mp-pop .chip { justify-self: start; }
-/* قائمة الأحياء */
-.map-side { padding: 0; display: flex; flex-direction: column; height: min(74vh, 700px); min-height: 440px; }
-.map-side .hd { padding: 14px 16px 10px; margin: 0; border-bottom: 1px solid var(--line); }
-.map-list { overflow-y: auto; padding: 8px; display: grid; gap: 2px; align-content: start; flex: 1; }
-.mp-item { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; cursor: pointer; transition: background .15s; }
-.mp-item:hover, .mp-item:focus-visible, .mp-item.on { background: var(--surface-2); }
-.mp-item.on { box-shadow: inset 3px 0 0 var(--gold); }
-.mp-item .rk { width: 24px; color: var(--ink-3); font-size: 12px; text-align: center; flex: none; }
-.mp-item b { font-size: 14px; font-weight: 700; display: block; }
-.mp-item small { font-size: 11.5px; color: var(--ink-3); }
-.mp-item .cnt { min-width: 34px; height: 30px; padding: 0 8px; border-radius: 10px; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--c); color: #2b1a18; flex: none; }
-.mp-unmapped { margin: 10px 4px 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); display: grid; gap: 4px; }
-.mp-unmapped svg { width: 14px; vertical-align: -2px; color: var(--warn, #b7791f); }
-.mp-u { display: flex; justify-content: space-between; font-size: 13px; padding-top: 4px; border-top: 1px dashed var(--line); }
-@media (max-width: 1100px) { .map-wrap { grid-template-columns: 1fr; } .map-side { height: auto; min-height: 0; } .map-list { max-height: 440px; } .map-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 860px) {
-  .map-ctl .seg { width: 100%; } .map-ctl .seg button { flex: 1; }
-  .map-ctl select.input { flex: 1; }
-  .map-toggles { margin-inline-start: 0; }
-  .map-stats { gap: 8px; } .map-stats .ms { padding: 10px 12px; gap: 10px; } .map-stats .ms > span { width: 34px; height: 34px; } .map-stats .ms b { font-size: 17px; }
-  .rmap { height: 62vh; min-height: 380px; }
-  .map-legend { inset-block-end: 8px; inset-inline-start: 8px; padding: 9px 11px; } .lg-ramp i { width: 30px; }
-}
-
-/* الخريطة المتجهة للرياض */
-.rmap { --k: 1; position: relative; height: min(74vh, 700px); min-height: 460px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; direction: ltr; outline: none;
-  --land: #f3ece0; --cell: #fffdf8; --edge: #e4d9c7; --road1: #d6c39b; --road2: #e8dbc2; --ring: #ffffff;
-  background: radial-gradient(1200px 700px at 60% 40%, #f8f3ea, var(--land)); }
-.rmap.dk { --land: #140f0e; --cell: #201816; --edge: #382b28; --road1: #5a4535; --road2: #3c2f29; --ring: #140f0e; background: radial-gradient(1200px 700px at 60% 40%, #1c1513, var(--land)); }
+/* خريطة المشروع: خريطة الرياض بنقاط المساجد حسب الحالة ولوحات زجاجية */
+.gmap { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(43,26,24,.12); }
+.rmap { --k: 1; position: relative; height: calc(100dvh - 130px); min-height: 560px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; direction: ltr; outline: none;
+  --land: #efe7d9; --cell: #fbf8f2; --edge: #e2d6c3; --road1: #d9c6a0; --road2: #e7dac2; --ring: #fff; --tint: #ceb26b;
+  background: radial-gradient(900px 600px at 30% 20%, #f7f1e6 0%, transparent 70%), radial-gradient(800px 600px at 80% 90%, #ecdcc0 0%, transparent 70%), var(--land); }
+.rmap.dk { --land: #120d0c; --cell: #1d1614; --edge: #33272400; --edge: #322624; --road1: #4f3c2f; --road2: #33281f; --ring: #120d0c; --tint: #ceb26b;
+  background: radial-gradient(900px 600px at 30% 20%, #241917 0%, transparent 70%), radial-gradient(800px 600px at 80% 90%, #2a1d14 0%, transparent 70%), var(--land); }
 .rmap.grabbing { cursor: grabbing; }
 .rmap:focus-visible { box-shadow: inset 0 0 0 2px var(--gold); }
 .rm-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
-.rm-cells path { fill: var(--cell); stroke: var(--edge); stroke-width: 1; vector-effect: non-scaling-stroke; transition: fill .15s; }
-.rm-cells path:hover { fill: color-mix(in srgb, var(--cell) 80%, var(--gold) 20%); }
+.rm-cells path { fill: var(--cell); stroke: var(--edge); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .rm-roads polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
-.rm-roads .m { stroke: var(--road1); stroke-width: 2.4; }
-.rm-roads .t { stroke: var(--road2); stroke-width: 1.3; }
-.rm-shade path, .rm-shade circle { fill: var(--f); stroke: var(--ring); stroke-width: 1.6; vector-effect: non-scaling-stroke; cursor: pointer; transition: stroke .12s, stroke-width .12s, filter .12s; }
-.rm-shade circle { r: calc(var(--r) * 1px / var(--k)); }
-.rm-shade .hov { stroke: var(--brand); stroke-width: 3; }
-.rm-shade .sel { stroke: var(--brand); stroke-width: 3.5; filter: drop-shadow(0 4px 10px rgba(43,26,24,.35)); }
-.rmap.dk .rm-shade .hov, .rmap.dk .rm-shade .sel { stroke: #ecd69c; }
-.rm-dots circle { r: calc(5.5px / var(--k)); fill: var(--f); stroke: var(--ring); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }
-.rm-dots circle:hover { r: calc(7.5px / var(--k)); }
+.rm-roads .m { stroke: var(--road1); stroke-width: 2.2; } .rm-roads .t { stroke: var(--road2); stroke-width: 1.2; }
+.rm-shade path { fill: var(--tint); fill-opacity: var(--o); stroke: var(--tint); stroke-opacity: .7; stroke-width: 1.4; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill-opacity .15s, stroke-width .15s; }
+.rm-shade .hov { fill-opacity: calc(var(--o) + .15); stroke-width: 2.4; }
+.rm-shade .sel { fill-opacity: calc(var(--o) + .2); stroke-width: 3; stroke: var(--brand); stroke-opacity: 1; }
+.rmap.dk .rm-shade .sel { stroke: #ecd69c; }
+/* نقاط المساجد */
+.rm-dots .pt { cursor: pointer; }
+.rm-dots .halo { r: calc(11px / var(--k)); fill: var(--c); opacity: .22; }
+.rm-dots .core { r: calc(5.5px / var(--k)); fill: var(--c); stroke: var(--ring); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rm-dots .ap .halo { display: none; }
+.rm-dots .ap .core { r: calc(4.8px / var(--k)); fill: var(--c); fill-opacity: .55; stroke: var(--c); stroke-width: 1.6; }
+.rmap.far .rm-dots .core { r: calc(4.5px / var(--k)); } .rmap.far .rm-dots .halo { r: calc(8px / var(--k)); }
+.rm-dots .pt:hover .core, .rm-dots .pt.sel .core { r: calc(8px / var(--k)); }
+.rm-dots .pt.sel .halo { r: calc(18px / var(--k)); opacity: .3; }
+.rm-dots .pulse { r: calc(7px / var(--k)); fill: none; stroke: #e0483b; stroke-width: 2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: gmPulse 1.8s ease-out infinite; }
+@keyframes gmPulse { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .rm-dots .pulse { animation: none; opacity: .8; } }
+/* أسماء الأحياء */
 .rm-labels { position: absolute; inset: 0; pointer-events: none; }
 .rm-l { position: absolute; left: 0; top: 0; will-change: transform; }
-.rm-l.off { visibility: hidden; }
-.rm-l span { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; direction: rtl;
-  padding: 3px 4px 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink);
-  background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line); box-shadow: 0 3px 10px rgba(0,0,0,.14); }
-.rm-l b { font-size: 11px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--brand); color: var(--on-brand, #fff); font-variant-numeric: tabular-nums; }
-.rm-tip { position: absolute; left: 0; top: 0; translate: -50% -100%; pointer-events: none; z-index: 6; direction: rtl; white-space: nowrap; display: grid; gap: 1px;
-  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.14); }
-.rm-tip b { font-size: 13px; } .rm-tip span { color: var(--ink-3); }
-.rm-zoom { position: absolute; top: 14px; left: 14px; z-index: 5; display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.1); background: var(--surface); }
-.rm-zoom button { all: unset; cursor: pointer; width: 38px; height: 38px; display: grid; place-items: center; font-size: 20px; color: var(--ink); }
-.rm-zoom button + button { border-top: 1px solid var(--line); }
-.rm-zoom button:hover { background: var(--surface-2); color: var(--brand); }
+.rm-l.off, .rmap.far .rm-l { visibility: hidden; }
+.rmap.far .rm-l:nth-child(-n+6) { visibility: visible; }
+.rmap.far .rm-l.off { visibility: hidden; }
+.rm-l span { position: absolute; transform: translate(-50%, calc(-50% - 18px)); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; direction: rtl;
+  padding: 2px 3px 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid color-mix(in srgb, var(--line) 70%, transparent); box-shadow: 0 2px 8px rgba(0,0,0,.1); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.rm-l b { font-size: 10.5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--brand); color: var(--on-brand, #fff); font-variant-numeric: tabular-nums; }
+/* الزجاج */
+.gmap .glass { background: color-mix(in srgb, var(--surface) 72%, transparent); border: 1px solid color-mix(in srgb, #fff 55%, transparent); box-shadow: 0 10px 30px rgba(43,26,24,.14), inset 0 1px 0 rgba(255,255,255,.5); direction: rtl; cursor: auto; }
+.gmap.dk .glass { border-color: rgba(255,255,255,.09); box-shadow: 0 10px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06); }
+@supports (backdrop-filter: blur(10px)) { .gmap .glass { backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); } }
+@supports not (backdrop-filter: blur(10px)) { .gmap .glass { background: var(--surface); } }
+/* شريط التصفية */
+.gm-bar { position: absolute; top: 14px; left: 66px; z-index: 6; display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 16px; flex-wrap: wrap; max-width: calc(100% - 66px - 380px); }
+.gm-bar select.input { height: 36px; min-width: 140px; width: auto; border-radius: 11px; background-color: color-mix(in srgb, var(--surface) 70%, transparent); font-size: 13px; padding-block: 0; }
+.gm-tg { display: inline-flex; cursor: pointer; }
+.gm-tg input { position: absolute; opacity: 0; pointer-events: none; }
+.gm-tg span { height: 36px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 11px; font-size: 13px; color: var(--ink-2); border: 1px solid transparent; }
+.gm-tg input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
+.gm-tg input:focus-visible + span { outline: 2px solid var(--gold); }
+/* التكبير */
+.rm-zoom { position: absolute; top: 14px; left: 14px; z-index: 6; display: grid; border-radius: 14px; overflow: hidden; }
+.rm-zoom button { all: unset; cursor: pointer; width: 40px; height: 40px; display: grid; place-items: center; font-size: 20px; color: var(--ink); }
+.rm-zoom button + button { border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.rm-zoom button:hover { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--brand); }
 .rm-zoom svg { width: 17px; height: 17px; }
-.rm-attr { position: absolute; right: 8px; bottom: 6px; font-size: 10px; color: var(--ink-3); opacity: .8; pointer-events: none; }
-.map-legend { z-index: 5; direction: rtl; right: 14px; left: auto; }
-.rm-card { position: absolute; z-index: 7; left: var(--x, 50%); top: var(--y, 50%); translate: -50% calc(-100% - 16px); width: 270px; direction: rtl; cursor: auto;
-  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; box-shadow: 0 16px 44px rgba(0,0,0,.22); animation: rmIn .18s ease-out; }
-.rm-card.below { translate: -50% 16px; }
-.rm-card::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: translateX(-50%) rotate(45deg); }
-.rm-card.below::after { bottom: auto; top: -7px; transform: translateX(-50%) rotate(225deg); }
-.rm-x { all: unset; cursor: pointer; position: absolute; top: 8px; left: 10px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--ink-3); }
-.rm-x:hover { background: var(--surface-2); }
+/* اللوحة الجانبية */
+.gm-panel { position: absolute; top: 14px; right: 14px; bottom: 14px; width: 340px; z-index: 6; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; transition: transform .25s ease; }
+.gm-handle { display: none; }
+.gm-head { padding: 16px 16px 12px; display: grid; gap: 12px; border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.gm-head > div:first-child { display: flex; align-items: baseline; gap: 8px; }
+.gm-head > div:first-child b { font-size: 17px; } .gm-head > div:first-child span { font-size: 12px; color: var(--ink-3); }
+.gm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px; }
+.gm-kpis div { background: color-mix(in srgb, var(--surface) 60%, transparent); border: 1px solid color-mix(in srgb, var(--line) 60%, transparent); border-radius: 12px; padding: 7px 8px; display: grid; }
+.gm-kpis b { font-size: 19px; line-height: 1.15; } .gm-kpis span { font-size: 11px; color: var(--ink-3); }
+.gm-kpis .bad b { color: #d14b3f; }
+.gm-sec { padding: 12px 14px 4px; display: grid; gap: 8px; }
+.gm-grow { flex: 1; min-height: 0; grid-template-rows: auto 1fr; }
+.gm-t { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.gm-t small { margin-inline-start: auto; font-weight: 400; color: var(--ink-3); }
+.gm-t button { all: unset; cursor: pointer; margin-inline-start: auto; font-size: 12px; color: var(--brand); font-weight: 600; }
+.gm-status { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.gm-st { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 11px; font-size: 12.5px; border: 1px solid color-mix(in srgb, var(--line) 60%, transparent); background: color-mix(in srgb, var(--surface) 55%, transparent); transition: opacity .15s, background .15s; }
+.gm-st i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); flex: none; }
+.gm-st span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-st b { font-size: 12.5px; }
+.gm-st:hover { background: color-mix(in srgb, var(--c) 10%, var(--surface)); }
+.gm-st.off { opacity: .4; } .gm-st.off i { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
+.gm-st[data-zero] { opacity: .35; }
+.gm-list { overflow-y: auto; display: grid; gap: 4px; align-content: start; padding-bottom: 8px; margin-inline: -4px; padding-inline: 4px; }
+.gm-item { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 6px; padding: 9px 10px; border-radius: 12px; transition: background .12s; }
+.gm-item:hover, .gm-item.on { background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.gm-item.on { box-shadow: inset 3px 0 0 var(--gold); }
+.gm-ir { display: flex; align-items: center; gap: 8px; } .gm-ir b { font-size: 13.5px; flex: 1; } .gm-ir span { font-weight: 700; font-size: 13px; }
+.gm-mix { display: flex; height: 6px; border-radius: 6px; overflow: hidden; gap: 2px; }
+.gm-mix i { display: block; min-width: 4px; border-radius: 3px; }
+.gm-note { padding: 8px 14px 12px; font-size: 11.5px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.gm-note:empty { display: none; }
+.dot-e, .dot-a { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--ink-3); }
+.dot-a { background: color-mix(in srgb, var(--ink-3) 55%, transparent); border: 1.5px solid var(--ink-3); margin-inline-start: 6px; }
+.gmap .mp-unmapped { margin: 6px 2px; padding: 9px 11px; border-radius: 12px; background: color-mix(in srgb, var(--surface) 55%, transparent); display: grid; gap: 4px; }
+.gmap .mp-unmapped svg { width: 14px; vertical-align: -2px; color: #b7791f; }
+.gmap .mp-u { display: flex; justify-content: space-between; font-size: 12.5px; padding-top: 4px; border-top: 1px dashed var(--line); }
+/* التلميح والبطاقة */
+.rm-tip { position: absolute; left: 0; top: 0; translate: -50% -100%; pointer-events: none; z-index: 8; direction: rtl; white-space: nowrap; display: grid; gap: 2px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--ink); border: 1px solid var(--line); border-radius: 11px; padding: 6px 10px; font-size: 12px; box-shadow: 0 8px 22px rgba(0,0,0,.16); }
+.rm-tip b { font-size: 13px; } .rm-tip span { color: var(--ink-3); display: inline-flex; align-items: center; gap: 5px; }
+.rm-tip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.rm-card { position: absolute; z-index: 9; left: var(--x, 50%); top: var(--y, 50%); translate: -50% calc(-100% - 18px); width: 290px; border-radius: 18px; padding: 16px; animation: rmIn .18s ease-out; }
+.rm-card.below { translate: -50% 18px; }
+.rm-x { all: unset; cursor: pointer; position: absolute; top: 9px; left: 10px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--ink-3); }
+.rm-x:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 @keyframes rmIn { from { opacity: 0; } to { opacity: 1; } }
 .mp-pop { display: grid; gap: 10px; text-align: right; }
-.mp-pop > b, .mp-pt b { font-size: 16px; }
-.mp-pt { display: flex; align-items: center; gap: 8px; padding-inline-end: 26px; flex-wrap: wrap; }
-.mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.mp-grid div { background: var(--surface-2); border-radius: 10px; padding: 8px 6px; display: grid; gap: 2px; text-align: center; }
-.mp-grid span { font-size: 11px; color: var(--ink-3); }
-.mp-grid b { font-size: 17px; }
-.mp-sub { font-size: 12px; color: var(--ink-3); }
-.mp-sub svg { width: 13px; vertical-align: -2px; }
+.mp-pt { display: flex; align-items: center; gap: 8px; padding-inline-end: 28px; flex-wrap: wrap; } .mp-pt b { font-size: 16px; }
+.mp-sub { font-size: 12px; color: var(--ink-3); } .mp-sub svg { width: 13px; vertical-align: -2px; }
 .mp-pop .btn { justify-self: stretch; justify-content: center; color: var(--on-brand, #fff); }
-.mp-pop .chip { justify-self: start; }
+.mp-pop .gm-mix { height: 8px; }
+.gm-legs { display: grid; gap: 4px; font-size: 12.5px; }
+.gm-legs span { display: flex; align-items: center; gap: 7px; } .gm-legs i { width: 9px; height: 9px; border-radius: 50%; } .gm-legs b { margin-inline-start: auto; }
+.gm-mh { display: flex; gap: 10px; align-items: flex-start; padding-inline-end: 26px; }
+.gm-mh > i { width: 14px; height: 14px; border-radius: 50%; margin-top: 5px; flex: none; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 0%, transparent); }
+.gm-mh b { font-size: 16px; }
+.gm-kv { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding-bottom: 6px; border-bottom: 1px dashed color-mix(in srgb, var(--line) 80%, transparent); }
+.gm-kv span { color: var(--ink-3); } .gm-kv b.bad { color: #d14b3f; }
+.rm-attr { position: absolute; left: 10px; bottom: 6px; z-index: 5; font-size: 10px; color: var(--ink-3); opacity: .8; pointer-events: none; }
+@media (max-width: 1100px) { .gm-panel { width: 300px; } .gm-bar { max-width: calc(100% - 66px - 330px); } }
 @media (max-width: 860px) {
-  .rm-card { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; translate: none; }
+  .gmap { border-radius: 18px; margin-inline: -4px; }
+  .rmap { height: calc(100dvh - 150px); min-height: 520px; }
+  .gm-bar { left: 64px; right: 10px; top: 10px; max-width: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .gm-bar::-webkit-scrollbar { display: none; }
+  .gm-bar select.input { min-width: 112px; flex: none; }
+  .gm-tg { flex: none; }
+  .rm-zoom { top: 10px; left: 10px; }
+  .gm-panel { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; height: 70%; transform: translateY(calc(100% - 150px)); border-radius: 20px; }
+  .gm-panel.open { transform: none; }
+  .gm-handle { all: unset; display: block; cursor: pointer; padding: 8px 0 2px; text-align: center; }
+  .gm-handle i { display: inline-block; width: 40px; height: 4px; border-radius: 4px; background: var(--ink-3); opacity: .5; }
+  .gm-head { padding-top: 4px; }
+  .gm-status { grid-template-columns: 1fr 1fr; }
+  .rm-card { left: 8px; right: 8px; top: auto; bottom: 166px; width: auto; translate: none; max-height: 60%; overflow-y: auto; }
   .rm-card.below { translate: none; }
-  .rm-card::after { display: none; }
-  .rm-zoom { top: 10px; left: 10px; } .rm-zoom button { width: 40px; height: 40px; }
-  .map-legend { right: 8px; }
 }
 /* التوزيع حسب الجهة */
 .rgs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
@@ -2169,12 +2177,26 @@ const PROJ_K = 1000, COS_LAT = Math.cos((24.7 * Math.PI) / 180), LNG0 = 46.3, LA
 const proj = ([lng, lat]) => [(lng - LNG0) * COS_LAT * PROJ_K, (LAT0 - lat) * PROJ_K];
 const pathOf = (rings) => rings.map((ring) => "M" + ring.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join("L") + "Z").join("");
 
-const MAP_METRICS = [["total", "كل المساجد"], ["active", "قيد التشغيل"], ["progress", "تحت الإجراء"]];
+// حالات المساجد على الخريطة: كل حالة لون، والنقطة تمثل مسجدًا
+const MAP_STATUS = [
+  { k: "selected", l: "بانتظار الإسناد", st: ["selected"], c: "#9b8f88" },
+  { k: "data", l: "البيانات والتواصل", st: ["assigned", "data_done"], c: "#4f86c6" },
+  { k: "study", l: "الدراسة والاعتماد", st: ["feasible", "study_done"], c: "#d4893b" },
+  { k: "install", l: "بانتظار التركيب", st: ["approved"], c: "#8d6cc4" },
+  { k: "active", l: "قيد التشغيل", st: ["active"], c: "#2f9e6a" },
+  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended"], c: "#c4544a" },
+];
+const statusOf = (stage) => MAP_STATUS.find((s) => s.st.includes(stage)) || MAP_STATUS[0];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
-const mapState = { metric: "total", assoc: "", region: "", points: true, labels: true };
+const mapState = { off: new Set(), assoc: "", region: "", labels: true, shade: true };
+
+// أرقام عشوائية ثابتة لكل مسجد (نفس الموقع التقريبي في كل مرة)
+const hash32 = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const inRing = (ring, x, y) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
 
 route("map", {
-  title: "خريطة الأحياء",
+  title: "خريطة المشروع",
   leave() { this.stop?.(); },
   async render(v) {
     v.innerHTML = `<div class="empty">${I.map}جارٍ تحميل الخريطة…</div>`;
@@ -2184,81 +2206,93 @@ route("map", {
       if (res.error) throw res.error;
       mosques = res.data || [];
     } catch (e) { v.innerHTML = `<div class="empty">${I.alert}${esc(errMsg(e))}</div>`; return; }
-    const r = role(), canOpen = r !== "viewer", dark = isDark();
-    const C = dark
-      ? { scale: ["#4d3b25", "#7a5f33", "#a8853f", "#cfae5a", "#ecd69c"] }
-      : { scale: ["#efe1b8", "#dcbd77", "#b98d4e", "#86573a", "#563331"] };
-    const ptColor = (st) => st === "active" ? (dark ? "#cfae5a" : "#a9831f") : PROGRESS.has(st) ? (dark ? "#4f86c6" : "#3b74a8") : st === "selected" ? (dark ? "#b04f45" : "#9a4a3a") : "#8e817e";
+    const r = role(), canOpen = r !== "viewer", dark = isDark(), mobile = isMobile();
     if (mapState.assoc && !S.associations.some((a) => a.id === mapState.assoc)) mapState.assoc = "";
 
-    // فهرس الأحياء: مضلع إن وُجد، وإلا نقطة مركز
+    // ───── الجغرافيا: فهرس الأحياء وحدود الرياض ─────
     const geo = districtGeo, index = new Map();
     geo.polys.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "poly", i, name: p.n })));
     geo.pts.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "pt", i, name: p.n })));
+    const rings = geo.polys.map((p) => p.r.reduce((a, b) => (b.length > a.length ? b : a)).map(proj));
     const centers = geo.polys.map((p) => proj(polyCenter(p.r.reduce((a, b) => (b.length > a.length ? b : a)))));
     const centerOf = (hit) => hit.kind === "pt" ? proj(geo.pts[hit.i].c) : centers[hit.i];
-    const boxOf = (hit) => {
-      if (hit.kind === "pt") { const [x, y] = centerOf(hit); return [x - 8, y - 8, x + 8, y + 8]; }
-      let b = [Infinity, Infinity, -Infinity, -Infinity];
-      geo.polys[hit.i].r.forEach((ring) => ring.forEach((p) => { const [x, y] = proj(p); b = [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)]; }));
-      return b;
-    };
-    // حدود الرياض (كل الأحياء) لتقييد التحريك
-    let W = [Infinity, Infinity, -Infinity, -Infinity];
-    geo.polys.forEach((p) => p.r.forEach((ring) => ring.forEach((pt) => { const [x, y] = proj(pt); W = [Math.min(W[0], x), Math.min(W[1], y), Math.max(W[2], x), Math.max(W[3], y)]; })));
+    const bbox = (pts) => pts.reduce((b, [x, y]) => [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)], [Infinity, Infinity, -Infinity, -Infinity]);
+    const boxOf = (hit) => { if (hit.kind === "pt") { const [x, y] = centerOf(hit); return [x - 10, y - 10, x + 10, y + 10]; } return bbox(rings[hit.i]); };
+    const W = bbox(rings.flat());
+    const hitOf = (m) => distKeys((m.district || "").trim()).map((k) => index.get(k)).find(Boolean) || null;
 
-    v.innerHTML = `<div class="mapv">
-      <div class="card map-ctl">
-        <div class="seg" id="mp-metric">${MAP_METRICS.map(([k, l]) => `<button data-k="${k}" class="${mapState.metric === k ? "on" : ""}">${l}</button>`).join("")}</div>
-        ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
-        <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
-        <div class="map-toggles">
-          <label><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}> أسماء الأحياء</label>
-          <label><input type="checkbox" id="mp-pts" ${mapState.points ? "checked" : ""}> مواقع المساجد</label>
+    // ───── موقع كل مسجد: دقيق من الرابط، وإلا تقريبي موزّع داخل حدود حيّه ─────
+    const placed = new Map(), byHit = new Map();
+    mosques.forEach((m) => { const h = hitOf(m); m._hit = h; if (h) { const key = h.kind + h.i; (byHit.get(key) || byHit.set(key, []).get(key)).push(m); } });
+    mosques.forEach((m) => { const c = coordsOf(m.map_url); if (c) placed.set(m.id, { xy: proj([c[1], c[0]]), exact: true }); });
+    for (const [, list] of byHit) {
+      const pts = list.filter((m) => placed.has(m.id)).map((m) => placed.get(m.id).xy);
+      list.filter((m) => !placed.has(m.id)).sort((a, b) => (a.id < b.id ? -1 : 1)).forEach((m) => {
+        const h = m._hit, rnd = rng(hash32(m.id));
+        let best = centerOf(h), bd = -1;
+        if (h.kind === "poly") {
+          const ring = rings[h.i], b = bbox(ring);
+          for (let t = 0, got = 0; t < 120 && got < 14; t++) {
+            const x = b[0] + (b[2] - b[0]) * rnd(), y = b[1] + (b[3] - b[1]) * rnd();
+            if (!inRing(ring, x, y)) continue; got++;
+            const d = pts.length ? Math.min(...pts.map(([px, py]) => Math.hypot(px - x, py - y))) : 1 + rnd();
+            if (d > bd) { bd = d; best = [x, y]; }
+          }
+        } else {
+          const [cx, cy] = best;
+          for (let t = 0; t < 14; t++) { const a = rnd() * Math.PI * 2, rr = 2 + rnd() * 7, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; const d = pts.length ? Math.min(...pts.map(([px, py]) => Math.hypot(px - x, py - y))) : 1 + rnd(); if (d > bd) { bd = d; best = [x, y]; } }
+        }
+        pts.push(best); placed.set(m.id, { xy: best, exact: false });
+      });
+    }
+    const now = Date.now(), overdue = (m) => m.stage === "active" && m.next_refill_at && new Date(m.next_refill_at) < now;
+
+    v.innerHTML = `<div class="gmap ${dark ? "dk" : ""}">
+      <div class="rmap ${dark ? "dk" : ""}" id="rmap" tabindex="0" aria-label="خريطة مساجد المشروع في الرياض">
+        <svg class="rm-svg"><defs><radialGradient id="gm-glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><g id="rm-g">
+          <g class="rm-cells">${geo.polys.map((p, i) => `<path d="${pathOf(p.r)}" data-c="${i}"/>`).join("")}</g>
+          <g class="rm-roads">${(geo.roads || []).map((rd) => `<polyline class="${rd.k === 1 ? "m" : "t"}" points="${rd.p.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join(" ")}"/>`).join("")}</g>
+          <g class="rm-shade" id="rm-shade"></g>
+          <g class="rm-dots" id="rm-dots"></g>
+        </g></svg>
+        <div class="rm-labels" id="rm-labels"></div>
+        <div class="rm-tip" id="rm-tip" hidden></div>
+        <div class="gm-bar glass">
+          ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+          <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <label class="gm-tg"><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}><span>الأسماء</span></label>
+          <label class="gm-tg"><input type="checkbox" id="mp-shade" ${mapState.shade ? "checked" : ""}><span>تظليل الأحياء</span></label>
         </div>
-      </div>
-      <div class="map-stats" id="mp-kpis"></div>
-      <div class="map-wrap">
-        <div class="card map-box">
-          <div class="rmap ${dark ? "dk" : ""}" id="rmap" tabindex="0" aria-label="خريطة أحياء الرياض">
-            <svg class="rm-svg" id="rm-svg"><g id="rm-g">
-              <g class="rm-cells">${geo.polys.map((p, i) => `<path d="${pathOf(p.r)}" data-c="${i}"/>`).join("")}</g>
-              <g class="rm-roads">${(geo.roads || []).map((rd) => `<polyline class="${rd.k === 1 ? "m" : "t"}" points="${rd.p.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join(" ")}"/>`).join("")}</g>
-              <g class="rm-shade" id="rm-shade"></g>
-              <g class="rm-dots" id="rm-dots"></g>
-            </g></svg>
-            <div class="rm-labels" id="rm-labels"></div>
-            <div class="rm-tip" id="rm-tip" hidden></div>
-            <div class="rm-zoom"><button data-z="in" aria-label="تكبير">+</button><button data-z="out" aria-label="تصغير">−</button><button data-z="home" aria-label="كل الرياض" title="كل الرياض">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')}</button></div>
-            <div class="map-legend" id="mp-legend"></div>
-            <div class="rm-card" id="rm-card" hidden></div>
-            <div class="rm-attr">© مساهمو OpenStreetMap</div>
-          </div>
-        </div>
-        <div class="card map-side"><div class="hd"><h3>الأحياء</h3><span class="muted small right" id="mp-n"></span></div><div class="map-list" id="mp-list"></div></div>
+        <div class="rm-zoom glass"><button data-z="in" aria-label="تكبير">+</button><button data-z="out" aria-label="تصغير">−</button><button data-z="home" aria-label="كل المساجد" title="كل المساجد">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')}</button></div>
+        <aside class="gm-panel glass ${mobile ? "" : "open"}" id="gm-panel">
+          <button class="gm-handle" id="gm-handle" aria-label="عرض التفاصيل"><i></i></button>
+          <div class="gm-head"><div><b>مساجد المشروع</b><span>الرياض</span></div><div class="gm-kpis" id="gm-kpis"></div></div>
+          <div class="gm-sec"><div class="gm-t"><span>الحالات</span><button id="gm-all" hidden>إظهار الكل</button></div><div class="gm-status" id="gm-status"></div></div>
+          <div class="gm-sec gm-grow"><div class="gm-t"><span>الأحياء</span><small id="mp-n"></small></div><div class="gm-list" id="mp-list"></div></div>
+          <div class="gm-note" id="gm-note"></div>
+        </aside>
+        <div class="rm-card glass" id="rm-card" hidden></div>
+        <div class="rm-attr">© مساهمو OpenStreetMap</div>
       </div></div>`;
 
-    const box = $("#rmap", v), svgEl = $("#rm-svg", v), G = $("#rm-g", v), labelsEl = $("#rm-labels", v), tip = $("#rm-tip", v), card = $("#rm-card", v);
+    const box = $("#rmap", v), G = $("#rm-g", v), labelsEl = $("#rm-labels", v), tip = $("#rm-tip", v), card = $("#rm-card", v), panel = $("#gm-panel", v);
     // ───── المشهد: تحويل واحد (k, x, y) مع حركة ناعمة نحو الهدف ─────
     const view = { k: 1, x: 0, y: 0 }, goal = { k: 1, x: 0, y: 0 };
     let raf = 0, size = { w: 1, h: 1 }, kMin = 1, labels = [];
-    const fitBox = (b, pad = 40) => { const k = Math.min((size.w - pad * 2) / (b[2] - b[0] || 1), (size.h - pad * 2) / (b[3] - b[1] || 1)); return { k, x: size.w / 2 - ((b[0] + b[2]) / 2) * k, y: size.h / 2 - ((b[1] + b[3]) / 2) * k }; };
-    const clampK = (k) => Math.max(kMin * 0.9, Math.min(kMin * 16, k));
-    // لا يخرج المشهد عن الرياض: يبقى جزء من المدينة دائمًا داخل الإطار
-    const clampXY = (t) => {
-      const m = 80;
-      t.x = Math.min(size.w - m - W[0] * t.k, Math.max(m - W[2] * t.k, t.x));
-      t.y = Math.min(size.h - m - W[1] * t.k, Math.max(m - W[3] * t.k, t.y));
-      return t;
-    };
+    // المساحة المرئية فعلًا (يمين اللوحة الجانبية على الكمبيوتر)
+    const vis = () => { const p = !isMobile() && panel.classList.contains("open") ? panel.offsetWidth + 24 : 0; return { l: 0, r: size.w - p, t: isMobile() ? 60 : 70, b: size.h - (isMobile() ? 120 : 0) }; };
+    const fitBox = (b, pad = 40) => { const a = vis(), w = a.r - a.l - pad * 2, h = a.b - a.t - pad * 2; const k = Math.min(w / (b[2] - b[0] || 1), h / (b[3] - b[1] || 1)); return { k, x: (a.l + a.r) / 2 - ((b[0] + b[2]) / 2) * k, y: (a.t + a.b) / 2 - ((b[1] + b[3]) / 2) * k }; };
+    const clampK = (k) => Math.max(kMin * 0.85, Math.min(kMin * 18, k));
+    const clampXY = (t) => { const m = 90; t.x = Math.min(size.w - m - W[0] * t.k, Math.max(m - W[2] * t.k, t.x)); t.y = Math.min(size.h - m - W[1] * t.k, Math.max(m - W[3] * t.k, t.y)); return t; };
     const apply = () => {
       G.setAttribute("transform", `translate(${view.x.toFixed(2)},${view.y.toFixed(2)}) scale(${view.k.toFixed(5)})`);
       box.style.setProperty("--k", view.k);
+      box.classList.toggle("far", view.k < kMin * 2.2);
       for (const l of labels) l.el.style.transform = `translate(${(l.x * view.k + view.x).toFixed(1)}px,${(l.y * view.k + view.y).toFixed(1)}px)`;
       if (card._at) placeCard();
     };
     const tick = () => {
-      const e = 0.22;
+      const e = 0.2;
       view.k += (goal.k - view.k) * e; view.x += (goal.x - view.x) * e; view.y += (goal.y - view.y) * e;
       const done = Math.abs(goal.k - view.k) < goal.k * 0.0005 && Math.abs(goal.x - view.x) < 0.3 && Math.abs(goal.y - view.y) < 0.3;
       if (done) Object.assign(view, goal);
@@ -2269,20 +2303,16 @@ route("map", {
     const animate = () => { if (!raf) raf = requestAnimationFrame(tick); };
     const setGoal = (t, instant = false) => { Object.assign(goal, clampXY({ ...t, k: clampK(t.k) })); if (instant) { Object.assign(view, goal); apply(); declutter(); } else animate(); };
     const zoomAt = (f, cx, cy) => { const k = clampK(goal.k * f), s = k / goal.k; setGoal({ k, x: cx - (cx - goal.x) * s, y: cy - (cy - goal.y) * s }); };
-    const resize = () => {
-      const rc = box.getBoundingClientRect(); const first = size.w === 1;
-      size = { w: rc.width, h: rc.height };
-      kMin = fitBox(W, 20).k;
-      if (first) setGoal(this.home || fitBox(W, 20), true); else setGoal(goal, true);
-    };
+    const resize = () => { const rc = box.getBoundingClientRect(), first = size.w === 1; size = { w: rc.width, h: rc.height }; kMin = fitBox(W, 10).k; setGoal(first ? (this.home?.() || fitBox(W, 10)) : goal, true); };
     const ro = new ResizeObserver(resize); ro.observe(box);
     this.stop = () => { ro.disconnect(); cancelAnimationFrame(raf); };
 
-    // ───── التفاعل: سحب بإصبع/فأرة مع قصور ذاتي، عجلة، قرص بإصبعين، نقر مزدوج ─────
+    // ───── التفاعل: سحب مع قصور ذاتي، عجلة، قرص بإصبعين، نقر مزدوج، لوحة المفاتيح ─────
     const ptrs = new Map(); let drag = null, moved = 0, vel = { x: 0, y: 0 }, lastT = 0;
     const local = (e) => { const rc = box.getBoundingClientRect(); return [e.clientX - rc.left, e.clientY - rc.top]; };
+    const onUi = (e) => e.target.closest(".glass");
     box.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".rm-zoom, .rm-card, .map-legend")) return;
+      if (onUi(e)) return;
       box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, local(e));
       cancelAnimationFrame(raf); raf = 0; Object.assign(goal, view);
       moved = 0; vel = { x: 0, y: 0 }; lastT = performance.now();
@@ -2291,16 +2321,15 @@ route("map", {
       box.classList.add("grabbing"); tip.hidden = true;
     });
     box.addEventListener("pointermove", (e) => {
-      if (!ptrs.has(e.pointerId)) return hover(e);
+      if (!ptrs.has(e.pointerId)) return onUi(e) ? (tip.hidden = true) : hover(e);
       ptrs.set(e.pointerId, local(e));
       if (drag?.pinch && ptrs.size === 2) {
-        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
         const k = clampK(drag.k * d / drag.pinch), s = k / drag.k;
-        Object.assign(view, clampXY({ k, x: c[0] - (drag.c[0] - drag.x) * s, y: c[1] - (drag.c[1] - drag.y) * s })); Object.assign(goal, view); apply(); moved += 10;
+        Object.assign(view, clampXY({ k, x: drag.c[0] - (drag.c[0] - drag.x) * s, y: drag.c[1] - (drag.c[1] - drag.y) * s })); Object.assign(goal, view); apply(); moved += 10;
       } else if (drag?.last) {
-        const p = local(e), dx = p[0] - drag.last[0], dy = p[1] - drag.last[1], now = performance.now(), dt = Math.max(1, now - lastT);
-        drag.last = p; lastT = now; moved += Math.abs(dx) + Math.abs(dy);
-        vel = { x: dx / dt * 16, y: dy / dt * 16 };
+        const p = local(e), dx = p[0] - drag.last[0], dy = p[1] - drag.last[1], t = performance.now(), dt = Math.max(1, t - lastT);
+        drag.last = p; lastT = t; moved += Math.abs(dx) + Math.abs(dy); vel = { x: dx / dt * 16, y: dy / dt * 16 };
         Object.assign(view, clampXY({ k: view.k, x: view.x + dx, y: view.y + dy })); Object.assign(goal, view); apply();
       }
     });
@@ -2310,154 +2339,154 @@ route("map", {
       if (ptrs.size === 1) { drag = { last: [...ptrs.values()][0] }; return; }
       if (ptrs.size) return;
       box.classList.remove("grabbing");
-      if (moved < 6 && e.type === "pointerup") return pick(e);
-      // قصور ذاتي بعد الإفلات
+      if (moved < 6 && e.type === "pointerup") { drag = null; return pick(e); }
       const sp = Math.hypot(vel.x, vel.y), cap = Math.min(1, 28 / (sp || 1));
-      if (sp > 1.5 && performance.now() - lastT < 80) setGoal({ k: view.k, x: view.x + vel.x * cap * 10, y: view.y + vel.y * cap * 10 });
-      else declutter();
+      if (sp > 1.5 && performance.now() - lastT < 80) setGoal({ k: view.k, x: view.x + vel.x * cap * 10, y: view.y + vel.y * cap * 10 }); else declutter();
       drag = null;
     };
     box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
-    box.addEventListener("wheel", (e) => { e.preventDefault(); const [x, y] = local(e); zoomAt(Math.exp(-Math.max(-50, Math.min(50, e.deltaY * (e.deltaMode ? 30 : 1))) * 0.005), x, y); }, { passive: false });
-    box.addEventListener("dblclick", (e) => { if (e.target.closest(".rm-zoom, .rm-card")) return; const [x, y] = local(e); zoomAt(e.shiftKey ? 0.5 : 2, x, y); });
-    box.addEventListener("pointerleave", () => { tip.hidden = true; hoverOff(); });
+    box.addEventListener("wheel", (e) => { if (onUi(e)) return; e.preventDefault(); const [x, y] = local(e); zoomAt(Math.exp(-Math.max(-50, Math.min(50, e.deltaY * (e.deltaMode ? 30 : 1))) * 0.005), x, y); }, { passive: false });
+    box.addEventListener("dblclick", (e) => { if (onUi(e)) return; const [x, y] = local(e); zoomAt(e.shiftKey ? 0.5 : 2, x, y); });
+    box.addEventListener("pointerleave", () => { tip.hidden = true; });
     box.addEventListener("keydown", (e) => {
-      const s = 60, m = { ArrowLeft: [s, 0], ArrowRight: [-s, 0], ArrowUp: [0, s], ArrowDown: [0, -s] }[e.key];
-      if (m) { e.preventDefault(); setGoal({ k: goal.k, x: goal.x + m[0], y: goal.y + m[1] }); }
+      if (e.target.closest("select, input")) return;
+      const s = 60, d = { ArrowLeft: [s, 0], ArrowRight: [-s, 0], ArrowUp: [0, s], ArrowDown: [0, -s] }[e.key];
+      if (d) { e.preventDefault(); setGoal({ k: goal.k, x: goal.x + d[0], y: goal.y + d[1] }); }
       if (e.key === "+" || e.key === "=") zoomAt(1.6, size.w / 2, size.h / 2);
       if (e.key === "-") zoomAt(1 / 1.6, size.w / 2, size.h / 2);
+      if (e.key === "Escape") closeCard();
     });
-    $(".rm-zoom", v).onclick = (e) => {
-      const z = e.target.closest("[data-z]")?.dataset.z; if (!z) return;
-      if (z === "home") { closeCard(); setGoal(this.home || fitBox(W, 20)); } else zoomAt(z === "in" ? 1.8 : 1 / 1.8, size.w / 2, size.h / 2);
-    };
+    $(".rm-zoom", v).onclick = (e) => { const z = e.target.closest("[data-z]")?.dataset.z; if (!z) return; if (z === "home") { closeCard(); setGoal(this.home?.() || fitBox(W, 10)); } else zoomAt(z === "in" ? 1.8 : 1 / 1.8, size.w / 2, size.h / 2); };
+    $("#gm-handle", v).onclick = () => { panel.classList.toggle("open"); };
 
-    // ───── الطبقات حسب البيانات ─────
-    let groups = new Map(), byCell = new Map(), selected = null, hovered = null;
-    const hoverOff = () => { hovered?.classList.remove("hov"); hovered = null; };
+    // ───── التلميح والبطاقة ─────
+    let groups = new Map(), selected = null, shown = [];
     function hover(e) {
       if (e.pointerType === "touch") return;
-      const t = e.target.closest("[data-g], [data-c], [data-m]");
-      if (t !== hovered) { hoverOff(); if (t?.dataset.g) { hovered = t; t.classList.add("hov"); } }
+      const t = e.target.closest("[data-m], [data-g], [data-c]");
       if (!t) { tip.hidden = true; return; }
       const [x, y] = local(e);
-      const g = t.dataset.g ? groups.get(t.dataset.g) : null, m = t.dataset.m ? mosques.find((q) => q.id === t.dataset.m) : null;
-      tip.innerHTML = g ? `<b>${esc(g.label)}</b><span>${fmtNum(g.n)} ${esc(MAP_METRICS.find((q) => q[0] === mapState.metric)[1])}</span>` : m ? `<b>${esc(m.name)}</b><span>${esc(STAGES[m.stage]?.s || "")}</span>` : `<span>${esc(geo.polys[+t.dataset.c].n.replace(/^حي\s+/, ""))}</span>`;
+      const m = t.dataset.m && mosques.find((q) => q.id === t.dataset.m), g = t.dataset.g && groups.get(t.dataset.g);
+      tip.innerHTML = m ? `<b>${esc(m.name)}</b><span><i style="background:${statusOf(m.stage).c}"></i>${esc(STAGES[m.stage]?.s || "")}${overdue(m) ? " • تعبئة متأخرة" : ""}</span>`
+        : g ? `<b>${esc(g.label)}</b><span>${fmtNum(g.all.length)} مسجد</span>` : `<span>${esc(geo.polys[+t.dataset.c].n.replace(/^حي\s+/, ""))}</span>`;
       tip.hidden = false; tip.style.transform = `translate(${x}px,${y - 14}px)`;
     }
     function pick(e) {
-      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-g], [data-m]");
+      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-m], [data-g]");
       if (!t) return closeCard();
       if (t.dataset.m) return openMosque(mosques.find((q) => q.id === t.dataset.m));
       openGroup(groups.get(t.dataset.g), false);
     }
     const placeCard = () => {
       if (isMobile() || !card._at) return;
-      const [wx, wy] = card._at, x = wx * view.k + view.x, y = wy * view.k + view.y;
-      card.style.setProperty("--x", `${Math.max(150, Math.min(size.w - 150, x))}px`); card.style.setProperty("--y", `${Math.max(20, y)}px`);
-      card.classList.toggle("below", y < 260);
+      const [wx, wy] = card._at, x = wx * view.k + view.x, y = wy * view.k + view.y, a = vis();
+      card.style.setProperty("--x", `${Math.max(150, Math.min(a.r - 150, x))}px`); card.style.setProperty("--y", `${y}px`);
+      card.classList.toggle("below", y - card.offsetHeight - 24 < a.t);
     };
-    const closeCard = () => { card.hidden = true; card._at = null; selected?.classList.remove("sel"); selected = null; $$(".mp-item.on", v).forEach((b) => b.classList.remove("on")); };
-    const showCard = (html, at) => { card.innerHTML = `<button class="rm-x" aria-label="إغلاق">×</button>${html}`; card.hidden = false; card._at = at; placeCard(); $(".rm-x", card).onclick = closeCard; };
+    const closeCard = () => { card.hidden = true; card._at = null; selected?.classList.remove("sel"); selected = null; $$(".gm-item.on", v).forEach((b) => b.classList.remove("on")); };
+    const showCard = (html, at) => {
+      card.innerHTML = `<button class="rm-x" aria-label="إغلاق">×</button>${html}`; card.hidden = false; card._at = at; placeCard(); $(".rm-x", card).onclick = closeCard;
+      // على الجوال البطاقة أسفل الخريطة: نحرّك المشهد ليبقى الموقع ظاهرًا فوقها
+      if (isMobile() && at) { const top = card.offsetTop - 30, sy = at[1] * goal.k + goal.y; if (sy > top && top > 90) setGoal({ k: goal.k, x: goal.x, y: goal.y - (sy - top) }); }
+    };
+    const mix = (list) => MAP_STATUS.map((s) => [s, list.filter((m) => s.st.includes(m.stage)).length]).filter(([, n]) => n);
+    const mixBar = (list) => `<div class="gm-mix">${mix(list).map(([s, n]) => `<i style="flex:${n};background:${s.c}" title="${s.l}: ${n}"></i>`).join("")}</div>`;
     function openGroup(g, fly) {
       if (!g) return;
+      if (isMobile()) panel.classList.remove("open");
       selected?.classList.remove("sel"); selected = $(`[data-g="${CSS.escape(g.key)}"]`, v); selected?.classList.add("sel");
-      $$(".mp-item", v).forEach((b) => b.classList.toggle("on", b.dataset.k === g.key));
+      $$(".gm-item", v).forEach((b) => b.classList.toggle("on", b.dataset.k === g.key));
       showCard(`<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b>${Object.keys(g.regions).length ? `<span class="chip plain">${Object.entries(g.regions).sort((a, b) => b[1] - a[1]).map(([k]) => regionName(k)).join("، ")}</span>` : ""}</div>
-        <div class="mp-grid"><div><span>المساجد</span><b class="num">${fmtNum(g.all.length)}</b></div><div><span>قيد التشغيل</span><b class="num">${fmtNum(g.active)}</b></div><div><span>تحت الإجراء</span><b class="num">${fmtNum(g.progress)}</b></div></div>
+        ${mixBar(g.all)}
+        <div class="gm-legs">${mix(g.all).map(([s, n]) => `<span><i style="background:${s.c}"></i>${s.l}<b>${fmtNum(n)}</b></span>`).join("")}</div>
         ${g.devices ? `<div class="mp-sub">${fmtNum(g.devices)} جهاز تعطير يعمل</div>` : ""}
         ${g.assocs.size ? `<div class="mp-sub">${I.org} ${[...g.assocs].map(esc).join("، ")}</div>` : ""}
-        ${canOpen ? `<a class="btn sm primary" href="#/mosques?district=${encodeURIComponent([...g.raws][0])}">${I.mosque} عرض المساجد</a>` : ""}</div>`, centerOf(g.hit));
-      if (!fly && isMobile()) { const [cx, cy] = centerOf(g.hit), sy = cy * view.k + view.y, lim = size.h - 300; if (sy > lim) setGoal({ k: goal.k, x: goal.x, y: goal.y - (sy - lim) - 30 }); }
-      if (fly) { const b = boxOf(g.hit), t = fitBox(b, Math.min(size.w, size.h) * 0.28); t.k = Math.min(t.k, kMin * 7); const c = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; setGoal({ k: t.k, x: size.w / 2 - c[0] * t.k, y: size.h / 2 - c[1] * t.k + (isMobile() ? -60 : 40) }); }
+        ${canOpen ? `<a class="btn sm primary" href="#/mosques?district=${encodeURIComponent([...g.raws][0])}">${I.mosque} مساجد الحي (${fmtNum(g.all.length)})</a>` : ""}</div>`, centerOf(g.hit));
+      if (fly) { const b = boxOf(g.hit), a = vis(), t = fitBox(b, Math.min(a.r - a.l, a.b - a.t) * 0.25); t.k = Math.min(t.k, kMin * 8); const c = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; setGoal({ k: t.k, x: (a.l + a.r) / 2 - c[0] * t.k, y: (a.t + a.b) / 2 - c[1] * t.k + (isMobile() ? -70 : 60) }); }
     }
     function openMosque(m) {
       if (!m) return;
-      const c = coordsOf(m.map_url);
-      showCard(`<div class="mp-pop"><b>${esc(m.name)}</b><div class="mp-sub">${esc(m.district || "")}${m.region ? ` • ${regionName(m.region)}` : ""}</div>${stageChip(m.stage)}${canOpen ? `<a class="btn sm primary" href="#/mosque/${m.id}">${I.mosque} صفحة المسجد</a>` : ""}</div>`, c ? proj([c[1], c[0]]) : null);
+      if (isMobile()) panel.classList.remove("open");
+      const p = placed.get(m.id), s = statusOf(m.stage);
+      showCard(`<div class="mp-pop"><div class="gm-mh"><i style="background:${s.c}"></i><div><b>${esc(m.name)}</b><div class="mp-sub"><span class="ltr">${esc(m.code || "")}</span> • ${esc(m.district || "")}${m.region ? ` • ${regionName(m.region)}` : ""}</div></div></div>
+        <div class="gm-kv"><span>الحالة</span><b style="color:${s.c}">${esc(STAGES[m.stage]?.l || m.stage)}</b></div>
+        ${m.association_id ? `<div class="gm-kv"><span>الجمعية</span><b>${esc(assocName(m.association_id))}</b></div>` : ""}
+        ${m.devices_count ? `<div class="gm-kv"><span>أجهزة التعطير</span><b>${fmtNum(m.devices_count)}</b></div>` : ""}
+        ${m.next_refill_at ? `<div class="gm-kv"><span>التعبئة القادمة</span><b class="${overdue(m) ? "bad" : ""}">${fmtDate(m.next_refill_at)}${overdue(m) ? " — متأخرة" : ""}</b></div>` : ""}
+        <div class="mp-sub">${p?.exact ? "● موقع دقيق من رابط الخرائط" : "◌ موقع تقريبي داخل الحي — أضف رابطًا بالإحداثيات لموقع دقيق"}</div>
+        ${canOpen ? `<a class="btn sm primary" href="#/mosque/${m.id}">${I.mosque} صفحة المسجد</a>` : ""}</div>`, p?.xy || null);
+      $$(".rm-dots .sel", v).forEach((x) => x.classList.remove("sel")); $(`[data-m="${m.id}"]`, v)?.classList.add("sel");
     }
 
     const declutter = () => {
       const kept = [];
       for (const l of labels) {
         l.el.classList.remove("off");
-        const b = l.el.firstElementChild.getBoundingClientRect();
-        if (!b.width) continue;
-        const hit = kept.some((k) => b.left < k.right + 4 && b.right > k.left - 4 && b.top < k.bottom + 3 && b.bottom > k.top - 3);
-        if (hit) l.el.classList.add("off"); else kept.push(b);
+        const b = l.el.firstElementChild.getBoundingClientRect(); if (!b.width) continue;
+        if (kept.some((k) => b.left < k.right + 4 && b.right > k.left - 4 && b.top < k.bottom + 3 && b.bottom > k.top - 3)) l.el.classList.add("off"); else kept.push(b);
       }
     };
 
-    const paint = () => {
+    const paint = (refit = true) => {
       closeCard();
-      const list = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
-      const val = (m) => mapState.metric === "active" ? m.stage === "active" : mapState.metric === "progress" ? PROGRESS.has(m.stage) : true;
+      const base = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
+      shown = base.filter((m) => !mapState.off.has(statusOf(m.stage).k));
       groups = new Map();
-      list.forEach((m) => {
-        const raw = (m.district || "").trim() || "غير محدد";
-        const hit = distKeys(raw).map((k) => index.get(k)).find(Boolean) || null;
-        const key = hit ? hit.kind + hit.i : "?" + normDist(raw);
-        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set(), regions: {} };
+      shown.forEach((m) => {
+        const raw = (m.district || "").trim() || "غير محدد", hit = m._hit, key = hit ? hit.kind + hit.i : "?" + normDist(raw);
+        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], active: 0, devices: 0, assocs: new Set(), regions: {} };
         g.raws.add(raw); g.all.push(m);
-        if (val(m)) g.n++;
         if (m.stage === "active") { g.active++; g.devices += m.devices_count || 0; }
-        if (PROGRESS.has(m.stage)) g.progress++;
         if (m.association_id) g.assocs.add(assocName(m.association_id));
         if (m.region) g.regions[m.region] = (g.regions[m.region] || 0) + 1;
         groups.set(key, g);
       });
-      const all = [...groups.values()].sort((a, b) => b.n - a.n || b.all.length - a.all.length);
-      const mapped = all.filter((g) => g.hit && g.n), unmapped = all.filter((g) => !g.hit);
-      const max = Math.max(1, ...all.map((g) => g.n)), step = Math.max(1, Math.ceil(max / 5));
-      const cls = (n) => Math.min(4, Math.floor((n - 1) / step)), color = (n) => C.scale[cls(n)];
-
-      // الأحياء الملوّنة: مضلعات بالتدرج أو دوائر للأحياء المعروفة بنقطة فقط
-      $("#rm-shade", v).innerHTML = mapped.map((g) => g.hit.kind === "poly"
-        ? `<path d="${pathOf(geo.polys[g.hit.i].r)}" data-g="${esc(g.key)}" style="--f:${color(g.n)}"/>`
-        : (() => { const [x, y] = centerOf(g.hit); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" class="pt" data-g="${esc(g.key)}" style="--f:${color(g.n)};--r:${10 + cls(g.n) * 3}"/>`; })()).join("");
-      // نقاط المساجد
-      let located = 0;
-      $("#rm-dots", v).innerHTML = list.map((m) => { const c = coordsOf(m.map_url); if (!c) return ""; located++; if (!mapState.points) return ""; const [x, y] = proj([c[1], c[0]]); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" data-m="${m.id}" style="--f:${ptColor(m.stage)}"/>`; }).join("");
-      // أسماء الأحياء (طبقة HTML بحجم ثابت)
-      labels = mapState.labels ? mapped.map((g) => { const [x, y] = centerOf(g.hit); const el = document.createElement("div"); el.className = "rm-l"; el.innerHTML = `<span>${esc(g.label)}<b>${fmtNum(g.n)}</b></span>`; return { x, y, el }; }) : [];
+      const all = [...groups.values()].sort((a, b) => b.all.length - a.all.length);
+      const mapped = all.filter((g) => g.hit), unmapped = all.filter((g) => !g.hit);
+      const max = Math.max(1, ...mapped.map((g) => g.all.length));
+      // تظليل خفيف للأحياء التي نتواجد فيها
+      $("#rm-shade", v).innerHTML = mapState.shade ? mapped.map((g) => g.hit.kind === "poly"
+        ? `<path d="${pathOf(geo.polys[g.hit.i].r)}" data-g="${esc(g.key)}" style="--o:${(0.14 + 0.32 * g.all.length / max).toFixed(2)}"/>` : "").join("") : "";
+      // نقاط المساجد حسب الحالة (الدقيقة بهالة، والتقريبية بحلقة)
+      const order = (m) => MAP_STATUS.indexOf(statusOf(m.stage));
+      $("#rm-dots", v).innerHTML = shown.filter((m) => placed.has(m.id)).sort((a, b) => order(a) - order(b)).map((m) => {
+        const p = placed.get(m.id), [x, y] = p.xy, s = statusOf(m.stage);
+        return `<g class="pt${p.exact ? "" : " ap"}${overdue(m) ? " od" : ""}" data-m="${m.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" style="--c:${s.c}">${overdue(m) ? `<circle class="pulse"/>` : ""}<circle class="halo"/><circle class="core"/></g>`;
+      }).join("");
+      // أسماء الأحياء
+      labels = mapState.labels ? mapped.map((g) => { const [x, y] = centerOf(g.hit); const el = document.createElement("div"); el.className = "rm-l"; el.innerHTML = `<span>${esc(g.label)}<b>${fmtNum(g.all.length)}</b></span>`; return { x, y, el }; }) : [];
       labelsEl.replaceChildren(...labels.map((l) => l.el));
 
-      const top = mapped[0];
-      $("#mp-kpis", v).innerHTML = `
-        <div class="card ms"><span>${I.map}</span><div><b class="num">${fmtNum(all.filter((g) => g.n).length)}</b><small>حيًّا نتواجد فيه</small></div></div>
-        <div class="card ms"><span>${I.mosque}</span><div><b class="num">${fmtNum(list.filter(val).length)}</b><small>${esc(MAP_METRICS.find((x) => x[0] === mapState.metric)[1])}</small></div></div>
-        <div class="card ms"><span>${I.sparkle}</span><div><b>${top ? esc(top.label) : "—"}</b><small>${top ? `الأعلى تواجدًا • ${fmtNum(top.n)} مسجد` : "الأعلى تواجدًا"}</small></div></div>
-        <div class="card ms"><span>${I.check}</span><div><b class="num">${fmtNum(located)}</b><small>مسجدًا بموقع محدد</small></div></div>`;
-      $("#mp-n", v).textContent = `${fmtNum(all.filter((g) => g.n).length)} حي`;
-      const classes = [0, 1, 2, 3, 4].filter((c) => c * step + 1 <= max);
-      $("#mp-legend", v).innerHTML = `<div class="lg-t">${esc(MAP_METRICS.find((x) => x[0] === mapState.metric)[1])} في الحي</div>
-        <div class="lg-ramp">${classes.map((c) => `<span><i style="background:${C.scale[c]}"></i><bdi dir="ltr">${step === 1 ? c + 1 : `${c * step + 1}${c === classes.length - 1 ? "+" : `–${(c + 1) * step}`}`}</bdi></span>`).join("")}</div>
-        ${mapState.points && located ? `<div class="lg-pts"><span><i style="background:${ptColor("active")}"></i>قيد التشغيل</span><span><i style="background:${ptColor("assigned")}"></i>تحت الإجراء</span><span><i style="background:${ptColor("selected")}"></i>بانتظار الإسناد</span></div>` : ""}`;
-      $("#mp-list", v).innerHTML = mapped.length || unmapped.length ? mapped.map((g) => `<button class="mp-item" data-k="${esc(g.key)}">
-          <span class="grow"><b>${esc(g.label)}</b><small>${fmtNum(g.active)} قيد التشغيل • ${fmtNum(g.progress)} تحت الإجراء</small></span>
-          <span class="cnt num" style="--c:${color(g.n)}">${fmtNum(g.n)}</span></button>`).join("") +
-        (unmapped.length ? `<div class="mp-unmapped"><div class="small"><b>${I.alert} أحياء لم تُحدَّد على الخريطة</b></div><div class="muted small">اسم الحي غير موجود في بيانات الخريطة، أو مكتوب بصيغة مختلفة</div>
-          ${unmapped.map((g) => `<div class="mp-u"><span>${esc(g.label)}</span><span class="num">${fmtNum(g.all.length)}</span></div>`).join("")}</div>` : "")
-        : `<div class="empty">${I.map}لا توجد مساجد بعد</div>`;
-      if (list.length && !located) $("#mp-list", v).insertAdjacentHTML("beforeend", `<div class="hint" style="margin:10px 6px 0">لإظهار نقطة لكل مسجد، اجعل «رابط الموقع» يحتوي الإحداثيات (في خرائط Google: اضغط مطولًا على الموقع وانسخ الإحداثيات).</div>`);
-      $$(".mp-item", v).forEach((b) => {
-        b.onclick = () => { openGroup(groups.get(b.dataset.k), true); if (isMobile()) box.scrollIntoView({ behavior: "smooth", block: "center" }); };
+      // اللوحة: المؤشرات والحالات والأحياء
+      const exact = shown.filter((m) => placed.get(m.id)?.exact).length, od = base.filter(overdue).length;
+      $("#gm-kpis", v).innerHTML = [[shown.length, "مسجد"], [shown.filter((m) => m.stage === "active").length, "قيد التشغيل"], [all.length, "حي"], ...(od ? [[od, "تعبئة متأخرة", "bad"]] : [])]
+        .map(([n, l, c]) => `<div class="${c || ""}"><b class="num">${fmtNum(n)}</b><span>${l}</span></div>`).join("");
+      $("#gm-status", v).innerHTML = MAP_STATUS.map((s) => { const n = base.filter((m) => s.st.includes(m.stage)).length; return `<button class="gm-st ${mapState.off.has(s.k) ? "off" : ""}" data-s="${s.k}" ${n ? "" : "data-zero"} style="--c:${s.c}"><i></i><span>${s.l}</span><b class="num">${fmtNum(n)}</b></button>`; }).join("");
+      $("#gm-all", v).hidden = !mapState.off.size;
+      $("#mp-n", v).textContent = `${fmtNum(all.length)} حي`;
+      $("#mp-list", v).innerHTML = mapped.map((g) => `<button class="gm-item" data-k="${esc(g.key)}"><div class="gm-ir"><b>${esc(g.label)}</b><span class="num">${fmtNum(g.all.length)}</span></div>${mixBar(g.all)}</button>`).join("") +
+        (unmapped.length ? `<div class="mp-unmapped"><div class="small"><b>${I.alert} أحياء لم تُحدَّد على الخريطة</b></div>${unmapped.map((g) => `<div class="mp-u"><span>${esc(g.label)}</span><span class="num">${fmtNum(g.all.length)}</span></div>`).join("")}</div>` : "") ||
+        `<div class="empty">${I.map}لا توجد مساجد</div>`;
+      $("#gm-note", v).innerHTML = shown.length ? `<span class="dot-e"></span> موقع دقيق (${fmtNum(exact)}) <span class="dot-a"></span> تقريبي داخل الحي (${fmtNum(shown.length - exact)})` : "";
+      $$(".gm-item", v).forEach((b) => {
+        b.onclick = () => openGroup(groups.get(b.dataset.k), true);
         b.onmouseenter = () => $(`[data-g="${CSS.escape(b.dataset.k)}"]`, v)?.classList.add("hov");
         b.onmouseleave = () => $(`[data-g="${CSS.escape(b.dataset.k)}"]`, v)?.classList.remove("hov");
       });
-      // الإطار الافتراضي: الأحياء التي نتواجد فيها، وإلا الرياض كلها
-      let hb = null;
-      mapped.forEach((g) => { const b = boxOf(g.hit); hb = hb ? [Math.min(hb[0], b[0]), Math.min(hb[1], b[1]), Math.max(hb[2], b[2]), Math.max(hb[3], b[3])] : b; });
-      this.home = hb && size.w > 1 ? (() => { const t = fitBox(hb, 50); t.k = Math.min(t.k, kMin * 6); const c = [(hb[0] + hb[2]) / 2, (hb[1] + hb[3]) / 2]; return { k: t.k, x: size.w / 2 - c[0] * t.k, y: size.h / 2 - c[1] * t.k }; })() : null;
-      if (size.w > 1) setGoal(this.home || fitBox(W, 20)); apply(); requestAnimationFrame(declutter);
+      // الإطار الافتراضي: كل النقاط الظاهرة
+      this.home = () => { const pts = shown.map((m) => placed.get(m.id)?.xy).filter(Boolean); if (!pts.length) return null; const b = bbox(pts), pad = 8; const t = fitBox([b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad], 30); t.k = Math.min(t.k, kMin * 7); return clampXY(t); };
+      if (refit && size.w > 1) setGoal(this.home() || fitBox(W, 10)); else apply();
+      requestAnimationFrame(declutter);
     };
     resize(); paint();
 
-    $("#mp-metric", v).onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; mapState.metric = b.dataset.k; $$("#mp-metric button", v).forEach((x) => x.classList.toggle("on", x === b)); paint(); };
+    $("#gm-status", v).onclick = (e) => { const b = e.target.closest("[data-s]"); if (!b) return; const k = b.dataset.s; mapState.off.has(k) ? mapState.off.delete(k) : mapState.off.add(k); paint(false); };
+    $("#gm-status", v).ondblclick = (e) => { const b = e.target.closest("[data-s]"); if (!b) return; mapState.off = new Set(MAP_STATUS.map((s) => s.k).filter((k) => k !== b.dataset.s)); paint(false); };
+    $("#gm-all", v).onclick = () => { mapState.off.clear(); paint(false); };
     $("#mp-assoc", v)?.addEventListener("change", (e) => { mapState.assoc = e.target.value; paint(); });
     $("#mp-region", v).onchange = (e) => { mapState.region = e.target.value; paint(); };
-    $("#mp-pts", v).onchange = (e) => { mapState.points = e.target.checked; paint(); };
-    $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(); };
+    $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(false); };
+    $("#mp-shade", v).onchange = (e) => { mapState.shade = e.target.checked; paint(false); };
   },
 });
 
@@ -3668,7 +3697,7 @@ const NAV = [
   { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
   { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
   { r: "reports", l: "التقارير", i: "report", roles: ["admin", "association", "company"] },
-  { r: "map", l: "خريطة الأحياء", i: "map", roles: ["admin", "association", "company", "viewer"] },
+  { r: "map", l: "خريطة المشروع", i: "map", roles: ["admin", "association", "company", "viewer"] },
   { r: "achievements", l: "المنجزات", i: "sparkle", roles: ["admin", "association", "company", "viewer"] },
   { r: "notifications", l: "الإشعارات", i: "bell", roles: ["admin", "association", "company", "viewer"], badge: true },
   { r: "messages", l: "الرسائل الجماعية", i: "send", roles: ["admin", "association"], sec: "التواصل" },

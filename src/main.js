@@ -5,7 +5,7 @@ const NAV = [
   { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
   { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
   { r: "reports", l: "التقارير", i: "report", roles: ["admin", "association", "company"] },
-  { r: "map", l: "خريطة الأحياء", i: "map", roles: ["admin", "association", "company", "viewer"] },
+  { r: "map", l: "خريطة المشروع", i: "map", roles: ["admin", "association", "company", "viewer"] },
   { r: "achievements", l: "المنجزات", i: "sparkle", roles: ["admin", "association", "company", "viewer"] },
   { r: "notifications", l: "الإشعارات", i: "bell", roles: ["admin", "association", "company", "viewer"], badge: true },
   { r: "messages", l: "الرسائل الجماعية", i: "send", roles: ["admin", "association"], sec: "التواصل" },

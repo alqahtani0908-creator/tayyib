@@ -39,12 +39,26 @@ const PROJ_K = 1000, COS_LAT = Math.cos((24.7 * Math.PI) / 180), LNG0 = 46.3, LA
 const proj = ([lng, lat]) => [(lng - LNG0) * COS_LAT * PROJ_K, (LAT0 - lat) * PROJ_K];
 const pathOf = (rings) => rings.map((ring) => "M" + ring.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join("L") + "Z").join("");
 
-const MAP_METRICS = [["total", "كل المساجد"], ["active", "قيد التشغيل"], ["progress", "تحت الإجراء"]];
+// حالات المساجد على الخريطة: كل حالة لون، والنقطة تمثل مسجدًا
+const MAP_STATUS = [
+  { k: "selected", l: "بانتظار الإسناد", st: ["selected"], c: "#9b8f88" },
+  { k: "data", l: "البيانات والتواصل", st: ["assigned", "data_done"], c: "#4f86c6" },
+  { k: "study", l: "الدراسة والاعتماد", st: ["feasible", "study_done"], c: "#d4893b" },
+  { k: "install", l: "بانتظار التركيب", st: ["approved"], c: "#8d6cc4" },
+  { k: "active", l: "قيد التشغيل", st: ["active"], c: "#2f9e6a" },
+  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended"], c: "#c4544a" },
+];
+const statusOf = (stage) => MAP_STATUS.find((s) => s.st.includes(stage)) || MAP_STATUS[0];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
-const mapState = { metric: "total", assoc: "", region: "", points: true, labels: true };
+const mapState = { off: new Set(), assoc: "", region: "", labels: true, shade: true };
+
+// أرقام عشوائية ثابتة لكل مسجد (نفس الموقع التقريبي في كل مرة)
+const hash32 = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const inRing = (ring, x, y) => { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; };
 
 route("map", {
-  title: "خريطة الأحياء",
+  title: "خريطة المشروع",
   leave() { this.stop?.(); },
   async render(v) {
     v.innerHTML = `<div class="empty">${I.map}جارٍ تحميل الخريطة…</div>`;
@@ -54,81 +68,93 @@ route("map", {
       if (res.error) throw res.error;
       mosques = res.data || [];
     } catch (e) { v.innerHTML = `<div class="empty">${I.alert}${esc(errMsg(e))}</div>`; return; }
-    const r = role(), canOpen = r !== "viewer", dark = isDark();
-    const C = dark
-      ? { scale: ["#4d3b25", "#7a5f33", "#a8853f", "#cfae5a", "#ecd69c"] }
-      : { scale: ["#efe1b8", "#dcbd77", "#b98d4e", "#86573a", "#563331"] };
-    const ptColor = (st) => st === "active" ? (dark ? "#cfae5a" : "#a9831f") : PROGRESS.has(st) ? (dark ? "#4f86c6" : "#3b74a8") : st === "selected" ? (dark ? "#b04f45" : "#9a4a3a") : "#8e817e";
+    const r = role(), canOpen = r !== "viewer", dark = isDark(), mobile = isMobile();
     if (mapState.assoc && !S.associations.some((a) => a.id === mapState.assoc)) mapState.assoc = "";
 
-    // فهرس الأحياء: مضلع إن وُجد، وإلا نقطة مركز
+    // ───── الجغرافيا: فهرس الأحياء وحدود الرياض ─────
     const geo = districtGeo, index = new Map();
     geo.polys.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "poly", i, name: p.n })));
     geo.pts.forEach((p, i) => distKeys(p.n).forEach((k) => index.has(k) || index.set(k, { kind: "pt", i, name: p.n })));
+    const rings = geo.polys.map((p) => p.r.reduce((a, b) => (b.length > a.length ? b : a)).map(proj));
     const centers = geo.polys.map((p) => proj(polyCenter(p.r.reduce((a, b) => (b.length > a.length ? b : a)))));
     const centerOf = (hit) => hit.kind === "pt" ? proj(geo.pts[hit.i].c) : centers[hit.i];
-    const boxOf = (hit) => {
-      if (hit.kind === "pt") { const [x, y] = centerOf(hit); return [x - 8, y - 8, x + 8, y + 8]; }
-      let b = [Infinity, Infinity, -Infinity, -Infinity];
-      geo.polys[hit.i].r.forEach((ring) => ring.forEach((p) => { const [x, y] = proj(p); b = [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)]; }));
-      return b;
-    };
-    // حدود الرياض (كل الأحياء) لتقييد التحريك
-    let W = [Infinity, Infinity, -Infinity, -Infinity];
-    geo.polys.forEach((p) => p.r.forEach((ring) => ring.forEach((pt) => { const [x, y] = proj(pt); W = [Math.min(W[0], x), Math.min(W[1], y), Math.max(W[2], x), Math.max(W[3], y)]; })));
+    const bbox = (pts) => pts.reduce((b, [x, y]) => [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)], [Infinity, Infinity, -Infinity, -Infinity]);
+    const boxOf = (hit) => { if (hit.kind === "pt") { const [x, y] = centerOf(hit); return [x - 10, y - 10, x + 10, y + 10]; } return bbox(rings[hit.i]); };
+    const W = bbox(rings.flat());
+    const hitOf = (m) => distKeys((m.district || "").trim()).map((k) => index.get(k)).find(Boolean) || null;
 
-    v.innerHTML = `<div class="mapv">
-      <div class="card map-ctl">
-        <div class="seg" id="mp-metric">${MAP_METRICS.map(([k, l]) => `<button data-k="${k}" class="${mapState.metric === k ? "on" : ""}">${l}</button>`).join("")}</div>
-        ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
-        <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
-        <div class="map-toggles">
-          <label><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}> أسماء الأحياء</label>
-          <label><input type="checkbox" id="mp-pts" ${mapState.points ? "checked" : ""}> مواقع المساجد</label>
+    // ───── موقع كل مسجد: دقيق من الرابط، وإلا تقريبي موزّع داخل حدود حيّه ─────
+    const placed = new Map(), byHit = new Map();
+    mosques.forEach((m) => { const h = hitOf(m); m._hit = h; if (h) { const key = h.kind + h.i; (byHit.get(key) || byHit.set(key, []).get(key)).push(m); } });
+    mosques.forEach((m) => { const c = coordsOf(m.map_url); if (c) placed.set(m.id, { xy: proj([c[1], c[0]]), exact: true }); });
+    for (const [, list] of byHit) {
+      const pts = list.filter((m) => placed.has(m.id)).map((m) => placed.get(m.id).xy);
+      list.filter((m) => !placed.has(m.id)).sort((a, b) => (a.id < b.id ? -1 : 1)).forEach((m) => {
+        const h = m._hit, rnd = rng(hash32(m.id));
+        let best = centerOf(h), bd = -1;
+        if (h.kind === "poly") {
+          const ring = rings[h.i], b = bbox(ring);
+          for (let t = 0, got = 0; t < 120 && got < 14; t++) {
+            const x = b[0] + (b[2] - b[0]) * rnd(), y = b[1] + (b[3] - b[1]) * rnd();
+            if (!inRing(ring, x, y)) continue; got++;
+            const d = pts.length ? Math.min(...pts.map(([px, py]) => Math.hypot(px - x, py - y))) : 1 + rnd();
+            if (d > bd) { bd = d; best = [x, y]; }
+          }
+        } else {
+          const [cx, cy] = best;
+          for (let t = 0; t < 14; t++) { const a = rnd() * Math.PI * 2, rr = 2 + rnd() * 7, x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; const d = pts.length ? Math.min(...pts.map(([px, py]) => Math.hypot(px - x, py - y))) : 1 + rnd(); if (d > bd) { bd = d; best = [x, y]; } }
+        }
+        pts.push(best); placed.set(m.id, { xy: best, exact: false });
+      });
+    }
+    const now = Date.now(), overdue = (m) => m.stage === "active" && m.next_refill_at && new Date(m.next_refill_at) < now;
+
+    v.innerHTML = `<div class="gmap ${dark ? "dk" : ""}">
+      <div class="rmap ${dark ? "dk" : ""}" id="rmap" tabindex="0" aria-label="خريطة مساجد المشروع في الرياض">
+        <svg class="rm-svg"><defs><radialGradient id="gm-glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><g id="rm-g">
+          <g class="rm-cells">${geo.polys.map((p, i) => `<path d="${pathOf(p.r)}" data-c="${i}"/>`).join("")}</g>
+          <g class="rm-roads">${(geo.roads || []).map((rd) => `<polyline class="${rd.k === 1 ? "m" : "t"}" points="${rd.p.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join(" ")}"/>`).join("")}</g>
+          <g class="rm-shade" id="rm-shade"></g>
+          <g class="rm-dots" id="rm-dots"></g>
+        </g></svg>
+        <div class="rm-labels" id="rm-labels"></div>
+        <div class="rm-tip" id="rm-tip" hidden></div>
+        <div class="gm-bar glass">
+          ${r !== "association" && S.associations.length ? `<select class="input" id="mp-assoc" aria-label="الجمعية"><option value="">كل الجمعيات</option>${S.associations.map((a) => `<option value="${a.id}" ${mapState.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
+          <select class="input" id="mp-region" aria-label="الجهة"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${mapState.region === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <label class="gm-tg"><input type="checkbox" id="mp-lbl" ${mapState.labels ? "checked" : ""}><span>الأسماء</span></label>
+          <label class="gm-tg"><input type="checkbox" id="mp-shade" ${mapState.shade ? "checked" : ""}><span>تظليل الأحياء</span></label>
         </div>
-      </div>
-      <div class="map-stats" id="mp-kpis"></div>
-      <div class="map-wrap">
-        <div class="card map-box">
-          <div class="rmap ${dark ? "dk" : ""}" id="rmap" tabindex="0" aria-label="خريطة أحياء الرياض">
-            <svg class="rm-svg" id="rm-svg"><g id="rm-g">
-              <g class="rm-cells">${geo.polys.map((p, i) => `<path d="${pathOf(p.r)}" data-c="${i}"/>`).join("")}</g>
-              <g class="rm-roads">${(geo.roads || []).map((rd) => `<polyline class="${rd.k === 1 ? "m" : "t"}" points="${rd.p.map((p) => proj(p).map((n) => n.toFixed(1)).join(",")).join(" ")}"/>`).join("")}</g>
-              <g class="rm-shade" id="rm-shade"></g>
-              <g class="rm-dots" id="rm-dots"></g>
-            </g></svg>
-            <div class="rm-labels" id="rm-labels"></div>
-            <div class="rm-tip" id="rm-tip" hidden></div>
-            <div class="rm-zoom"><button data-z="in" aria-label="تكبير">+</button><button data-z="out" aria-label="تصغير">−</button><button data-z="home" aria-label="كل الرياض" title="كل الرياض">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')}</button></div>
-            <div class="map-legend" id="mp-legend"></div>
-            <div class="rm-card" id="rm-card" hidden></div>
-            <div class="rm-attr">© مساهمو OpenStreetMap</div>
-          </div>
-        </div>
-        <div class="card map-side"><div class="hd"><h3>الأحياء</h3><span class="muted small right" id="mp-n"></span></div><div class="map-list" id="mp-list"></div></div>
+        <div class="rm-zoom glass"><button data-z="in" aria-label="تكبير">+</button><button data-z="out" aria-label="تصغير">−</button><button data-z="home" aria-label="كل المساجد" title="كل المساجد">${svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')}</button></div>
+        <aside class="gm-panel glass ${mobile ? "" : "open"}" id="gm-panel">
+          <button class="gm-handle" id="gm-handle" aria-label="عرض التفاصيل"><i></i></button>
+          <div class="gm-head"><div><b>مساجد المشروع</b><span>الرياض</span></div><div class="gm-kpis" id="gm-kpis"></div></div>
+          <div class="gm-sec"><div class="gm-t"><span>الحالات</span><button id="gm-all" hidden>إظهار الكل</button></div><div class="gm-status" id="gm-status"></div></div>
+          <div class="gm-sec gm-grow"><div class="gm-t"><span>الأحياء</span><small id="mp-n"></small></div><div class="gm-list" id="mp-list"></div></div>
+          <div class="gm-note" id="gm-note"></div>
+        </aside>
+        <div class="rm-card glass" id="rm-card" hidden></div>
+        <div class="rm-attr">© مساهمو OpenStreetMap</div>
       </div></div>`;
 
-    const box = $("#rmap", v), svgEl = $("#rm-svg", v), G = $("#rm-g", v), labelsEl = $("#rm-labels", v), tip = $("#rm-tip", v), card = $("#rm-card", v);
+    const box = $("#rmap", v), G = $("#rm-g", v), labelsEl = $("#rm-labels", v), tip = $("#rm-tip", v), card = $("#rm-card", v), panel = $("#gm-panel", v);
     // ───── المشهد: تحويل واحد (k, x, y) مع حركة ناعمة نحو الهدف ─────
     const view = { k: 1, x: 0, y: 0 }, goal = { k: 1, x: 0, y: 0 };
     let raf = 0, size = { w: 1, h: 1 }, kMin = 1, labels = [];
-    const fitBox = (b, pad = 40) => { const k = Math.min((size.w - pad * 2) / (b[2] - b[0] || 1), (size.h - pad * 2) / (b[3] - b[1] || 1)); return { k, x: size.w / 2 - ((b[0] + b[2]) / 2) * k, y: size.h / 2 - ((b[1] + b[3]) / 2) * k }; };
-    const clampK = (k) => Math.max(kMin * 0.9, Math.min(kMin * 16, k));
-    // لا يخرج المشهد عن الرياض: يبقى جزء من المدينة دائمًا داخل الإطار
-    const clampXY = (t) => {
-      const m = 80;
-      t.x = Math.min(size.w - m - W[0] * t.k, Math.max(m - W[2] * t.k, t.x));
-      t.y = Math.min(size.h - m - W[1] * t.k, Math.max(m - W[3] * t.k, t.y));
-      return t;
-    };
+    // المساحة المرئية فعلًا (يمين اللوحة الجانبية على الكمبيوتر)
+    const vis = () => { const p = !isMobile() && panel.classList.contains("open") ? panel.offsetWidth + 24 : 0; return { l: 0, r: size.w - p, t: isMobile() ? 60 : 70, b: size.h - (isMobile() ? 120 : 0) }; };
+    const fitBox = (b, pad = 40) => { const a = vis(), w = a.r - a.l - pad * 2, h = a.b - a.t - pad * 2; const k = Math.min(w / (b[2] - b[0] || 1), h / (b[3] - b[1] || 1)); return { k, x: (a.l + a.r) / 2 - ((b[0] + b[2]) / 2) * k, y: (a.t + a.b) / 2 - ((b[1] + b[3]) / 2) * k }; };
+    const clampK = (k) => Math.max(kMin * 0.85, Math.min(kMin * 18, k));
+    const clampXY = (t) => { const m = 90; t.x = Math.min(size.w - m - W[0] * t.k, Math.max(m - W[2] * t.k, t.x)); t.y = Math.min(size.h - m - W[1] * t.k, Math.max(m - W[3] * t.k, t.y)); return t; };
     const apply = () => {
       G.setAttribute("transform", `translate(${view.x.toFixed(2)},${view.y.toFixed(2)}) scale(${view.k.toFixed(5)})`);
       box.style.setProperty("--k", view.k);
+      box.classList.toggle("far", view.k < kMin * 2.2);
       for (const l of labels) l.el.style.transform = `translate(${(l.x * view.k + view.x).toFixed(1)}px,${(l.y * view.k + view.y).toFixed(1)}px)`;
       if (card._at) placeCard();
     };
     const tick = () => {
-      const e = 0.22;
+      const e = 0.2;
       view.k += (goal.k - view.k) * e; view.x += (goal.x - view.x) * e; view.y += (goal.y - view.y) * e;
       const done = Math.abs(goal.k - view.k) < goal.k * 0.0005 && Math.abs(goal.x - view.x) < 0.3 && Math.abs(goal.y - view.y) < 0.3;
       if (done) Object.assign(view, goal);
@@ -139,20 +165,16 @@ route("map", {
     const animate = () => { if (!raf) raf = requestAnimationFrame(tick); };
     const setGoal = (t, instant = false) => { Object.assign(goal, clampXY({ ...t, k: clampK(t.k) })); if (instant) { Object.assign(view, goal); apply(); declutter(); } else animate(); };
     const zoomAt = (f, cx, cy) => { const k = clampK(goal.k * f), s = k / goal.k; setGoal({ k, x: cx - (cx - goal.x) * s, y: cy - (cy - goal.y) * s }); };
-    const resize = () => {
-      const rc = box.getBoundingClientRect(); const first = size.w === 1;
-      size = { w: rc.width, h: rc.height };
-      kMin = fitBox(W, 20).k;
-      if (first) setGoal(this.home || fitBox(W, 20), true); else setGoal(goal, true);
-    };
+    const resize = () => { const rc = box.getBoundingClientRect(), first = size.w === 1; size = { w: rc.width, h: rc.height }; kMin = fitBox(W, 10).k; setGoal(first ? (this.home?.() || fitBox(W, 10)) : goal, true); };
     const ro = new ResizeObserver(resize); ro.observe(box);
     this.stop = () => { ro.disconnect(); cancelAnimationFrame(raf); };
 
-    // ───── التفاعل: سحب بإصبع/فأرة مع قصور ذاتي، عجلة، قرص بإصبعين، نقر مزدوج ─────
+    // ───── التفاعل: سحب مع قصور ذاتي، عجلة، قرص بإصبعين، نقر مزدوج، لوحة المفاتيح ─────
     const ptrs = new Map(); let drag = null, moved = 0, vel = { x: 0, y: 0 }, lastT = 0;
     const local = (e) => { const rc = box.getBoundingClientRect(); return [e.clientX - rc.left, e.clientY - rc.top]; };
+    const onUi = (e) => e.target.closest(".glass");
     box.addEventListener("pointerdown", (e) => {
-      if (e.target.closest(".rm-zoom, .rm-card, .map-legend")) return;
+      if (onUi(e)) return;
       box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, local(e));
       cancelAnimationFrame(raf); raf = 0; Object.assign(goal, view);
       moved = 0; vel = { x: 0, y: 0 }; lastT = performance.now();
@@ -161,16 +183,15 @@ route("map", {
       box.classList.add("grabbing"); tip.hidden = true;
     });
     box.addEventListener("pointermove", (e) => {
-      if (!ptrs.has(e.pointerId)) return hover(e);
+      if (!ptrs.has(e.pointerId)) return onUi(e) ? (tip.hidden = true) : hover(e);
       ptrs.set(e.pointerId, local(e));
       if (drag?.pinch && ptrs.size === 2) {
-        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
         const k = clampK(drag.k * d / drag.pinch), s = k / drag.k;
-        Object.assign(view, clampXY({ k, x: c[0] - (drag.c[0] - drag.x) * s, y: c[1] - (drag.c[1] - drag.y) * s })); Object.assign(goal, view); apply(); moved += 10;
+        Object.assign(view, clampXY({ k, x: drag.c[0] - (drag.c[0] - drag.x) * s, y: drag.c[1] - (drag.c[1] - drag.y) * s })); Object.assign(goal, view); apply(); moved += 10;
       } else if (drag?.last) {
-        const p = local(e), dx = p[0] - drag.last[0], dy = p[1] - drag.last[1], now = performance.now(), dt = Math.max(1, now - lastT);
-        drag.last = p; lastT = now; moved += Math.abs(dx) + Math.abs(dy);
-        vel = { x: dx / dt * 16, y: dy / dt * 16 };
+        const p = local(e), dx = p[0] - drag.last[0], dy = p[1] - drag.last[1], t = performance.now(), dt = Math.max(1, t - lastT);
+        drag.last = p; lastT = t; moved += Math.abs(dx) + Math.abs(dy); vel = { x: dx / dt * 16, y: dy / dt * 16 };
         Object.assign(view, clampXY({ k: view.k, x: view.x + dx, y: view.y + dy })); Object.assign(goal, view); apply();
       }
     });
@@ -180,153 +201,153 @@ route("map", {
       if (ptrs.size === 1) { drag = { last: [...ptrs.values()][0] }; return; }
       if (ptrs.size) return;
       box.classList.remove("grabbing");
-      if (moved < 6 && e.type === "pointerup") return pick(e);
-      // قصور ذاتي بعد الإفلات
+      if (moved < 6 && e.type === "pointerup") { drag = null; return pick(e); }
       const sp = Math.hypot(vel.x, vel.y), cap = Math.min(1, 28 / (sp || 1));
-      if (sp > 1.5 && performance.now() - lastT < 80) setGoal({ k: view.k, x: view.x + vel.x * cap * 10, y: view.y + vel.y * cap * 10 });
-      else declutter();
+      if (sp > 1.5 && performance.now() - lastT < 80) setGoal({ k: view.k, x: view.x + vel.x * cap * 10, y: view.y + vel.y * cap * 10 }); else declutter();
       drag = null;
     };
     box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
-    box.addEventListener("wheel", (e) => { e.preventDefault(); const [x, y] = local(e); zoomAt(Math.exp(-Math.max(-50, Math.min(50, e.deltaY * (e.deltaMode ? 30 : 1))) * 0.005), x, y); }, { passive: false });
-    box.addEventListener("dblclick", (e) => { if (e.target.closest(".rm-zoom, .rm-card")) return; const [x, y] = local(e); zoomAt(e.shiftKey ? 0.5 : 2, x, y); });
-    box.addEventListener("pointerleave", () => { tip.hidden = true; hoverOff(); });
+    box.addEventListener("wheel", (e) => { if (onUi(e)) return; e.preventDefault(); const [x, y] = local(e); zoomAt(Math.exp(-Math.max(-50, Math.min(50, e.deltaY * (e.deltaMode ? 30 : 1))) * 0.005), x, y); }, { passive: false });
+    box.addEventListener("dblclick", (e) => { if (onUi(e)) return; const [x, y] = local(e); zoomAt(e.shiftKey ? 0.5 : 2, x, y); });
+    box.addEventListener("pointerleave", () => { tip.hidden = true; });
     box.addEventListener("keydown", (e) => {
-      const s = 60, m = { ArrowLeft: [s, 0], ArrowRight: [-s, 0], ArrowUp: [0, s], ArrowDown: [0, -s] }[e.key];
-      if (m) { e.preventDefault(); setGoal({ k: goal.k, x: goal.x + m[0], y: goal.y + m[1] }); }
+      if (e.target.closest("select, input")) return;
+      const s = 60, d = { ArrowLeft: [s, 0], ArrowRight: [-s, 0], ArrowUp: [0, s], ArrowDown: [0, -s] }[e.key];
+      if (d) { e.preventDefault(); setGoal({ k: goal.k, x: goal.x + d[0], y: goal.y + d[1] }); }
       if (e.key === "+" || e.key === "=") zoomAt(1.6, size.w / 2, size.h / 2);
       if (e.key === "-") zoomAt(1 / 1.6, size.w / 2, size.h / 2);
+      if (e.key === "Escape") closeCard();
     });
-    $(".rm-zoom", v).onclick = (e) => {
-      const z = e.target.closest("[data-z]")?.dataset.z; if (!z) return;
-      if (z === "home") { closeCard(); setGoal(this.home || fitBox(W, 20)); } else zoomAt(z === "in" ? 1.8 : 1 / 1.8, size.w / 2, size.h / 2);
-    };
+    $(".rm-zoom", v).onclick = (e) => { const z = e.target.closest("[data-z]")?.dataset.z; if (!z) return; if (z === "home") { closeCard(); setGoal(this.home?.() || fitBox(W, 10)); } else zoomAt(z === "in" ? 1.8 : 1 / 1.8, size.w / 2, size.h / 2); };
+    $("#gm-handle", v).onclick = () => { panel.classList.toggle("open"); };
 
-    // ───── الطبقات حسب البيانات ─────
-    let groups = new Map(), byCell = new Map(), selected = null, hovered = null;
-    const hoverOff = () => { hovered?.classList.remove("hov"); hovered = null; };
+    // ───── التلميح والبطاقة ─────
+    let groups = new Map(), selected = null, shown = [];
     function hover(e) {
       if (e.pointerType === "touch") return;
-      const t = e.target.closest("[data-g], [data-c], [data-m]");
-      if (t !== hovered) { hoverOff(); if (t?.dataset.g) { hovered = t; t.classList.add("hov"); } }
+      const t = e.target.closest("[data-m], [data-g], [data-c]");
       if (!t) { tip.hidden = true; return; }
       const [x, y] = local(e);
-      const g = t.dataset.g ? groups.get(t.dataset.g) : null, m = t.dataset.m ? mosques.find((q) => q.id === t.dataset.m) : null;
-      tip.innerHTML = g ? `<b>${esc(g.label)}</b><span>${fmtNum(g.n)} ${esc(MAP_METRICS.find((q) => q[0] === mapState.metric)[1])}</span>` : m ? `<b>${esc(m.name)}</b><span>${esc(STAGES[m.stage]?.s || "")}</span>` : `<span>${esc(geo.polys[+t.dataset.c].n.replace(/^حي\s+/, ""))}</span>`;
+      const m = t.dataset.m && mosques.find((q) => q.id === t.dataset.m), g = t.dataset.g && groups.get(t.dataset.g);
+      tip.innerHTML = m ? `<b>${esc(m.name)}</b><span><i style="background:${statusOf(m.stage).c}"></i>${esc(STAGES[m.stage]?.s || "")}${overdue(m) ? " • تعبئة متأخرة" : ""}</span>`
+        : g ? `<b>${esc(g.label)}</b><span>${fmtNum(g.all.length)} مسجد</span>` : `<span>${esc(geo.polys[+t.dataset.c].n.replace(/^حي\s+/, ""))}</span>`;
       tip.hidden = false; tip.style.transform = `translate(${x}px,${y - 14}px)`;
     }
     function pick(e) {
-      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-g], [data-m]");
+      const t = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-m], [data-g]");
       if (!t) return closeCard();
       if (t.dataset.m) return openMosque(mosques.find((q) => q.id === t.dataset.m));
       openGroup(groups.get(t.dataset.g), false);
     }
     const placeCard = () => {
       if (isMobile() || !card._at) return;
-      const [wx, wy] = card._at, x = wx * view.k + view.x, y = wy * view.k + view.y;
-      card.style.setProperty("--x", `${Math.max(150, Math.min(size.w - 150, x))}px`); card.style.setProperty("--y", `${Math.max(20, y)}px`);
-      card.classList.toggle("below", y < 260);
+      const [wx, wy] = card._at, x = wx * view.k + view.x, y = wy * view.k + view.y, a = vis();
+      card.style.setProperty("--x", `${Math.max(150, Math.min(a.r - 150, x))}px`); card.style.setProperty("--y", `${y}px`);
+      card.classList.toggle("below", y - card.offsetHeight - 24 < a.t);
     };
-    const closeCard = () => { card.hidden = true; card._at = null; selected?.classList.remove("sel"); selected = null; $$(".mp-item.on", v).forEach((b) => b.classList.remove("on")); };
-    const showCard = (html, at) => { card.innerHTML = `<button class="rm-x" aria-label="إغلاق">×</button>${html}`; card.hidden = false; card._at = at; placeCard(); $(".rm-x", card).onclick = closeCard; };
+    const closeCard = () => { card.hidden = true; card._at = null; selected?.classList.remove("sel"); selected = null; $$(".gm-item.on", v).forEach((b) => b.classList.remove("on")); };
+    const showCard = (html, at) => {
+      card.innerHTML = `<button class="rm-x" aria-label="إغلاق">×</button>${html}`; card.hidden = false; card._at = at; placeCard(); $(".rm-x", card).onclick = closeCard;
+      // على الجوال البطاقة أسفل الخريطة: نحرّك المشهد ليبقى الموقع ظاهرًا فوقها
+      if (isMobile() && at) { const top = card.offsetTop - 30, sy = at[1] * goal.k + goal.y; if (sy > top && top > 90) setGoal({ k: goal.k, x: goal.x, y: goal.y - (sy - top) }); }
+    };
+    const mix = (list) => MAP_STATUS.map((s) => [s, list.filter((m) => s.st.includes(m.stage)).length]).filter(([, n]) => n);
+    const mixBar = (list) => `<div class="gm-mix">${mix(list).map(([s, n]) => `<i style="flex:${n};background:${s.c}" title="${s.l}: ${n}"></i>`).join("")}</div>`;
     function openGroup(g, fly) {
       if (!g) return;
+      if (isMobile()) panel.classList.remove("open");
       selected?.classList.remove("sel"); selected = $(`[data-g="${CSS.escape(g.key)}"]`, v); selected?.classList.add("sel");
-      $$(".mp-item", v).forEach((b) => b.classList.toggle("on", b.dataset.k === g.key));
+      $$(".gm-item", v).forEach((b) => b.classList.toggle("on", b.dataset.k === g.key));
       showCard(`<div class="mp-pop"><div class="mp-pt"><b>${esc(g.label)}</b>${Object.keys(g.regions).length ? `<span class="chip plain">${Object.entries(g.regions).sort((a, b) => b[1] - a[1]).map(([k]) => regionName(k)).join("، ")}</span>` : ""}</div>
-        <div class="mp-grid"><div><span>المساجد</span><b class="num">${fmtNum(g.all.length)}</b></div><div><span>قيد التشغيل</span><b class="num">${fmtNum(g.active)}</b></div><div><span>تحت الإجراء</span><b class="num">${fmtNum(g.progress)}</b></div></div>
+        ${mixBar(g.all)}
+        <div class="gm-legs">${mix(g.all).map(([s, n]) => `<span><i style="background:${s.c}"></i>${s.l}<b>${fmtNum(n)}</b></span>`).join("")}</div>
         ${g.devices ? `<div class="mp-sub">${fmtNum(g.devices)} جهاز تعطير يعمل</div>` : ""}
         ${g.assocs.size ? `<div class="mp-sub">${I.org} ${[...g.assocs].map(esc).join("، ")}</div>` : ""}
-        ${canOpen ? `<a class="btn sm primary" href="#/mosques?district=${encodeURIComponent([...g.raws][0])}">${I.mosque} عرض المساجد</a>` : ""}</div>`, centerOf(g.hit));
-      if (!fly && isMobile()) { const [cx, cy] = centerOf(g.hit), sy = cy * view.k + view.y, lim = size.h - 300; if (sy > lim) setGoal({ k: goal.k, x: goal.x, y: goal.y - (sy - lim) - 30 }); }
-      if (fly) { const b = boxOf(g.hit), t = fitBox(b, Math.min(size.w, size.h) * 0.28); t.k = Math.min(t.k, kMin * 7); const c = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; setGoal({ k: t.k, x: size.w / 2 - c[0] * t.k, y: size.h / 2 - c[1] * t.k + (isMobile() ? -60 : 40) }); }
+        ${canOpen ? `<a class="btn sm primary" href="#/mosques?district=${encodeURIComponent([...g.raws][0])}">${I.mosque} مساجد الحي (${fmtNum(g.all.length)})</a>` : ""}</div>`, centerOf(g.hit));
+      if (fly) { const b = boxOf(g.hit), a = vis(), t = fitBox(b, Math.min(a.r - a.l, a.b - a.t) * 0.25); t.k = Math.min(t.k, kMin * 8); const c = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; setGoal({ k: t.k, x: (a.l + a.r) / 2 - c[0] * t.k, y: (a.t + a.b) / 2 - c[1] * t.k + (isMobile() ? -70 : 60) }); }
     }
     function openMosque(m) {
       if (!m) return;
-      const c = coordsOf(m.map_url);
-      showCard(`<div class="mp-pop"><b>${esc(m.name)}</b><div class="mp-sub">${esc(m.district || "")}${m.region ? ` • ${regionName(m.region)}` : ""}</div>${stageChip(m.stage)}${canOpen ? `<a class="btn sm primary" href="#/mosque/${m.id}">${I.mosque} صفحة المسجد</a>` : ""}</div>`, c ? proj([c[1], c[0]]) : null);
+      if (isMobile()) panel.classList.remove("open");
+      const p = placed.get(m.id), s = statusOf(m.stage);
+      showCard(`<div class="mp-pop"><div class="gm-mh"><i style="background:${s.c}"></i><div><b>${esc(m.name)}</b><div class="mp-sub"><span class="ltr">${esc(m.code || "")}</span> • ${esc(m.district || "")}${m.region ? ` • ${regionName(m.region)}` : ""}</div></div></div>
+        <div class="gm-kv"><span>الحالة</span><b style="color:${s.c}">${esc(STAGES[m.stage]?.l || m.stage)}</b></div>
+        ${m.association_id ? `<div class="gm-kv"><span>الجمعية</span><b>${esc(assocName(m.association_id))}</b></div>` : ""}
+        ${m.devices_count ? `<div class="gm-kv"><span>أجهزة التعطير</span><b>${fmtNum(m.devices_count)}</b></div>` : ""}
+        ${m.next_refill_at ? `<div class="gm-kv"><span>التعبئة القادمة</span><b class="${overdue(m) ? "bad" : ""}">${fmtDate(m.next_refill_at)}${overdue(m) ? " — متأخرة" : ""}</b></div>` : ""}
+        <div class="mp-sub">${p?.exact ? "● موقع دقيق من رابط الخرائط" : "◌ موقع تقريبي داخل الحي — أضف رابطًا بالإحداثيات لموقع دقيق"}</div>
+        ${canOpen ? `<a class="btn sm primary" href="#/mosque/${m.id}">${I.mosque} صفحة المسجد</a>` : ""}</div>`, p?.xy || null);
+      $$(".rm-dots .sel", v).forEach((x) => x.classList.remove("sel")); $(`[data-m="${m.id}"]`, v)?.classList.add("sel");
     }
 
     const declutter = () => {
       const kept = [];
       for (const l of labels) {
         l.el.classList.remove("off");
-        const b = l.el.firstElementChild.getBoundingClientRect();
-        if (!b.width) continue;
-        const hit = kept.some((k) => b.left < k.right + 4 && b.right > k.left - 4 && b.top < k.bottom + 3 && b.bottom > k.top - 3);
-        if (hit) l.el.classList.add("off"); else kept.push(b);
+        const b = l.el.firstElementChild.getBoundingClientRect(); if (!b.width) continue;
+        if (kept.some((k) => b.left < k.right + 4 && b.right > k.left - 4 && b.top < k.bottom + 3 && b.bottom > k.top - 3)) l.el.classList.add("off"); else kept.push(b);
       }
     };
 
-    const paint = () => {
+    const paint = (refit = true) => {
       closeCard();
-      const list = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
-      const val = (m) => mapState.metric === "active" ? m.stage === "active" : mapState.metric === "progress" ? PROGRESS.has(m.stage) : true;
+      const base = mosques.filter((m) => (!mapState.assoc || m.association_id === mapState.assoc) && (!mapState.region || m.region === mapState.region));
+      shown = base.filter((m) => !mapState.off.has(statusOf(m.stage).k));
       groups = new Map();
-      list.forEach((m) => {
-        const raw = (m.district || "").trim() || "غير محدد";
-        const hit = distKeys(raw).map((k) => index.get(k)).find(Boolean) || null;
-        const key = hit ? hit.kind + hit.i : "?" + normDist(raw);
-        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], n: 0, active: 0, progress: 0, devices: 0, assocs: new Set(), regions: {} };
+      shown.forEach((m) => {
+        const raw = (m.district || "").trim() || "غير محدد", hit = m._hit, key = hit ? hit.kind + hit.i : "?" + normDist(raw);
+        const g = groups.get(key) || { key, hit, label: hit ? hit.name.replace(/^حي\s+/, "") : raw, raws: new Set(), all: [], active: 0, devices: 0, assocs: new Set(), regions: {} };
         g.raws.add(raw); g.all.push(m);
-        if (val(m)) g.n++;
         if (m.stage === "active") { g.active++; g.devices += m.devices_count || 0; }
-        if (PROGRESS.has(m.stage)) g.progress++;
         if (m.association_id) g.assocs.add(assocName(m.association_id));
         if (m.region) g.regions[m.region] = (g.regions[m.region] || 0) + 1;
         groups.set(key, g);
       });
-      const all = [...groups.values()].sort((a, b) => b.n - a.n || b.all.length - a.all.length);
-      const mapped = all.filter((g) => g.hit && g.n), unmapped = all.filter((g) => !g.hit);
-      const max = Math.max(1, ...all.map((g) => g.n)), step = Math.max(1, Math.ceil(max / 5));
-      const cls = (n) => Math.min(4, Math.floor((n - 1) / step)), color = (n) => C.scale[cls(n)];
-
-      // الأحياء الملوّنة: مضلعات بالتدرج أو دوائر للأحياء المعروفة بنقطة فقط
-      $("#rm-shade", v).innerHTML = mapped.map((g) => g.hit.kind === "poly"
-        ? `<path d="${pathOf(geo.polys[g.hit.i].r)}" data-g="${esc(g.key)}" style="--f:${color(g.n)}"/>`
-        : (() => { const [x, y] = centerOf(g.hit); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" class="pt" data-g="${esc(g.key)}" style="--f:${color(g.n)};--r:${10 + cls(g.n) * 3}"/>`; })()).join("");
-      // نقاط المساجد
-      let located = 0;
-      $("#rm-dots", v).innerHTML = list.map((m) => { const c = coordsOf(m.map_url); if (!c) return ""; located++; if (!mapState.points) return ""; const [x, y] = proj([c[1], c[0]]); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" data-m="${m.id}" style="--f:${ptColor(m.stage)}"/>`; }).join("");
-      // أسماء الأحياء (طبقة HTML بحجم ثابت)
-      labels = mapState.labels ? mapped.map((g) => { const [x, y] = centerOf(g.hit); const el = document.createElement("div"); el.className = "rm-l"; el.innerHTML = `<span>${esc(g.label)}<b>${fmtNum(g.n)}</b></span>`; return { x, y, el }; }) : [];
+      const all = [...groups.values()].sort((a, b) => b.all.length - a.all.length);
+      const mapped = all.filter((g) => g.hit), unmapped = all.filter((g) => !g.hit);
+      const max = Math.max(1, ...mapped.map((g) => g.all.length));
+      // تظليل خفيف للأحياء التي نتواجد فيها
+      $("#rm-shade", v).innerHTML = mapState.shade ? mapped.map((g) => g.hit.kind === "poly"
+        ? `<path d="${pathOf(geo.polys[g.hit.i].r)}" data-g="${esc(g.key)}" style="--o:${(0.14 + 0.32 * g.all.length / max).toFixed(2)}"/>` : "").join("") : "";
+      // نقاط المساجد حسب الحالة (الدقيقة بهالة، والتقريبية بحلقة)
+      const order = (m) => MAP_STATUS.indexOf(statusOf(m.stage));
+      $("#rm-dots", v).innerHTML = shown.filter((m) => placed.has(m.id)).sort((a, b) => order(a) - order(b)).map((m) => {
+        const p = placed.get(m.id), [x, y] = p.xy, s = statusOf(m.stage);
+        return `<g class="pt${p.exact ? "" : " ap"}${overdue(m) ? " od" : ""}" data-m="${m.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" style="--c:${s.c}">${overdue(m) ? `<circle class="pulse"/>` : ""}<circle class="halo"/><circle class="core"/></g>`;
+      }).join("");
+      // أسماء الأحياء
+      labels = mapState.labels ? mapped.map((g) => { const [x, y] = centerOf(g.hit); const el = document.createElement("div"); el.className = "rm-l"; el.innerHTML = `<span>${esc(g.label)}<b>${fmtNum(g.all.length)}</b></span>`; return { x, y, el }; }) : [];
       labelsEl.replaceChildren(...labels.map((l) => l.el));
 
-      const top = mapped[0];
-      $("#mp-kpis", v).innerHTML = `
-        <div class="card ms"><span>${I.map}</span><div><b class="num">${fmtNum(all.filter((g) => g.n).length)}</b><small>حيًّا نتواجد فيه</small></div></div>
-        <div class="card ms"><span>${I.mosque}</span><div><b class="num">${fmtNum(list.filter(val).length)}</b><small>${esc(MAP_METRICS.find((x) => x[0] === mapState.metric)[1])}</small></div></div>
-        <div class="card ms"><span>${I.sparkle}</span><div><b>${top ? esc(top.label) : "—"}</b><small>${top ? `الأعلى تواجدًا • ${fmtNum(top.n)} مسجد` : "الأعلى تواجدًا"}</small></div></div>
-        <div class="card ms"><span>${I.check}</span><div><b class="num">${fmtNum(located)}</b><small>مسجدًا بموقع محدد</small></div></div>`;
-      $("#mp-n", v).textContent = `${fmtNum(all.filter((g) => g.n).length)} حي`;
-      const classes = [0, 1, 2, 3, 4].filter((c) => c * step + 1 <= max);
-      $("#mp-legend", v).innerHTML = `<div class="lg-t">${esc(MAP_METRICS.find((x) => x[0] === mapState.metric)[1])} في الحي</div>
-        <div class="lg-ramp">${classes.map((c) => `<span><i style="background:${C.scale[c]}"></i><bdi dir="ltr">${step === 1 ? c + 1 : `${c * step + 1}${c === classes.length - 1 ? "+" : `–${(c + 1) * step}`}`}</bdi></span>`).join("")}</div>
-        ${mapState.points && located ? `<div class="lg-pts"><span><i style="background:${ptColor("active")}"></i>قيد التشغيل</span><span><i style="background:${ptColor("assigned")}"></i>تحت الإجراء</span><span><i style="background:${ptColor("selected")}"></i>بانتظار الإسناد</span></div>` : ""}`;
-      $("#mp-list", v).innerHTML = mapped.length || unmapped.length ? mapped.map((g) => `<button class="mp-item" data-k="${esc(g.key)}">
-          <span class="grow"><b>${esc(g.label)}</b><small>${fmtNum(g.active)} قيد التشغيل • ${fmtNum(g.progress)} تحت الإجراء</small></span>
-          <span class="cnt num" style="--c:${color(g.n)}">${fmtNum(g.n)}</span></button>`).join("") +
-        (unmapped.length ? `<div class="mp-unmapped"><div class="small"><b>${I.alert} أحياء لم تُحدَّد على الخريطة</b></div><div class="muted small">اسم الحي غير موجود في بيانات الخريطة، أو مكتوب بصيغة مختلفة</div>
-          ${unmapped.map((g) => `<div class="mp-u"><span>${esc(g.label)}</span><span class="num">${fmtNum(g.all.length)}</span></div>`).join("")}</div>` : "")
-        : `<div class="empty">${I.map}لا توجد مساجد بعد</div>`;
-      if (list.length && !located) $("#mp-list", v).insertAdjacentHTML("beforeend", `<div class="hint" style="margin:10px 6px 0">لإظهار نقطة لكل مسجد، اجعل «رابط الموقع» يحتوي الإحداثيات (في خرائط Google: اضغط مطولًا على الموقع وانسخ الإحداثيات).</div>`);
-      $$(".mp-item", v).forEach((b) => {
-        b.onclick = () => { openGroup(groups.get(b.dataset.k), true); if (isMobile()) box.scrollIntoView({ behavior: "smooth", block: "center" }); };
+      // اللوحة: المؤشرات والحالات والأحياء
+      const exact = shown.filter((m) => placed.get(m.id)?.exact).length, od = base.filter(overdue).length;
+      $("#gm-kpis", v).innerHTML = [[shown.length, "مسجد"], [shown.filter((m) => m.stage === "active").length, "قيد التشغيل"], [all.length, "حي"], ...(od ? [[od, "تعبئة متأخرة", "bad"]] : [])]
+        .map(([n, l, c]) => `<div class="${c || ""}"><b class="num">${fmtNum(n)}</b><span>${l}</span></div>`).join("");
+      $("#gm-status", v).innerHTML = MAP_STATUS.map((s) => { const n = base.filter((m) => s.st.includes(m.stage)).length; return `<button class="gm-st ${mapState.off.has(s.k) ? "off" : ""}" data-s="${s.k}" ${n ? "" : "data-zero"} style="--c:${s.c}"><i></i><span>${s.l}</span><b class="num">${fmtNum(n)}</b></button>`; }).join("");
+      $("#gm-all", v).hidden = !mapState.off.size;
+      $("#mp-n", v).textContent = `${fmtNum(all.length)} حي`;
+      $("#mp-list", v).innerHTML = mapped.map((g) => `<button class="gm-item" data-k="${esc(g.key)}"><div class="gm-ir"><b>${esc(g.label)}</b><span class="num">${fmtNum(g.all.length)}</span></div>${mixBar(g.all)}</button>`).join("") +
+        (unmapped.length ? `<div class="mp-unmapped"><div class="small"><b>${I.alert} أحياء لم تُحدَّد على الخريطة</b></div>${unmapped.map((g) => `<div class="mp-u"><span>${esc(g.label)}</span><span class="num">${fmtNum(g.all.length)}</span></div>`).join("")}</div>` : "") ||
+        `<div class="empty">${I.map}لا توجد مساجد</div>`;
+      $("#gm-note", v).innerHTML = shown.length ? `<span class="dot-e"></span> موقع دقيق (${fmtNum(exact)}) <span class="dot-a"></span> تقريبي داخل الحي (${fmtNum(shown.length - exact)})` : "";
+      $$(".gm-item", v).forEach((b) => {
+        b.onclick = () => openGroup(groups.get(b.dataset.k), true);
         b.onmouseenter = () => $(`[data-g="${CSS.escape(b.dataset.k)}"]`, v)?.classList.add("hov");
         b.onmouseleave = () => $(`[data-g="${CSS.escape(b.dataset.k)}"]`, v)?.classList.remove("hov");
       });
-      // الإطار الافتراضي: الأحياء التي نتواجد فيها، وإلا الرياض كلها
-      let hb = null;
-      mapped.forEach((g) => { const b = boxOf(g.hit); hb = hb ? [Math.min(hb[0], b[0]), Math.min(hb[1], b[1]), Math.max(hb[2], b[2]), Math.max(hb[3], b[3])] : b; });
-      this.home = hb && size.w > 1 ? (() => { const t = fitBox(hb, 50); t.k = Math.min(t.k, kMin * 6); const c = [(hb[0] + hb[2]) / 2, (hb[1] + hb[3]) / 2]; return { k: t.k, x: size.w / 2 - c[0] * t.k, y: size.h / 2 - c[1] * t.k }; })() : null;
-      if (size.w > 1) setGoal(this.home || fitBox(W, 20)); apply(); requestAnimationFrame(declutter);
+      // الإطار الافتراضي: كل النقاط الظاهرة
+      this.home = () => { const pts = shown.map((m) => placed.get(m.id)?.xy).filter(Boolean); if (!pts.length) return null; const b = bbox(pts), pad = 8; const t = fitBox([b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad], 30); t.k = Math.min(t.k, kMin * 7); return clampXY(t); };
+      if (refit && size.w > 1) setGoal(this.home() || fitBox(W, 10)); else apply();
+      requestAnimationFrame(declutter);
     };
     resize(); paint();
 
-    $("#mp-metric", v).onclick = (e) => { const b = e.target.closest("[data-k]"); if (!b) return; mapState.metric = b.dataset.k; $$("#mp-metric button", v).forEach((x) => x.classList.toggle("on", x === b)); paint(); };
+    $("#gm-status", v).onclick = (e) => { const b = e.target.closest("[data-s]"); if (!b) return; const k = b.dataset.s; mapState.off.has(k) ? mapState.off.delete(k) : mapState.off.add(k); paint(false); };
+    $("#gm-status", v).ondblclick = (e) => { const b = e.target.closest("[data-s]"); if (!b) return; mapState.off = new Set(MAP_STATUS.map((s) => s.k).filter((k) => k !== b.dataset.s)); paint(false); };
+    $("#gm-all", v).onclick = () => { mapState.off.clear(); paint(false); };
     $("#mp-assoc", v)?.addEventListener("change", (e) => { mapState.assoc = e.target.value; paint(); });
     $("#mp-region", v).onchange = (e) => { mapState.region = e.target.value; paint(); };
-    $("#mp-pts", v).onchange = (e) => { mapState.points = e.target.checked; paint(); };
-    $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(); };
+    $("#mp-lbl", v).onchange = (e) => { mapState.labels = e.target.checked; paint(false); };
+    $("#mp-shade", v).onchange = (e) => { mapState.shade = e.target.checked; paint(false); };
   },
 });
