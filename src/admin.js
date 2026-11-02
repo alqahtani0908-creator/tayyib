@@ -37,8 +37,15 @@ async function assocForm(a = null) {
 }
 
 // ───────────────────────── الحسابات ─────────────────────────
-const siteUrl = () => location.origin + location.pathname;
-const inviteText = (a) => `السلام عليكم ${a.name}،\nتم إنشاء حسابك في منصة «${S.settings.platform_name || "طيب"}» لمشروع تعطير المساجد بصفة: ${ROLES[a.role]}${a.role === "association" ? ` (${assocName(a.association_id)})` : ""}.\n\nرابط المنصة: ${siteUrl()}\nالبريد: ${a.email}\nرمز التفعيل: ${a.invite_code}\n\nاختر «تفعيل حساب جديد» وأدخل بريدك ورمز التفعيل واختر كلمة مرور.`;
+const siteUrl = () => location.origin + location.pathname.replace(/[^/]*$/, "");
+// أدلة الاستخدام حسب الصلاحية (docs/guide/) — بنفس مسار رابط الدليل في القائمة
+const guideBase = () => new URL(ASSETS.replace(/assets\/$/, "guide/"), location.href).href;
+const guideUrl = (role) => `${guideBase()}${role}.html`;
+const guidePdf = (role) => `${guideBase()}pdf/${role}.pdf`;
+const GUIDE_TPL = "السلام عليكم {الاسم}،\n\nنرفق لكم دليل استخدام منصة «{المنصة}» الخاص بصلاحيتكم ({الصلاحية})، ويشرح خطوات عملكم في المنصة بالصور:\n{رابط_الدليل}\n\nنسخة PDF للتحميل والطباعة:\n{رابط_PDF}\n\nرابط المنصة: {رابط_المنصة}\n\nوجزاكم الله خيرًا.";
+const fillGuide = (tpl, a) => tpl.replaceAll("{الاسم}", a.name || "").replaceAll("{المنصة}", S.settings.platform_name || "طيب").replaceAll("{الصلاحية}", ROLES[a.role] || "")
+  .replaceAll("{رابط_الدليل}", guideUrl(a.role)).replaceAll("{رابط_PDF}", guidePdf(a.role)).replaceAll("{رابط_المنصة}", siteUrl());
+const inviteText = (a) => `السلام عليكم ${a.name}،\nتم إنشاء حسابك في منصة «${S.settings.platform_name || "طيب"}» لمشروع تعطير المساجد بصفة: ${ROLES[a.role]}${a.role === "association" ? ` (${assocName(a.association_id)})` : ""}.\n\nرابط المنصة: ${siteUrl()}\nالبريد: ${a.email}\nرمز التفعيل: ${a.invite_code}\n\nاختر «تفعيل حساب جديد» وأدخل بريدك ورمز التفعيل واختر كلمة مرور.\n\nدليل الاستخدام الخاص بصلاحيتك: ${guideUrl(a.role)}`;
 
 route("accounts", {
   title: "الحسابات",
@@ -48,7 +55,7 @@ route("accounts", {
     if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
     let f = "";
     v.innerHTML = `<div class="pagehead"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
-      <button class="btn primary right" id="add">${I.plus} إنشاء حساب</button></div>
+      <button class="btn right" id="guides">${I.report} إرسال الأدلة</button><button class="btn primary" id="add">${I.plus} إنشاء حساب</button></div>
       <div class="card"><div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>الاسم</th><th>الصلاحية</th><th>البريد</th><th>الجوال</th><th>الحالة</th><th>آخر دخول</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
       <div class="hint" style="margin-top:12px">💡 بعد إنشاء الحساب أرسل للمستخدم رابط المنصة ورمز التفعيل (زر واتساب). يدخل المستخدم بريده والرمز ويختار كلمة مروره. لنسيان كلمة المرور استخدم «إعادة تعيين الدخول».</div>`;
     const draw = () => {
@@ -60,12 +67,14 @@ route("accounts", {
         <td data-hide-sm class="small muted">${a.last_seen_at ? ago(a.last_seen_at) : "—"}</td>
         <td data-hide-sm><div class="row" style="gap:4px;flex-wrap:nowrap">
           ${!a.user_id && a.active ? `<a class="btn sm" title="إرسال الدعوة عبر واتساب" ${a.phone ? `href="${esc(waLink(a.phone, inviteText(a)))}" target="_blank" rel="noopener"` : `data-copyinv="${a.id}"`}>${a.phone ? I.wa : I.copy} الدعوة</a>` : ""}
+          <button class="btn sm ghost" data-guide="${a.id}" title="إرسال دليل الاستخدام">${I.report}</button>
           <button class="btn sm ghost" data-edit="${a.id}" title="تعديل">${I.edit}</button>
           ${a.user_id && a.user_id !== S.me.user_id ? `<button class="btn sm ghost" data-reset="${a.id}" title="إعادة تعيين الدخول">${I.key}</button>` : ""}</div></td></tr>`).join("") || `<tr><td colspan="7" class="empty">لا توجد حسابات</td></tr>`;
     };
     $("#seg", v).onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; f = b.dataset.f; $$("#seg button", v).forEach((x) => x.classList.toggle("on", x === b)); draw(); };
     $("#rows", v).onclick = async (e) => {
-      const ed = e.target.closest("[data-edit]"), rs = e.target.closest("[data-reset]"), cp = e.target.closest("[data-copyinv]");
+      const ed = e.target.closest("[data-edit]"), rs = e.target.closest("[data-reset]"), cp = e.target.closest("[data-copyinv]"), gd = e.target.closest("[data-guide]");
+      if (gd) return guideDialog([list.find((a) => a.id === gd.dataset.guide)]);
       if (ed && await accountForm(list.find((a) => a.id === ed.dataset.edit))) render();
       if (cp) { navigator.clipboard.writeText(inviteText(list.find((a) => a.id === cp.dataset.copyinv))).then(() => toast("تم نسخ نص الدعوة")); }
       if (rs) {
@@ -75,10 +84,45 @@ route("accounts", {
         if (code) { toast(`رمز التفعيل الجديد: ${code}`, "", { ms: 12000 }); render(); }
       }
     };
+    $("#guides", v).onclick = () => guideDialog(list.filter((a) => a.active && (!f || a.role === f)), f);
     $("#add", v).onclick = async () => { const a = await accountForm(); if (a) { render(); inviteDialog(a); } };
     draw();
   },
 });
+// إرسال دليل الاستخدام: كل مستلم يصله دليل صلاحيته، بواتساب أو البريد، مع رسالة قابلة للتعديل
+function guideDialog(accounts, role = "") {
+  if (!accounts.length) return toast("لا توجد حسابات نشطة لإرسال الأدلة لها", "err");
+  const one = accounts.length === 1, sent = new Set();
+  const body = document.createElement("div");
+  body.innerHTML = `<div class="stack">
+    <div class="gd-links">${[...new Set(accounts.map((a) => a.role))].map((r) => `<a class="chip plain" href="${esc(guideUrl(r))}" target="_blank" rel="noopener">${I.report} دليل ${esc(ROLES[r])}</a>`).join("")}</div>
+    <div class="field"><label>نص الرسالة <span class="muted small">— المتغيرات: {الاسم} {الصلاحية} {رابط_الدليل} {رابط_PDF} {رابط_المنصة}</span></label><textarea class="input" data-tpl rows="8">${esc(GUIDE_TPL)}</textarea></div>
+    ${one ? "" : `<div class="row small"><span class="muted" data-prog></span><button type="button" class="btn sm ghost right" data-copyall>${I.copy} نسخ كل الرسائل</button></div>`}
+    <div class="gd-list" data-list></div>
+  </div>`;
+  const tpl = () => $("[data-tpl]", body).value;
+  const draw = () => {
+    $("[data-list]", body).innerHTML = accounts.map((a) => `<div class="gd-row ${sent.has(a.id) ? "done" : ""}" data-a="${a.id}">
+      <div class="grow"><b>${esc(a.name)}</b><div class="small muted">${esc(ROLES[a.role])}${a.role === "association" && a.association_id ? ` • ${esc(assocName(a.association_id))}` : ""}${a.phone ? ` • <span class="num">${esc(displayPhone(a.phone))}</span>` : ""}</div></div>
+      ${sent.has(a.id) ? `<span class="chip ok">${I.check} أُرسل</span>` : ""}
+      ${a.phone ? `<a class="btn sm wa-btn" data-send="wa" href="${esc(waLink(a.phone, fillGuide(tpl(), a)))}" target="_blank" rel="noopener">${I.wa} واتساب</a>` : ""}
+      ${a.email ? `<a class="btn sm" data-send="mail" href="mailto:${esc(a.email)}?subject=${encodeURIComponent(`دليل استخدام منصة ${S.settings.platform_name || "طيب"}`)}&body=${encodeURIComponent(fillGuide(tpl(), a))}">${I.mail} بريد</a>` : ""}
+      <button type="button" class="btn sm ghost" data-send="copy" title="نسخ الرسالة">${I.copy}</button></div>`).join("");
+    const p = $("[data-prog]", body); if (p) p.textContent = `أُرسل ${fmtNum(sent.size)} من ${fmtNum(accounts.length)}`;
+  };
+  $("[data-tpl]", body).oninput = draw;
+  body.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-send]"); if (b) {
+      const a = accounts.find((x) => x.id === b.closest("[data-a]").dataset.a);
+      if (b.dataset.send === "copy") { navigator.clipboard.writeText(fillGuide(tpl(), a)).then(() => toast("تم نسخ الرسالة")); }
+      sent.add(a.id); setTimeout(draw, 50);
+    }
+    if (e.target.closest("[data-copyall]")) navigator.clipboard.writeText(accounts.map((a) => `— ${a.name}:\n${fillGuide(tpl(), a)}`).join("\n\n")).then(() => toast("تم نسخ كل الرسائل"));
+  });
+  draw();
+  modal({ title: one ? `إرسال دليل الاستخدام — ${accounts[0].name}` : `إرسال أدلة الاستخدام${role ? ` — ${ROLES[role]}` : ""} (${fmtNum(accounts.length)})`, body, wide: true, actions: [{ label: "إغلاق" }] });
+}
+
 // البيانات التي يمكن طلبها من صاحب الجوال عند إنشاء حسابه: [المفتاح، اسم الخيار، صياغته في الرسالة]
 const ACC_ASK = [
   ["name", "الاسم الكامل", "الاسم الكامل"],

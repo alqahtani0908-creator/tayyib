@@ -1036,3 +1036,12 @@ a.fi[href]:hover { background: var(--surface-2); }
 .doc .foot { margin-top: 16px; display: flex; align-items: center; gap: 12px; font-size: 8.5pt; color: #9a8d86; break-before: avoid; }
 .doc .foot .gold-rule { flex: 1; height: 2px; background: linear-gradient(90deg, #ceb26b, transparent); }
 .doc.wide .dh { padding: 14px 20px; } .doc.wide .dh h1 { font-size: 18pt; }
+
+/* إرسال أدلة الاستخدام */
+.gd-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.gd-links .chip { padding: 6px 12px; gap: 6px; display: inline-flex; align-items: center; }
+.gd-links svg { width: 15px; height: 15px; }
+.gd-list { display: grid; gap: 6px; max-height: 340px; overflow-y: auto; }
+.gd-row { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); flex-wrap: wrap; }
+.gd-row.done { background: color-mix(in srgb, #2f9e6a 7%, var(--surface)); border-color: color-mix(in srgb, #2f9e6a 30%, var(--line)); }
+.gd-row .grow { min-width: 160px; }
