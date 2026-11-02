@@ -1002,3 +1002,15 @@ a.fi[href]:hover { background: var(--surface-2); }
 .doc table.list .miss { color: #a33; font-size: 8.5pt; }
 .doc.wide .dh .t { font-size: 22px; }
 .doc.wide .foot { margin-top: 8px; padding-top: 4px; break-before: avoid; }
+
+/* طلب البيانات الناقصة عبر واتساب عند إنشاء حساب */
+.wa-req { margin-top: 14px; border: 1px solid color-mix(in srgb, #25d366 35%, var(--line)); background: color-mix(in srgb, #25d366 6%, var(--surface)); border-radius: 14px; padding: 12px 14px; display: grid; gap: 10px; }
+.wr-h { display: flex; gap: 10px; align-items: flex-start; }
+.wr-h > svg { width: 22px; height: 22px; color: #1fa855; flex: none; margin-top: 2px; }
+.wr-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.wr-opts label { cursor: pointer; padding: 6px 12px; display: inline-flex; gap: 6px; align-items: center; }
+.wr-opts input { accent-color: #1fa855; }
+.wa-req textarea { font-size: 13px; line-height: 1.7; min-height: 120px; }
+.btn.wa-btn { background: #1fa855; border-color: #1fa855; color: #fff; }
+.btn.wa-btn:hover { background: #17924a; }
+.btn.wa-btn.disabled { opacity: .45; cursor: not-allowed; }

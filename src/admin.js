@@ -79,6 +79,18 @@ route("accounts", {
     draw();
   },
 });
+// البيانات التي يمكن طلبها من صاحب الجوال عند إنشاء حسابه: [المفتاح، اسم الخيار، صياغته في الرسالة]
+const ACC_ASK = [
+  ["name", "الاسم الكامل", "الاسم الكامل"],
+  ["email", "البريد الإلكتروني", "البريد الإلكتروني (سيكون اسم الدخول للمنصة)"],
+  ["title", "المسمى الوظيفي", "المسمى الوظيفي"],
+  ["assoc", "اسم الجمعية", "اسم الجمعية التي تتبع لها"],
+];
+const accAskText = (name, roleName, asks) => {
+  if (!asks.length) return "";
+  const platform = S.settings.platform_name || "طيب", org = S.settings.org_name || "مشروع تعطير المساجد";
+  return `السلام عليكم ورحمة الله وبركاته${name ? ` أ. ${name}` : ""}،\n\nنعمل على إنشاء حسابكم في منصة «${platform}» — ${org}${roleName ? ` بصلاحية «${roleName}»` : ""}.\nنأمل تزويدنا بالبيانات التالية لإكمال الحساب:\n${asks.map((x) => `• ${x}`).join("\n")}\n\nوجزاكم الله خيرًا.`;
+};
 async function accountForm(a = null) {
   const body = document.createElement("div");
   body.innerHTML = `<form class="form" onsubmit="return false">${fld("name", "الاسم", { value: a?.name, req: true })}${fld("title", "المسمى", { value: a?.title, ph: "مثال: مشرف ميداني" })}
@@ -86,9 +98,35 @@ async function accountForm(a = null) {
     ${fld("role", "الصلاحية", { value: a?.role || "association", opts: Object.entries(ROLES), attrs: a?.user_id === S.me.user_id ? "disabled" : "" })}
     <div data-aw>${fld("association_id", "الجمعية", { value: a?.association_id || "", opts: [["", "— اختر —"], ...S.associations.filter((x) => x.active || x.id === a?.association_id).map((x) => [x.id, x.name])] })}</div>
     ${a ? fld("active", "الحالة", { value: a.active ? "1" : "0", opts: [["1", "نشط"], ["0", "معطل"]], attrs: a.user_id === S.me.user_id ? "disabled" : "" }) : ""}</form>
+    <div class="wa-req" data-wareq>
+      <div class="wr-h">${I.wa}<div class="grow"><b>طلب البيانات الناقصة عبر واتساب</b><div class="muted small">اختر ما تريد طلبه من صاحب الجوال، ثم أرسل الرسالة</div></div></div>
+      <div class="wr-opts">${ACC_ASK.map(([k, l]) => `<label class="chip plain"><input type="checkbox" value="${k}"> ${l}</label>`).join("")}</div>
+      <textarea class="input" data-watext rows="6"></textarea>
+      <div class="row"><a class="btn wa-btn" data-wasend target="_blank" rel="noopener">${I.wa} إرسال عبر واتساب</a><span class="muted small" data-wahint></span></div>
+    </div>
     <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء • الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) • الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة • حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
   const sync = () => { $("[data-aw]", body).hidden = $('[name="role"]', body).value !== "association"; };
-  $('[name="role"]', body).onchange = sync; sync();
+  $('[name="role"]', body).onchange = () => { sync(); waSync(); }; sync();
+  // طلب البيانات الناقصة: تُحدَّد الحقول الفارغة تلقائيًا ما لم يغيّرها المدير بنفسه، والنص قابل للتعديل
+  const wr = $("[data-wareq]", body), txt = $("[data-watext]", wr), touched = new Set();
+  let edited = false;
+  const val = (n) => ($(`[name="${n}"]`, body)?.value || "").trim();
+  const empty = { name: () => !val("name"), email: () => !val("email"), title: () => !val("title"), assoc: () => val("role") === "association" && !val("association_id") };
+  const waSync = () => {
+    $$(".wr-opts input", wr).forEach((cb) => { if (!touched.has(cb.value)) cb.checked = empty[cb.value]?.() ?? false; });
+    const asks = $$(".wr-opts input:checked", wr).map((cb) => ACC_ASK.find(([k]) => k === cb.value)[2]);
+    if (!edited) txt.value = accAskText(val("name"), $(`[name="role"] option:checked`, body)?.textContent || "", asks);
+    const ph = normPhone(val("phone")), ok = ph.length >= 11 && txt.value.trim();
+    const send = $("[data-wasend]", wr);
+    send.href = ok ? waLink(ph, txt.value) : "#"; send.classList.toggle("disabled", !ok);
+    $("[data-wahint]", wr).textContent = ph.length >= 11 ? `إلى ${displayPhone(val("phone"))}` : "أدخل رقم الجوال أولًا";
+  };
+  $$(".wr-opts input", wr).forEach((cb) => cb.onchange = () => { touched.add(cb.value); edited = false; waSync(); });
+  txt.oninput = () => { edited = true; waSync(); };
+  body.addEventListener("input", (e) => { if (e.target.closest("form")) waSync(); });
+  body.addEventListener("change", (e) => { if (e.target.closest("form")) waSync(); });
+  $("[data-wasend]", wr).onclick = (e) => { if (e.currentTarget.classList.contains("disabled")) { e.preventDefault(); toast(normPhone(val("phone")).length >= 11 ? "اختر البيانات المطلوبة" : "أدخل رقم جوال صحيح أولًا", "err"); } };
+  waSync();
   return modal({
     title: a ? "تعديل الحساب" : "إنشاء حساب", body, wide: true,
     actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: async (mb) => {
