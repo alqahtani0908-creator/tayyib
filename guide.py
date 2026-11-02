@@ -403,7 +403,7 @@ footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);color:v
 }
 """
 
-HEAD = """<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+HEAD = """<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><script>if(location.protocol==="http:"&&!/^(localhost|127\.|\[::1\])/.test(location.hostname))location.replace("https://"+location.host+location.pathname+location.search+location.hash)</script><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title} — منصة طيب</title><link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
