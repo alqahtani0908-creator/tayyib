@@ -13,12 +13,15 @@ BADGE = f'<svg viewBox="952 0 1046 565" xmlns="http://www.w3.org/2000/svg"><rect
 
 # ───── عناصر المحتوى ─────
 def P(t): return f"<p>{t}</p>"
-def steps(*items): return "<ol class='steps'>" + "".join(f"<li>{i}</li>" for i in items) + "</ol>"
-def bullets(*items): return "<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>"
+def steps(*items): return "<ol class='steps'>" + "".join(f"<li><span>{i}</span></li>" for i in items) + "</ol>"
+def bullets(*items): return "<ul class='pts'>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>"
+TIP_ICON = {"tip": "💡", "note": "ℹ️", "warn": "⚠️"}
 def tip(t, kind="tip"):
     label = {"tip": "نصيحة", "note": "ملاحظة", "warn": "تنبيه"}[kind]
-    return f"<div class='call {kind}'><b>{label}</b><span>{t}</span></div>"
-def fig(img, cap, mobile=False): return f"<figure class='{'mob' if mobile else ''}'><img src='img/{img}.jpg' alt='{html.escape(cap)}' loading='lazy'><figcaption>{cap}</figcaption></figure>"
+    return f"<div class='call {kind}'><i>{TIP_ICON[kind]}</i><div><b>{label}</b><span>{t}</span></div></div>"
+def fig(img, cap, mobile=False):
+    return (f"<figure class='shot{' mob' if mobile else ''}'><button class='zoom' type='button' aria-label='تكبير الصورة: {html.escape(cap)}'>"
+            f"<img src='img/{img}.jpg' alt='{html.escape(cap)}' loading='lazy'><span class='zi'>⤢</span></button><figcaption>{cap}</figcaption></figure>")
 def figs2(a, b): return f"<div class='pair'>{a}{b}</div>"
 def table(head, rows): return "<table><thead><tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows) + "</tbody></table>"
 
@@ -30,10 +33,12 @@ WORKFLOW = [
     ("9", "قياس رضا المصلين عن العطر", "الجمعية"), ("10", "التقرير الشهري لأداء التعطير", "الجمعية"),
     ("11", "التعبئة الشهرية (مع تذكير آلي قبل ٧٢ ساعة)", "الشركة المنفذة"), ("12", "المتابعة والتقارير والمؤشرات", "الجميع"),
 ]
+WHO_CLS = {"مدير النظام": "w-admin", "الجمعية": "w-assoc", "الشركة المنفذة": "w-co", "الجميع": "w-all"}
 def workflow(mine):
-    rows = [(n, t, w) for n, t, w in WORKFLOW]
-    body = "".join(f"<tr class='{'me' if w in mine else ''}'><td class='n'>{n}</td><td>{t}</td><td>{w}</td></tr>" for n, t, w in rows)
-    return f"<table class='wf'><thead><tr><th>#</th><th>الخطوة</th><th>المسؤول</th></tr></thead><tbody>{body}</tbody></table>"
+    # مسار تفاعلي: خطوات صاحب الدليل مميزة، وزر لعرض خطواته فقط
+    cards = "".join(f"<li class='wf-s {WHO_CLS[w]}{' me' if w in mine else ''}'><b class='wf-n'>{n}</b><div><span>{t}</span><small>{w}</small></div></li>" for n, t, w in WORKFLOW)
+    return (f"<div class='wf'><div class='wf-bar'><button type='button' class='wf-t on' data-wf='all'>كل الخطوات</button>"
+            f"<button type='button' class='wf-t' data-wf='me'>خطواتي فقط</button><span class='wf-k'><i class='me-dot'></i>خطوات صلاحيتك</span></div><ol class='wf-list'>{cards}</ol></div>")
 
 def login_section(role_word):
     return ("الدخول وتفعيل الحساب", [
@@ -338,106 +343,309 @@ GUIDES["viewer"] = dict(title="دليل حساب العرض", who="حساب ال
     notif_section("v-notif"),
 ])
 
-CSS = """
-:root{--brown:#563331;--gold:#ceb26b;--gold-soft:#f5eedc;--cream:#fbfaf6;--ink:#2b1a18;--ink2:#5e4d4a;--ink3:#8e817e;--line:#ebe4d8}
+CSS = r"""
+:root{--brown:#563331;--brown2:#6b4340;--gold:#ceb26b;--gold2:#e6cf8f;--gold-soft:#f5eedc;--bg:#f4efe6;--ink:#2b1a18;--ink2:#5e4d4a;--ink3:#8e817e;--line:#e8dfd1;
+  --glass:rgba(255,255,255,.62);--glass2:rgba(255,255,255,.78);--edge:rgba(255,255,255,.75);--shadow:0 14px 40px rgba(86,51,49,.12);--card:#fff}
+html[data-theme=dark]{--bg:#120d0c;--ink:#f4ede7;--ink2:#c8bab4;--ink3:#978883;--line:#33282500;--line:#352a27;--gold-soft:#2c2318;
+  --glass:rgba(34,26,24,.62);--glass2:rgba(34,26,24,.8);--edge:rgba(255,255,255,.08);--shadow:0 14px 40px rgba(0,0,0,.45);--card:#1d1615}
 *{box-sizing:border-box}
-html{background:var(--cream)}
-body{margin:0;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--ink);line-height:1.85;font-size:15.5px;background:var(--cream)}
-.ltr{direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:#fff;border:1px solid var(--line);padding:1px 6px;border-radius:6px}
-.wrap{max-width:980px;margin:0 auto;padding:0 24px 80px}
-.cover{background:var(--brown);color:#fff;padding:56px 24px 48px;position:relative;overflow:hidden}
-.cover::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 15% 120%,rgba(206,178,107,.25),transparent 70%)}
-.cover .in{max-width:980px;margin:0 auto;position:relative;z-index:1;display:grid;gap:14px}
-.cover .logo{width:150px;height:auto}
-.cover h1{font-size:40px;margin:10px 0 0;line-height:1.3}
-.cover p{margin:0;color:#ead9b5;font-size:17px;max-width:640px}
-.cover .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:13.5px;color:#d9c9a8}
-.cover .meta b{color:#fff}
-.cover .gold-line{width:72px;height:3px;background:var(--gold);border-radius:3px}
-nav.toc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 26px;margin:-28px 0 30px;position:relative;z-index:2;box-shadow:0 10px 30px rgba(86,51,49,.08)}
-nav.toc h2{margin:0 0 8px;font-size:18px;border:0;padding:0}
-nav.toc ol{margin:0;padding:0 20px 0 0;columns:2;column-gap:36px;font-size:14.5px}
-nav.toc a{color:var(--ink);text-decoration:none}
-nav.toc a:hover{color:var(--brown);text-decoration:underline}
-section{padding-top:18px}
-h2{font-size:24px;margin:30px 0 12px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--line);padding-bottom:10px}
-h2 .no{display:inline-grid;place-items:center;min-width:36px;height:36px;border-radius:11px;background:var(--brown);color:var(--gold);font-size:17px;flex:none}
-p{margin:10px 0}
-ol.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}
-ol.steps li{counter-increment:s;position:relative;padding:10px 52px 10px 14px;background:#fff;border:1px solid var(--line);border-radius:12px}
-ol.steps li::before{content:counter(s);position:absolute;right:12px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--gold-soft);color:var(--brown);font-weight:700;display:grid;place-items:center;font-size:14px}
-ul{padding-right:22px}
-ul li{margin:5px 0}
-figure{margin:18px 0 22px;break-inside:avoid}
-figure img{width:100%;display:block;border-radius:14px;border:1px solid var(--line);box-shadow:0 12px 34px rgba(43,26,24,.12);background:#fff}
-figure.mob img{max-width:300px;margin:0 auto;border-radius:22px}
-figcaption{text-align:center;font-size:13px;color:var(--ink3);margin-top:8px}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--ink);line-height:1.9;font-size:16px;background:var(--bg);
+  background-image:radial-gradient(900px 500px at 85% -10%,rgba(206,178,107,.28),transparent 70%),radial-gradient(800px 600px at -10% 30%,rgba(86,51,49,.12),transparent 70%),radial-gradient(700px 500px at 70% 110%,rgba(206,178,107,.16),transparent 70%);background-attachment:fixed}
+a{color:inherit}
+.ltr{direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:var(--card);border:1px solid var(--line);padding:1px 7px;border-radius:7px}
+.glass{background:var(--glass);border:1px solid var(--edge);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+/* شريط علوي ثابت */
+.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:10px max(16px,calc((100vw - 1240px)/2));border-bottom:1px solid var(--edge);background:var(--glass2);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.bar .mark{width:54px;height:30px;flex:none;display:block}
+.bar .mark svg{width:100%;height:100%}
+.bar .ttl{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .ttl small{font-weight:400;color:var(--ink3);margin-inline-start:6px}
+.bar .sp{flex:1}
+.bar .ib{all:unset;cursor:pointer;height:38px;min-width:38px;padding:0 12px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
+.bar .ib:hover{background:var(--gold-soft)}
+.bar .ib.pdf{background:var(--brown);color:#fff;border-color:var(--brown)}
+.prog{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:transparent}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width .1s}
+/* الغلاف */
+.hero{position:relative;margin:22px auto 0;max-width:1240px;padding:0 16px}
+.hero .in{position:relative;overflow:hidden;border-radius:28px;padding:42px 40px 36px;color:#fff;background:linear-gradient(125deg,#3f2523 0%,#563331 50%,#74493f 100%);box-shadow:0 24px 60px rgba(86,51,49,.3)}
+.hero .in::before{content:"";position:absolute;inset:0;background:radial-gradient(520px 260px at 10% 0%,rgba(206,178,107,.35),transparent 70%),radial-gradient(420px 240px at 95% 110%,rgba(206,178,107,.22),transparent 70%)}
+.hero .in>*{position:relative}
+.hero .logo{width:120px;margin-bottom:14px}
+.hero h1{margin:0;font-size:38px;line-height:1.25}
+.hero p{margin:10px 0 0;color:#ecdcb8;font-size:17px;max-width:680px}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.hero .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;font-size:13.5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hero .pill b{color:var(--gold2)}
+/* بداية سريعة */
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:-26px;position:relative;z-index:2;padding:0 26px}
+.quick a{text-decoration:none;border-radius:18px;padding:16px 18px;display:grid;gap:4px;transition:transform .15s}
+.quick a:hover{transform:translateY(-2px)}
+.quick a small{color:var(--ink3);font-size:12.5px}
+.quick a b{font-size:15px}
+.quick a .n{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--brown);color:var(--gold);font-weight:700;font-size:14px;margin-bottom:4px}
+/* التخطيط */
+.layout{max-width:1240px;margin:28px auto 80px;padding:0 16px;display:grid;grid-template-columns:290px minmax(0,1fr);gap:24px;align-items:start}
+.side{position:sticky;top:76px;border-radius:22px;padding:14px;max-height:calc(100vh - 96px);display:flex;flex-direction:column;gap:10px}
+.search{position:relative}
+.search input{width:100%;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:0 38px 0 12px;font:inherit;font-size:14px;outline:none}
+.search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(206,178,107,.25)}
+.search::before{content:"⌕";position:absolute;right:12px;top:50%;transform:translateY(-52%);font-size:20px;color:var(--ink3)}
+.done-meter{display:flex;align-items:center;gap:10px;padding:4px 6px;font-size:13px;color:var(--ink2)}
+.ring{--p:0;width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--ink);background:conic-gradient(var(--gold) calc(var(--p)*1%),var(--line) 0)}
+.ring::before{content:"";position:absolute;width:30px;height:30px;border-radius:50%;background:var(--card)}
+.ring{position:relative}.ring span{position:relative}
+.toc{list-style:none;margin:0;padding:0;overflow-y:auto;display:grid;gap:2px}
+.toc a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;text-decoration:none;font-size:14px;color:var(--ink2);transition:background .15s,color .15s}
+.toc a .k{width:24px;height:24px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--gold-soft);color:var(--brown)}
+html[data-theme=dark] .toc a .k{color:var(--gold)}
+.toc a:hover{background:var(--glass2);color:var(--ink)}
+.toc a.on{background:var(--brown);color:#fff}.toc a.on .k{background:var(--gold);color:var(--brown)}
+.toc a.read .k{background:#2f9e6a;color:#fff}
+.toc a.read .k::after{content:"✓"}.toc a.read .k span{display:none}
+.toc li[hidden]{display:none}
+.nores{display:none;padding:10px;text-align:center;color:var(--ink3);font-size:13px}
+.nores.show{display:block}
+/* الأقسام */
+.content{display:grid;gap:18px}
+section.sec{border-radius:24px;padding:26px 28px 22px;scroll-margin-top:90px}
+section.sec[hidden]{display:none}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sh .num{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;font-weight:700;font-size:18px;color:var(--gold);background:linear-gradient(135deg,#4a2b29,#6b4340);box-shadow:0 6px 16px rgba(86,51,49,.25)}
+.sh h2{margin:0;font-size:23px;line-height:1.35;flex:1}
+.mark-read{all:unset;cursor:pointer;flex:none;font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink2);white-space:nowrap}
+.mark-read:hover{border-color:#2f9e6a;color:#2f9e6a}
+.mark-read.on{background:#2f9e6a;border-color:#2f9e6a;color:#fff}
+p{margin:12px 0}
+mark{background:rgba(206,178,107,.45);color:inherit;border-radius:4px;padding:0 2px}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0;display:grid;gap:10px}
+ol.steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+ol.steps li::before{content:counter(s);width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--brown);background:linear-gradient(135deg,var(--gold2),var(--gold));margin-top:1px}
+ul.pts{list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}
+ul.pts li{position:relative;padding-inline-start:22px}
+ul.pts li::before{content:"";position:absolute;right:4px;top:12px;width:8px;height:8px;border-radius:3px;background:var(--gold);transform:rotate(45deg)}
+.call{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;margin:16px 0;font-size:15px;border:1px solid}
+.call i{font-style:normal;font-size:20px;line-height:1.4}
+.call b{display:block;font-size:13px;margin-bottom:2px}
+.call.tip{background:rgba(206,178,107,.14);border-color:rgba(206,178,107,.45)}
+.call.note{background:rgba(79,134,198,.1);border-color:rgba(79,134,198,.35)}
+.call.warn{background:rgba(196,84,74,.1);border-color:rgba(196,84,74,.35)}
+figure.shot{margin:18px 0 22px}
+.zoom{all:unset;cursor:zoom-in;display:block;position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 14px 34px rgba(43,26,24,.14);background:var(--card)}
+.zoom img{width:100%;display:block;transition:transform .35s}
+.zoom:hover img{transform:scale(1.015)}
+.zoom .zi{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:17px;color:#fff;background:rgba(43,26,24,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s}
+.zoom:hover .zi,.zoom:focus-visible .zi{opacity:1}
+.zoom:focus-visible{outline:3px solid var(--gold)}
+figure.mob .zoom{max-width:290px;margin:0 auto;border-radius:26px}
+figcaption{text-align:center;font-size:13px;color:var(--ink3);margin-top:9px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .pair figure{margin:12px 0}
-.call{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:12px;margin:14px 0;font-size:14.5px;break-inside:avoid}
-.call b{flex:none;font-size:12.5px;padding:2px 10px;border-radius:999px;margin-top:2px}
-.call.tip{background:#f5eedc}.call.tip b{background:var(--gold);color:var(--ink)}
-.call.note{background:#eaf1f8}.call.note b{background:#3b74a8;color:#fff}
-.call.warn{background:#fbecea}.call.warn b{background:#9a4a3a;color:#fff}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line)}
-th{background:var(--gold-soft);font-weight:700}
-table.wf{break-inside:avoid}
-table.wf td.n{width:44px;text-align:center;color:var(--ink3);font-weight:700}
-table.wf tr.me td{background:#fff8e6;font-weight:700}
-table.wf tr.me td.n{color:var(--brown)}
-footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.dl{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);text-decoration:none;font-weight:700;padding:9px 18px;border-radius:12px;font-size:14px;margin-top:12px;width:max-content}
-@media (max-width:720px){.wrap{padding:0 16px 60px}.cover h1{font-size:30px}nav.toc ol{columns:1}.pair{grid-template-columns:1fr}h2{font-size:20px}}
+th{background:var(--gold-soft)}
+/* مسار العمل التفاعلي */
+.wf{margin:14px 0}
+.wf-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.wf-t{all:unset;cursor:pointer;font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.wf-t.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+.wf-k{margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink3)}
+.me-dot{width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--gold2),var(--gold))}
+.wf-list{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.wf-s{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:14px;background:var(--card);border:1px solid var(--line);transition:opacity .2s,transform .2s}
+.wf-s .wf-n{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:13px;background:var(--gold-soft);color:var(--brown)}
+.wf-s span{display:block;font-size:13.5px;line-height:1.55}
+.wf-s small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+html[data-theme=dark] .wf-s .wf-n{color:var(--gold)}
+.wf-s.me{border-color:var(--gold);background:linear-gradient(135deg,rgba(206,178,107,.2),rgba(206,178,107,.06));box-shadow:0 6px 16px rgba(206,178,107,.18)}
+.wf-s.me .wf-n{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--brown)}
+.wf.only-me .wf-s:not(.me){display:none}
+/* عارض الصور */
+.lb{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,12,11,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.lb.open{display:flex}
+.lb figure{margin:0;max-width:min(1200px,96vw);display:grid;gap:10px}
+.lb img{max-width:100%;max-height:82vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.5);background:#fff;justify-self:center}
+.lb figcaption{color:#f1e6d3;font-size:14px}
+.lb button{all:unset;cursor:pointer;position:absolute;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
+.lb button:hover{background:rgba(255,255,255,.22)}
+.lb .x{top:16px;left:16px}.lb .pv{right:16px;top:50%}.lb .nx{left:16px;top:50%}
+/* أزرار عائمة */
+.fab{position:fixed;bottom:18px;left:18px;z-index:25;display:flex;gap:8px}
+.fab button{all:unset;cursor:pointer;height:46px;min-width:46px;padding:0 16px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600}
+.fab .top{opacity:0;pointer-events:none;transition:opacity .2s}.fab .top.show{opacity:1;pointer-events:auto}
+.fab .tocb{display:none;background:var(--brown)!important;color:#fff;border-color:var(--brown)!important;box-shadow:0 10px 26px rgba(86,51,49,.35)!important}
+footer{max-width:1240px;margin:0 auto 40px;padding:0 16px;color:var(--ink3);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+/* الجوال */
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .side{position:fixed;inset:auto 10px 10px 10px;top:auto;z-index:40;max-height:72vh;transform:translateY(calc(100% + 20px));transition:transform .25s ease;border-radius:22px}
+  .side.open{transform:none}
+  .fab .tocb{display:inline-flex}
+  .scrim{position:fixed;inset:0;z-index:35;background:rgba(20,12,11,.35);display:none}.scrim.show{display:block}
+  .bar .ttl small,.bar .ib .t{display:none}
+}
+@media (max-width:720px){
+  body{font-size:15.5px}
+  .hero .in{padding:30px 22px 34px;border-radius:22px}.hero h1{font-size:28px}.hero .logo{width:96px}
+  .quick{padding:0 10px;grid-template-columns:1fr 1fr}
+  section.sec{padding:20px 16px 16px;border-radius:20px}
+  .sh h2{font-size:19px}.sh .num{width:38px;height:38px;font-size:16px}
+  .sh{flex-wrap:wrap}.mark-read{margin-inline-start:52px}
+  .pair{grid-template-columns:1fr}
+  .wf-list{grid-template-columns:1fr}
+}
+/* الطباعة وPDF: مستند نظيف بلا عناصر تفاعلية */
 @media print{
   @page{size:A4;margin:14mm 13mm}
   @page :first{margin:0}
-  html,body{background:#fff;font-size:12.5px}
-  .dl,.noprint{display:none!important}
-  .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;height:297mm;display:flex;align-items:center;padding:0 22mm;margin:0;break-after:page}
-  .cover .in{gap:18px}.cover .logo{width:200px}.cover h1{font-size:46px}
-  nav.toc{margin:0 0 6px;box-shadow:none}
-  section{break-before:page;padding-top:0}
-  section:first-of-type{break-before:auto}
-  h2{margin-top:0}
-  figure img{box-shadow:none}
+  html,body{background:#fff!important;color:#2b1a18;font-size:12px}
+  html[data-theme=dark]{--bg:#fff;--ink:#2b1a18;--ink2:#5e4d4a;--ink3:#8e817e;--line:#e8dfd1;--gold-soft:#f5eedc;--card:#fff;--glass:#fff;--glass2:#fff}
+  .bar,.side,.fab,.lb,.quick,.mark-read,.wf-bar,.zi,.scrim,.noprint{display:none!important}
+  body>*:not(.hero):not(.layout){display:none!important}
+  body{background-image:none!important}
+  *,*::before,*::after{box-shadow:none!important;text-shadow:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .glass{background:#fff!important;box-shadow:none!important;border:0!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .hero{margin:0;padding:0;max-width:none;break-after:page}
+  .hero .in{height:297mm;border-radius:0;display:flex;flex-direction:column;justify-content:center;padding:0 22mm;box-shadow:none}
+  .hero .logo{width:200px}.hero h1{font-size:46px}
+  .layout{display:block;margin:0;padding:0;max-width:none}
+  section.sec{break-before:page;padding:0;border-radius:0}
+  section.sec:first-child{break-before:auto}
+  section.sec[hidden]{display:block!important}
+  .wf.only-me .wf-s{display:flex!important}
+  .zoom{box-shadow:none}
+  figure{break-inside:avoid}
+  ol.steps li,.call,.wf-s{break-inside:avoid}
+  footer{display:none}
 }
 """
 
-HEAD = """<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><script>if(location.protocol==="http:"&&!/^(localhost|127\.|\[::1\])/.test(location.hostname))location.replace("https://"+location.host+location.pathname+location.search+location.hash)</script><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title} — منصة طيب</title><link rel="icon" href="../icon.svg" type="image/svg+xml">
+JS = r"""
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const role = document.body.dataset.role, KEY = "tayyib.guide.read." + role;
+  const root = document.documentElement;
+  // المظهر: يتبع النظام ويمكن تبديله
+  const saved = (() => { try { return localStorage.getItem("tayyib.guide.theme"); } catch { return null; } })();
+  const setTheme = (t) => { root.dataset.theme = t; $("#theme") && ($("#theme").textContent = t === "dark" ? "☀︎" : "☾"); };
+  setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  $("#theme")?.addEventListener("click", () => { const t = root.dataset.theme === "dark" ? "light" : "dark"; setTheme(t); try { localStorage.setItem("tayyib.guide.theme", t); } catch {} });
+  $("#print")?.addEventListener("click", () => window.print());
+  if (!role) return;
+
+  const secs = $$("section.sec"), links = $$(".toc a");
+  // تقدّم القراءة
+  const prog = $(".prog i"), topBtn = $(".fab .top");
+  const onScroll = () => { const h = document.documentElement; const p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight); prog.style.width = (p * 100).toFixed(1) + "%"; topBtn.classList.toggle("show", h.scrollTop > 600); };
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  topBtn.onclick = () => scrollTo({ top: 0, behavior: "smooth" });
+  // القسم الحالي في المحتويات
+  const io = new IntersectionObserver((es) => { es.forEach((e) => { if (e.isIntersecting) { links.forEach((a) => a.classList.toggle("on", a.hash === "#" + e.target.id)); const a = links.find((x) => x.hash === "#" + e.target.id); a && a.scrollIntoView({ block: "nearest" }); } }); }, { rootMargin: "-30% 0px -60% 0px" });
+  secs.forEach((s) => io.observe(s));
+  // «تمت قراءته» محفوظ في المتصفح
+  let read = new Set(); try { read = new Set(JSON.parse(localStorage.getItem(KEY)) || []); } catch {}
+  const paint = () => {
+    secs.forEach((s) => { const b = $(".mark-read", s), on = read.has(s.id); b.classList.toggle("on", on); b.textContent = on ? "✓ تمت قراءته" : "تحديد كمقروء"; });
+    links.forEach((a) => a.classList.toggle("read", read.has(a.hash.slice(1))));
+    const p = Math.round(read.size / secs.length * 100); $(".ring").style.setProperty("--p", p); $(".ring span").textContent = p + "٪";
+    $(".done-meter b").textContent = `${read.size} من ${secs.length}`;
+    try { localStorage.setItem(KEY, JSON.stringify([...read])); } catch {}
+  };
+  secs.forEach((s) => $(".mark-read", s).onclick = () => { read.has(s.id) ? read.delete(s.id) : read.add(s.id); paint(); });
+  paint();
+  // البحث الفوري في الأقسام
+  const norm = (t) => t.replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").toLowerCase();
+  const texts = secs.map((s) => norm(s.textContent));
+  const clearMarks = () => $$("mark.hl").forEach((m) => m.replaceWith(m.textContent));
+  const highlight = (s, q) => { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach((n) => { const i = norm(n.data).indexOf(q); if (i < 0 || n.parentElement.closest("button,figcaption,.wf-bar")) return; const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + q.length); const m = document.createElement("mark"); m.className = "hl"; r.surroundContents(m); }); };
+  $("#q").addEventListener("input", (e) => {
+    const q = norm(e.target.value.trim()); clearMarks(); let n = 0;
+    secs.forEach((s, i) => { const hit = !q || texts[i].includes(q); s.hidden = !hit; links[i].parentElement.hidden = !hit; if (hit) n++; if (hit && q.length > 1) highlight(s, q); });
+    $(".nores").classList.toggle("show", !n);
+  });
+  // مسار العمل: خطواتي فقط
+  $$(".wf").forEach((w) => w.addEventListener("click", (e) => { const b = e.target.closest("[data-wf]"); if (!b) return; $$("[data-wf]", w).forEach((x) => x.classList.toggle("on", x === b)); w.classList.toggle("only-me", b.dataset.wf === "me"); }));
+  // المحتويات على الجوال
+  const side = $(".side"), scrim = $(".scrim");
+  const toggleSide = (o) => { side.classList.toggle("open", o); scrim.classList.toggle("show", o); };
+  $(".fab .tocb").onclick = () => toggleSide(!side.classList.contains("open"));
+  scrim.onclick = () => toggleSide(false);
+  links.forEach((a) => a.addEventListener("click", () => toggleSide(false)));
+  // عارض الصور مع التنقل بالأسهم
+  const shots = $$("figure.shot"), lb = $(".lb"); let cur = 0;
+  const show = (i) => { cur = (i + shots.length) % shots.length; const f = shots[cur]; $("img", lb).src = $("img", f).src; $("img", lb).alt = $("img", f).alt; $("figcaption", lb).textContent = `${$("figcaption", f).textContent}  •  ${cur + 1} / ${shots.length}`; lb.classList.add("open"); };
+  shots.forEach((f, i) => $(".zoom", f).onclick = () => show(i));
+  $(".x", lb).onclick = () => lb.classList.remove("open");
+  $(".pv", lb).onclick = () => show(cur - 1); $(".nx", lb).onclick = () => show(cur + 1);
+  lb.onclick = (e) => { if (e.target === lb) lb.classList.remove("open"); };
+  addEventListener("keydown", (e) => {
+    if (lb.classList.contains("open")) { if (e.key === "Escape") lb.classList.remove("open"); if (e.key === "ArrowLeft") show(cur + 1); if (e.key === "ArrowRight") show(cur - 1); }
+    else if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); $("#q").focus(); }
+  });
+})();
+"""
+
+HEAD = """<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><script>if(location.protocol==="http:"&&!/^(localhost|127\\.|\\[::1\\])/.test(location.hostname))location.replace("https://"+location.host+location.pathname+location.search+location.hash)</script><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} — منصة طيب</title><link rel="icon" href="../icon.svg" type="image/svg+xml"><meta name="theme-color" content="#563331">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="guide.css"></head><body>"""
+<link rel="stylesheet" href="guide.css"></head>"""
+
+def topbar(title, sub, key=""):
+    return f"""<header class="bar"><a class="mark" href="index.html" aria-label="كل الأدلة">{BADGE}</a><div class="ttl">{title}<small>{sub}</small></div><span class="sp"></span>
+<button class="ib" id="theme" type="button" aria-label="تبديل المظهر">☾</button>
+{f'<a class="ib pdf" href="pdf/{key}.pdf" download>⤓ <span class="t">PDF</span></a>' if key else ''}
+<a class="ib" href="../" title="فتح المنصة">↗ <span class="t">المنصة</span></a><div class="prog"><i></i></div></header>"""
 
 def build(key, g):
-    toc = "".join(f"<li><a href='#s{i}'>{t}</a></li>" for i, (t, _) in enumerate(g["sections"], 1))
-    secs = "".join(f"<section id='s{i}'><h2><span class='no'>{i}</span>{t}</h2>{''.join(body)}</section>" for i, (t, body) in enumerate(g["sections"], 1))
-    page = HEAD.format(title=g["title"]) + f"""
-<header class="cover"><div class="in"><div class="logo">{LOGO}</div><div class="gold-line"></div>
-<h1>{g['title']}</h1><p>{g['lead']}</p>
-<div class="meta"><span>المنصة: <b>طيب — مشروع تعطير مساجد الرياض</b></span><span>الإصدار: <b>{VERSION}</b></span></div>
-<a class="dl noprint" href="pdf/{key}.pdf" download>⤓ تنزيل الدليل PDF</a></div></header>
-<main class="wrap"><nav class="toc"><h2>المحتويات</h2><ol>{toc}</ol></nav>{secs}
-<footer><span>منصة طيب • {g['title']}</span><span>الصور من بيانات تجريبية للتوضيح</span></footer></main></body></html>"""
+    secs = g["sections"]
+    toc = "".join(f"<li><a href='#s{i}'><span class='k'><span>{i}</span></span>{t}</a></li>" for i, (t, _) in enumerate(secs, 1))
+    body = "".join(f"<section class='sec glass' id='s{i}'><div class='sh'><span class='num'>{i}</span><h2>{t}</h2><button class='mark-read' type='button'>تحديد كمقروء</button></div>{''.join(b)}</section>" for i, (t, b) in enumerate(secs, 1))
+    # بداية سريعة: أهم أربعة أقسام بعد المقدمة
+    picks = [(i, t) for i, (t, _) in enumerate(secs, 1) if not any(x in t for x in ("الدخول", "التنقل", "دورك", "صلاحياتك", "الإشعارات"))][:4]
+    quick = "".join(f"<a class='glass' href='#s{i}'><span class='n'>{i}</span><b>{t}</b><small>انتقل للشرح ←</small></a>" for i, t in picks)
+    page = HEAD.format(title=g["title"]) + f"""<body data-role="{key}">
+{topbar(g['title'], 'منصة طيب', key)}
+<div class="hero"><div class="in"><div class="logo">{LOGO}</div><h1>{g['title']}</h1><p>{g['lead']}</p>
+<div class="meta"><span class="pill">📘 <b>{len(secs)}</b> قسمًا</span><span class="pill">🖼️ شرح بالصور</span><span class="pill">🗓️ {VERSION}</span></div></div>
+<div class="quick">{quick}</div></div>
+<div class="layout">
+<aside class="side glass" aria-label="المحتويات"><div class="search"><input id="q" type="search" placeholder="ابحث في الدليل… ( / )" aria-label="البحث في الدليل"></div>
+<div class="done-meter"><div class="ring"><span>0٪</span></div><div>تقدّم القراءة<br><b>0</b></div></div>
+<ul class="toc">{toc}</ul><div class="nores">لا توجد نتائج مطابقة</div></aside>
+<main class="content">{body}</main></div>
+<footer><span>منصة طيب • {g['title']}</span><span>الصور من بيانات تجريبية للتوضيح</span></footer>
+<div class="fab"><button class="tocb glass" type="button">☰ المحتويات</button><button class="top glass" type="button" aria-label="إلى الأعلى">↑</button></div>
+<div class="scrim"></div>
+<div class="lb" role="dialog" aria-label="عرض الصورة"><button class="x" type="button" aria-label="إغلاق">✕</button><button class="pv" type="button" aria-label="السابقة">›</button><button class="nx" type="button" aria-label="التالية">‹</button><figure><img alt=""><figcaption></figcaption></figure></div>
+<script src="guide.js"></script></body></html>"""
     (out / f"{key}.html").write_text(page, encoding="utf-8")
 
+ICONS = {"admin": "🛠️", "association": "🕌", "company": "🧰", "viewer": "📊"}
 def index():
-    cards = "".join(f"""<a class="card" href="{k}.html"><b>{g['title']}</b><span>{g['lead']}</span><i>فتح الدليل ←</i></a>""" for k, g in GUIDES.items())
-    page = HEAD.format(title="أدلة الاستخدام") + f"""
-<style>.cards{{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:-28px;position:relative;z-index:2}}
-.cards .card{{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;text-decoration:none;color:var(--ink);display:grid;gap:6px;box-shadow:0 10px 30px rgba(86,51,49,.08)}}
-.cards .card b{{font-size:19px}}.cards .card span{{color:var(--ink2);font-size:14px}}.cards .card i{{font-style:normal;color:var(--brown);font-weight:700;font-size:14px;margin-top:6px}}
-.cards .card:hover{{border-color:var(--gold)}}@media(max-width:720px){{.cards{{grid-template-columns:1fr}}}}</style>
-<header class="cover"><div class="in"><div class="logo">{LOGO}</div><div class="gold-line"></div><h1>أدلة استخدام منصة طيب</h1>
-<p>اختر الدليل حسب صلاحية حسابك. كل دليل يشرح خطوات عملك في المنصة بالصور، ويمكن تنزيله PDF.</p></div></header>
-<main class="wrap"><div class="cards">{cards}</div><footer><span>منصة طيب — مشروع تعطير مساجد الرياض</span><span>الإصدار: {VERSION}</span></footer></main></body></html>"""
+    cards = "".join(f"""<a class="rc glass" href="{k}.html"><span class="ri">{ICONS[k]}</span><b>{g['title']}</b><span>{g['lead']}</span><i>فتح الدليل ←</i><em><a href="pdf/{k}.pdf" download>⤓ PDF</a></em></a>""" for k, g in GUIDES.items())
+    cards = cards.replace('<em><a href="', '<em data-href="').replace('" download>⤓ PDF</a></em>', '">⤓ PDF</em>')
+    page = HEAD.format(title="أدلة الاستخدام") + f"""<body>
+{topbar('أدلة الاستخدام', 'منصة طيب')}
+<style>.rcs{{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:1000px;margin:-26px auto 60px;padding:0 26px;position:relative;z-index:2}}
+.rc{{border-radius:22px;padding:22px;text-decoration:none;display:grid;gap:6px;transition:transform .15s}}.rc:hover{{transform:translateY(-3px)}}
+.rc .ri{{font-size:28px}}.rc b{{font-size:19px}}.rc span{{color:var(--ink2);font-size:14px}}.rc i{{font-style:normal;color:var(--brown);font-weight:700;font-size:14px;margin-top:4px}}
+html[data-theme=dark] .rc i{{color:var(--gold)}}.rc em{{font-style:normal;font-size:12.5px;color:var(--ink3);cursor:pointer;justify-self:start}}
+@media(max-width:720px){{.rcs{{grid-template-columns:1fr;padding:0 10px}}}}</style>
+<div class="hero"><div class="in"><div class="logo">{LOGO}</div><h1>أدلة استخدام منصة طيب</h1>
+<p>اختر الدليل حسب صلاحية حسابك. كل دليل يشرح خطوات عملك بالصور، مع بحث فوري وتتبّع لما قرأته، ويمكن تنزيله PDF.</p></div></div>
+<div class="rcs">{cards}</div>
+<footer><span>منصة طيب — مشروع تعطير مساجد الرياض</span><span>الإصدار: {VERSION}</span></footer>
+<script src="guide.js"></script><script>document.querySelectorAll(".rc em").forEach(e=>e.addEventListener("click",ev=>{{ev.preventDefault();location.href=e.dataset.href}}))</script></body></html>"""
     (out / "index.html").write_text(page, encoding="utf-8")
 
 if __name__ == "__main__":
     (out / "pdf").mkdir(parents=True, exist_ok=True)
     (out / "guide.css").write_text(CSS, encoding="utf-8")
+    (out / "guide.js").write_text(JS, encoding="utf-8")
     for k, g in GUIDES.items(): build(k, g)
     index()
     missing = sorted({s.split("img/")[1].split(".jpg")[0] for f in out.glob("*.html") for s in f.read_text(encoding="utf-8").split("src='")[1:] if "img/" in s} - {p.stem for p in (out / "img").glob("*.jpg")})
