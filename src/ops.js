@@ -33,7 +33,7 @@ route("refills", {
     $$("tr[data-id]", v).forEach((tr) => tr.onclick = () => go("/mosque/" + tr.dataset.id));
     $$("[data-refill]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.refill), "refill")) render(); });
     $$("[data-visit]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.visit), "visit")) render(); });
-    $("#exp", v).onclick = () => exportXlsx(active.map(mosqueRow), `جدول-التعبئة-${isoDay()}.xlsx`, "التعبئة");
+    $("#exp", v).onclick = () => exportXlsx(active.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `جدول-التعبئة-${isoDay()}.xlsx`, "التعبئة", { title: "جدول التعبئة والزيارات" });
   },
 });
 
@@ -73,7 +73,7 @@ route("reports", {
     const upd = () => { f.type = $("#t", v).value; f.assoc = $("#a", v)?.value || ""; f.from = $("#from", v).value; f.to = $("#to", v).value; load(); };
     ["#t", "#a", "#from", "#to"].forEach((s) => $(s, v)?.addEventListener("change", upd));
     $("#exp", v).onclick = () => exportXlsx(rows.map((x) => { const m = mosqueById(x.mosque_id); return { "التاريخ": fmtDateTime(x.created_at), "الرمز": m?.code, "المسجد": m?.name, "الحي": m?.district, "الجمعية": assocName(m?.association_id),
-      "نوع التقرير": REPORT_TYPES[x.type]?.l || x.type, "الملخص": x.summary || "", "الجهة": ROLES[x.author_role] || "", ...Object.fromEntries(reportDetails(x)) }; }), `تقارير-طيب-${f.from}_${f.to}.xlsx`, "التقارير");
+      "نوع التقرير": REPORT_TYPES[x.type]?.l || x.type, "الملخص": x.summary || "", "الجهة": ROLES[x.author_role] || "", ...Object.fromEntries(reportDetails(x)) }; }), `تقارير-طيب-${f.from}_${f.to}.xlsx`, "التقارير", { title: "سجل التقارير", note: `الفترة: ${f.from} إلى ${f.to}` });
     $("#monthly", v).onclick = () => monthlyCompound();
     load();
   },

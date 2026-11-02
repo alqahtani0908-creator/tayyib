@@ -318,30 +318,76 @@ function hydrateFiles(root) {
 }
 
 // ───── تصدير Excel ─────
-function exportXlsx(rows, filename, sheet = "البيانات") {
+// تصدير Excel بهوية المنصة: ترويسة بنية، عناوين ذهبية، صفوف متناوبة، حدود، عرض أعمدة تلقائي، تصفية، واتجاه من اليمين
+// plain: ملف بسيط بلا ترويسة (نموذج الاستيراد يجب أن يبدأ بصف العناوين)
+function exportXlsx(rows, filename, sheet = "البيانات", { title = "", note = "", plain = false } = {}) {
   if (!window.XLSX) return toast("مكتبة Excel لم تُحمّل بعد", "err");
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(12, k.length + 4) }));
+  const keys = Object.keys(rows[0] || {}), n = Math.max(1, keys.length);
+  const platform = S.settings.platform_name || "طيب", org = S.settings.org_name || "";
+  const line = { style: "thin", color: { rgb: "E6DCCB" } }, box = { top: line, bottom: line, left: line, right: line };
+  const al = (h = "right") => ({ horizontal: h, vertical: "center", wrapText: true, readingOrder: 2 });
+  const F = (o = {}) => ({ name: "Arial", sz: 10, color: { rgb: "2B1A18" }, ...o });
+  const head = plain ? [] : [[`${platform} — ${title || sheet}`], [[org, fmtDateTime(new Date()), `${fmtNum(rows.length)} سجل`, note].filter(Boolean).join("   •   ")], []];
+  const aoa = [...head, keys, ...rows.map((r) => keys.map((k) => r[k] ?? "")), ...(plain ? [] : [[], [`صدر من منصة ${platform}${S.me?.name ? ` — ${S.me.name}` : ""}`]])];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const H = head.length, last = H + rows.length; // صف العناوين ثم البيانات
+  const cell = (r, c) => { const ref = XLSX.utils.encode_cell({ r, c }); return ws[ref] || (ws[ref] = { t: "s", v: "" }); };
+  // ألوان المراحل في عمود «المرحلة»
+  const stageTone = {}; Object.values(STAGES).forEach((s) => { const t = { ok: ["E5F4EC", "1F7A4D"], info: ["E7F0FA", "2F5F96"], gold: ["F7EFDC", "7A5A1F"], warn: ["FBEFE1", "9A5A12"], bad: ["FBE9E7", "A33A2F"] }[s.c] || ["F1EEEA", "6B5F5A"]; stageTone[s.l] = stageTone[s.s] = t; });
+  if (!plain) {
+    for (let c = 0; c < n; c++) {
+      cell(0, c).s = { font: F({ sz: 16, bold: true, color: { rgb: "FFFFFF" } }), fill: { fgColor: { rgb: "563331" } }, alignment: al() };
+      cell(1, c).s = { font: F({ sz: 10, color: { rgb: "5B3D35" } }), fill: { fgColor: { rgb: "F5EEDC" } }, alignment: al(), border: { bottom: { style: "medium", color: { rgb: "CEB26B" } } } };
+    }
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: n - 1 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: n - 1 } }, { s: { r: last + 2, c: 0 }, e: { r: last + 2, c: n - 1 } }];
+    cell(last + 2, 0).s = { font: F({ sz: 9, italic: true, color: { rgb: "9A8D86" } }), alignment: al() };
+  }
+  keys.forEach((k, c) => {
+    cell(H, c).s = { font: F({ bold: true, color: { rgb: plain ? "2B1A18" : "FFFFFF" } }), fill: { fgColor: { rgb: plain ? "F5EEDC" : "6B4340" } }, alignment: al("center"), border: { ...box, bottom: { style: "medium", color: { rgb: "CEB26B" } } } };
+    for (let r = H + 1; r <= last; r++) {
+      const x = cell(r, c), v = String(x.v ?? ""), zebra = (r - H) % 2 === 0;
+      const tone = k === "المرحلة" && stageTone[v];
+      x.s = { font: F(tone ? { bold: true, color: { rgb: tone[1] } } : k === "م" ? { color: { rgb: "9A8D86" } } : {}), alignment: al(k === "م" || x.t === "n" || /^[\d\s+()-]{7,}$/.test(v) ? "center" : "right"),
+        fill: { fgColor: { rgb: tone ? tone[0] : zebra ? "FBF8F2" : "FFFFFF" } }, border: box };
+    }
+  });
+  // عرض الأعمدة حسب أطول قيمة، وارتفاع صفوف الترويسة
+  ws["!cols"] = keys.map((k) => ({ wch: Math.min(48, Math.max(k === "م" ? 5 : 10, k.length + 3, ...rows.slice(0, 400).map((r) => String(r[k] ?? "").length + 2))) }));
+  ws["!rows"] = plain ? [{ hpt: 24 }] : [{ hpt: 34 }, { hpt: 22 }, { hpt: 8 }, { hpt: 26 }];
+  if (rows.length) ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: H, c: 0 }, e: { r: last, c: n - 1 } }) };
   const wb = XLSX.utils.book_new();
   wb.Workbook = { Views: [{ RTL: true }] };
-  XLSX.utils.book_append_sheet(wb, ws, sheet);
+  XLSX.utils.book_append_sheet(wb, ws, sheet.slice(0, 31));
+  wb.Props = { Title: title || sheet, Author: platform, Company: org };
   XLSX.writeFile(wb, filename);
 }
 
 // ───── الطباعة ─────
-function printDoc(title, inner, { landscape = false, file = "" } = {}) {
+function printDoc(title, inner, { landscape = false, file = "", meta = [] } = {}) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `${landscape ? "<style>@page { size: A4 landscape; margin: 10mm; }</style>" : ""}<div class="doc${landscape ? " wide" : ""}" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
-    <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> • ${fmtDateTime(new Date())}</div></div>
-    <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
-    ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
+  const platform = S.settings.platform_name || "طيب", org = S.settings.org_name || "";
+  const q = (t) => `"${String(t).replace(/["\\]/g, "")}"`;
+  // تذييل كل صفحة: اسم المنصة ورقم الصفحة (هوامش الصفحة في متصفحات Chrome الحديثة)
+  const page = `@page { size: A4${landscape ? " landscape" : ""}; margin: 12mm 11mm 15mm;
+    @bottom-right { content: ${q(`${platform} • ${org}`)}; font: 8pt sans-serif; color: #9a8d86; }
+    @bottom-left { content: "صفحة " counter(page) " من " counter(pages); font: 8pt sans-serif; color: #9a8d86; } }`;
+  el.innerHTML = `<style>${page}</style><div class="doc${landscape ? " wide" : ""}" dir="rtl">
+    <header class="dh">
+      <div class="dh-logo">${S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : logoSvg()}</div>
+      <div class="dh-txt"><div class="dh-k">${esc(platform)} • ${esc(org)}</div><h1>${esc(title)}</h1></div>
+      <img class="dh-f" src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد">
+    </header>
+    <div class="dmeta">${[["تاريخ الإصدار", fmtDateTime(new Date())], ["أصدره", S.me?.name || ""], ...meta].filter(([, x]) => x !== "" && x != null)
+      .map(([k, x]) => `<span>${esc(k)}: <b>${esc(x)}</b></span>`).join("")}</div>
+    <main class="dbody">${inner}</main>
+    <div class="foot"><span>صدر من منصة ${esc(platform)}</span><span class="gold-rule"></span></div></div>`;
   document.body.classList.add("printing-doc");
   // عنوان الصفحة يصبح الاسم المقترح لملف PDF
   const oldTitle = document.title; if (file) document.title = file;
   const done = () => { document.body.classList.remove("printing-doc"); document.title = oldTitle; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
-  setTimeout(() => window.print(), 250);
+  setTimeout(() => window.print(), 300);
 }
 
 // ───── التنقل ─────

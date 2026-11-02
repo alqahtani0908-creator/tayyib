@@ -302,7 +302,7 @@ function guessColumn(header) {
   return best;
 }
 function downloadTemplate() {
-  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "الجهة": "شمال", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد");
+  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "الجهة": "شمال", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد", { plain: true });
 }
 async function importDialog() {
   const body = document.createElement("div");
@@ -553,7 +553,7 @@ const PDF_COLS = [
   ["district", "الحي", true, (m) => esc(m.district || "—")],
   ["region", "الجهة", true, (m) => regionName(m.region) || "—"],
   ["assoc", "الجمعية", true, (m) => m.association_id ? esc(assocName(m.association_id)) : "غير مسند"],
-  ["stage", "المرحلة", true, (m) => esc(STAGES[m.stage]?.s || m.stage)],
+  ["stage", "المرحلة", true, (m) => { const c = statusOf(m.stage).c; return `<span class="st" style="--sc:${c};--sb:color-mix(in srgb, ${c} 13%, white)">${esc(STAGES[m.stage]?.s || m.stage)}</span>`; }],
   ["imam", "الإمام", true, (m) => personCell(m.imam_name, m.imam_phone)],
   ["muezzin", "المؤذن", true, (m) => personCell(m.muezzin_name, m.muezzin_phone)],
   ["servant", "الخادم", true, (m) => personCell(m.servant_name, m.servant_phone)],
@@ -581,18 +581,18 @@ async function exportDialog(list, conds, q) {
     $$('[name="fmt"]', mb).forEach((x) => x.onchange = sync);
   }, actions: [{ label: `${I.download} تصدير`, cls: "primary", onClick: (mb) => {
     const day = isoDay();
-    if ($('[name="fmt"]:checked', mb).value === "xlsx") { exportXlsx(list.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${day}.xlsx`, "المساجد"); return true; }
+    if ($('[name="fmt"]:checked', mb).value === "xlsx") { exportXlsx(list.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${day}.xlsx`, "المساجد", { title: "قائمة المساجد", note: conds || q ? `شروط البحث: ${[q ? `النص: ${q}` : "", conds].filter(Boolean).join(" • ")}` : "" }); return true; }
     const keys = $$("#xcols input:checked", mb).map((x) => x.value);
     try { localStorage.setItem("tayyib.pdfcols", JSON.stringify(keys)); } catch {}
     const cols = PDF_COLS.filter(([k]) => keys.includes(k));
     const by = (k) => list.filter((m) => m.stage === k).length;
-    const stats = [["إجمالي", list.length], ["قيد التشغيل", by("active")], ["تحت الإجراء", list.filter((m) => ["assigned", "data_done", "feasible", "study_done", "approved"].includes(m.stage)).length], ["بانتظار الإسناد", by("selected")]];
+    const stats = [["إجمالي المساجد", list.length, "#563331"], ["قيد التشغيل", by("active"), "#2f9e6a"], ["تحت الإجراء", list.filter((m) => ["assigned", "data_done", "feasible", "study_done", "approved"].includes(m.stage)).length, "#4f86c6"], ["بانتظار الإسناد", by("selected"), "#9b8f88"]];
     printDoc("قائمة المساجد", `
       ${conds || q ? `<div class="conds"><b>شروط البحث:</b> ${esc([q ? `النص: ${q}` : "", conds].filter(Boolean).join(" • "))}</div>` : ""}
-      <div class="dstats">${stats.map(([l, n]) => `<div><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</div>
+      <div class="dstats">${stats.map(([l, n, c]) => `<div style="--a:${c}"><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</div>
       <table class="list"><thead><tr><th class="n">م</th><th>المسجد</th>${cols.map(([, l]) => `<th>${l}</th>`).join("")}</tr></thead>
       <tbody>${list.map((m, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(m.name)}</b><div class="ph">${esc(m.code || "")}</div></td>${cols.map(([, , , fn]) => `<td>${fn(m)}</td>`).join("")}</tr>`).join("")}</tbody></table>`,
-      { landscape: cols.length > 4, file: `مساجد-طيب-${day}` });
+      { landscape: cols.length > 4, file: `مساجد-طيب-${day}`, meta: [["عدد المساجد", fmtNum(list.length)]] });
     return true;
   } }, { label: "إلغاء" }] });
 }

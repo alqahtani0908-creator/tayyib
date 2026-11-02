@@ -91,7 +91,7 @@ async function sendQueue(b) {
     if (mk) { rec[+mk.dataset.mark].sent = mk.checked; save(); draw(); return; }
     if (e.target.closest("[data-next]")) { const i = rec.findIndex((x) => !x.sent); if (i >= 0) { window.open(waLink(rec[i].phone, fillVars(b.body, rec[i])), "_blank", "noopener"); rec[i].sent = true; save(); draw(); } }
     if (e.target.closest("[data-copy]")) { navigator.clipboard.writeText(rec.map((x) => "+" + x.phone).join("\n")).then(() => toast("تم نسخ الأرقام")); }
-    if (e.target.closest("[data-xls]")) exportXlsx(rec.map((x) => ({ "الاسم": x.name, "الجوال": displayPhone(x.phone), "المسجد": x.mosque, "الحي": x.district, "الرسالة": fillVars(b.body, x), "أُرسلت": x.sent ? "نعم" : "لا" })), "قائمة-الإرسال.xlsx", "الإرسال");
+    if (e.target.closest("[data-xls]")) exportXlsx(rec.map((x) => ({ "الاسم": x.name, "الجوال": displayPhone(x.phone), "المسجد": x.mosque, "الحي": x.district, "الرسالة": fillVars(b.body, x), "أُرسلت": x.sent ? "نعم" : "لا" })), "قائمة-الإرسال.xlsx", "الإرسال", { title: "قائمة الإرسال الجماعي" });
   };
   draw();
   await modal({ title: "قائمة الإرسال عبر واتساب", body, wide: true, actions: [{ label: "إغلاق" }] });

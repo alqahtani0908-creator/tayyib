@@ -648,16 +648,6 @@ a.fi[href]:hover { background: var(--surface-2); }
   #printdoc { display: block !important; }
 }
 #printdoc { display: none; }
-.doc { font-family: var(--font); color: #222; }
-.doc .dh { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #ceb26b; padding-bottom: 12px; margin-bottom: 18px; }
-.doc .dh .t { font-size: 28px; font-weight: 700; color: #563331; line-height: 1; }
-.doc .dh .s { color: #666; font-size: 13px; }
-.doc .dh .fl { height: 52px; width: auto; }
-.doc h2 { font-size: 17px; margin: 18px 0 8px; color: #563331; }
-.doc table { width: 100%; border-collapse: collapse; font-size: 11.5pt; }
-.doc td, .doc th { border: 1px solid #d8cfc2; padding: 6px 10px; text-align: start; }
-.doc th { background: #f5eedc; width: 30%; }
-.doc .foot { margin-top: 30px; font-size: 11px; color: #777; border-top: 1px solid #ddd; padding-top: 8px; }
 
 /* ───────── التجاوب ───────── */
 @media (min-width: 1600px) {
@@ -1002,22 +992,6 @@ a.fi[href]:hover { background: var(--surface-2); }
 /* تصدير PDF لقائمة المساجد */
 .xcols { display: flex; flex-wrap: wrap; gap: 6px; }
 .xcols label { cursor: pointer; padding: 6px 12px; display: inline-flex; gap: 6px; align-items: center; }
-.doc .conds { font-size: 10.5pt; background: #faf6ec; border: 1px solid #ecdfc0; border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; }
-.doc .dstats { display: flex; gap: 10px; margin-bottom: 12px; }
-.doc .dstats div { border: 1px solid #e5dccd; border-radius: 6px; padding: 6px 14px; display: grid; }
-.doc .dstats b { font-size: 16pt; color: #563331; line-height: 1.1; }
-.doc .dstats span { font-size: 9pt; color: #777; }
-.doc table.list { font-size: 9.5pt; }
-.doc table.list th { width: auto; white-space: nowrap; font-size: 9.5pt; }
-.doc table.list td, .doc table.list th { padding: 4px 7px; vertical-align: top; }
-.doc table.list .n { width: 26px; text-align: center; color: #777; }
-.doc table.list tr { break-inside: avoid; }
-.doc table.list thead { display: table-header-group; }
-.doc table.list tbody tr:nth-child(even) td { background: #fbf9f4; }
-.doc table.list .ph { color: #777; font-size: 8.5pt; direction: ltr; text-align: right; }
-.doc table.list .miss { color: #a33; font-size: 8.5pt; }
-.doc.wide .dh .t { font-size: 22px; }
-.doc.wide .foot { margin-top: 8px; padding-top: 4px; break-before: avoid; }
 
 /* طلب البيانات الناقصة عبر واتساب عند إنشاء حساب */
 .wa-req { margin-top: 14px; border: 1px solid color-mix(in srgb, #25d366 35%, var(--line)); background: color-mix(in srgb, #25d366 6%, var(--surface)); border-radius: 14px; padding: 12px 14px; display: grid; gap: 10px; }
@@ -1031,6 +1005,54 @@ a.fi[href]:hover { background: var(--surface-2); }
 .btn.wa-btn:hover { background: #17924a; }
 .btn.wa-btn.disabled { opacity: .45; cursor: not-allowed; }
 
+/* ───── المستندات المطبوعة وPDF: قالب فاخر بهوية المنصة ───── */
+.doc { font-family: var(--font); color: #2b1a18; font-size: 10.5pt; line-height: 1.6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.doc .dh { position: relative; display: flex; align-items: center; gap: 18px; padding: 18px 22px; border-radius: 14px; overflow: hidden; color: #fff;
+  background: linear-gradient(120deg, #4a2b29 0%, #563331 55%, #6b4340 100%); }
+.doc .dh::before { content: ""; position: absolute; inset: 0; background: radial-gradient(420px 160px at 12% 0%, rgba(206,178,107,.28), transparent 70%), radial-gradient(300px 140px at 95% 120%, rgba(206,178,107,.18), transparent 70%); }
+.doc .dh::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, transparent, #ceb26b 20%, #e6cf8f 50%, #ceb26b 80%, transparent); }
+.doc .dh > * { position: relative; }
+.doc .dh-logo { width: 96px; height: 50px; flex: none; }
+.doc .dh-logo svg, .doc .dh-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.doc .dh-txt { flex: 1; min-width: 0; }
+.doc .dh-k { font-size: 9pt; color: #e6d3a3; letter-spacing: .2px; }
+.doc .dh h1 { margin: 2px 0 0; font-size: 21pt; line-height: 1.2; font-weight: 700; color: #fff; }
+.doc .dh-f { height: 46px; width: auto; flex: none; opacity: .95; }
+.doc .dmeta { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 9px 4px 12px; margin-bottom: 12px; border-bottom: 1px solid #ece3d4; font-size: 9pt; color: #8a7d76; }
+.doc .dmeta b { color: #3a2523; font-weight: 600; }
+.doc h2 { display: flex; align-items: center; gap: 9px; font-size: 13pt; margin: 18px 0 9px; color: #563331; break-after: avoid; }
+.doc h2::before { content: ""; width: 5px; height: 18px; border-radius: 3px; background: linear-gradient(#ceb26b, #b8954a); flex: none; }
+.doc h2 small { font-weight: 400; color: #9a8d86 !important; font-size: 10pt; }
+.doc table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 10pt; border: 1px solid #e6dccb; border-radius: 10px; overflow: hidden; margin-bottom: 6px; }
+.doc td, .doc th { padding: 7px 11px; text-align: start; vertical-align: top; border-bottom: 1px solid #efe7da; }
+.doc tr:last-child > td, .doc tr:last-child > th { border-bottom: 0; }
+/* جداول القيم (عنوان في العمود الأول) */
+.doc th { background: #f8f2e4; color: #5b3d35; font-weight: 600; width: 28%; border-inline-end: 1px solid #efe7da; }
+/* صف العناوين في الجداول المتعددة الأعمدة */
+.doc thead th, .doc tr:not(:has(td)) > th { background: #563331; color: #fff; font-weight: 600; width: auto !important; white-space: nowrap; border-inline-end: 1px solid rgba(255,255,255,.08); font-size: 9.5pt; }
+.doc tbody tr:nth-child(even) > td, .doc table:not(.list) tr:nth-child(odd):has(td:nth-child(3)) > td { background: #fcfaf5; }
+.doc thead { display: table-header-group; }
+.doc tr { break-inside: avoid; }
+.doc .conds { display: flex; gap: 8px; align-items: center; font-size: 9.5pt; background: linear-gradient(90deg, #fbf5e6, #fdfaf3); border: 1px solid #ecdcb4; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; color: #5b3d35; }
+.doc .conds b { color: #563331; }
+.doc .dstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.doc .dstats div { position: relative; border: 1px solid #e6dccb; border-radius: 12px; padding: 10px 14px 9px; display: grid; background: #fff; overflow: hidden; }
+.doc .dstats div::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 4px; background: var(--a, #ceb26b); }
+.doc .dstats b { font-size: 20pt; color: #3a2523; line-height: 1.1; font-weight: 700; }
+.doc .dstats span { font-size: 8.5pt; color: #8a7d76; }
+.doc table.list { font-size: 9pt; }
+.doc table.list td, .doc table.list th { padding: 5px 8px; }
+.doc table.list .n { width: 24px; text-align: center; color: #9a8d86; font-variant-numeric: tabular-nums; }
+.doc table.list td.n { font-weight: 600; }
+.doc table.list .ph { color: #8a7d76; font-size: 8pt; direction: ltr; text-align: right; font-variant-numeric: tabular-nums; }
+.doc table.list .miss { color: #b0443a; font-size: 8pt; }
+.doc .st { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; font-size: 8.5pt; white-space: nowrap; font-weight: 600; background: var(--sb); color: var(--sc); }
+.doc .st::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sc); }
+.doc .foot { margin-top: 16px; display: flex; align-items: center; gap: 12px; font-size: 8.5pt; color: #9a8d86; break-before: avoid; }
+.doc .foot .gold-rule { flex: 1; height: 2px; background: linear-gradient(90deg, #ceb26b, transparent); }
+.doc.wide .dh { padding: 14px 20px; } .doc.wide .dh h1 { font-size: 18pt; }
+
 </style>
 <script src="config.js"></script>
 </head>
@@ -1039,7 +1061,7 @@ a.fi[href]:hover { background: var(--surface-2); }
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" defer></script>
 <script>
 // ───────────────────────── الأساسيات ─────────────────────────
 const CFG = window.TAYYIB_CONFIG || {};
@@ -1361,30 +1383,76 @@ function hydrateFiles(root) {
 }
 
 // ───── تصدير Excel ─────
-function exportXlsx(rows, filename, sheet = "البيانات") {
+// تصدير Excel بهوية المنصة: ترويسة بنية، عناوين ذهبية، صفوف متناوبة، حدود، عرض أعمدة تلقائي، تصفية، واتجاه من اليمين
+// plain: ملف بسيط بلا ترويسة (نموذج الاستيراد يجب أن يبدأ بصف العناوين)
+function exportXlsx(rows, filename, sheet = "البيانات", { title = "", note = "", plain = false } = {}) {
   if (!window.XLSX) return toast("مكتبة Excel لم تُحمّل بعد", "err");
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(12, k.length + 4) }));
+  const keys = Object.keys(rows[0] || {}), n = Math.max(1, keys.length);
+  const platform = S.settings.platform_name || "طيب", org = S.settings.org_name || "";
+  const line = { style: "thin", color: { rgb: "E6DCCB" } }, box = { top: line, bottom: line, left: line, right: line };
+  const al = (h = "right") => ({ horizontal: h, vertical: "center", wrapText: true, readingOrder: 2 });
+  const F = (o = {}) => ({ name: "Arial", sz: 10, color: { rgb: "2B1A18" }, ...o });
+  const head = plain ? [] : [[`${platform} — ${title || sheet}`], [[org, fmtDateTime(new Date()), `${fmtNum(rows.length)} سجل`, note].filter(Boolean).join("   •   ")], []];
+  const aoa = [...head, keys, ...rows.map((r) => keys.map((k) => r[k] ?? "")), ...(plain ? [] : [[], [`صدر من منصة ${platform}${S.me?.name ? ` — ${S.me.name}` : ""}`]])];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const H = head.length, last = H + rows.length; // صف العناوين ثم البيانات
+  const cell = (r, c) => { const ref = XLSX.utils.encode_cell({ r, c }); return ws[ref] || (ws[ref] = { t: "s", v: "" }); };
+  // ألوان المراحل في عمود «المرحلة»
+  const stageTone = {}; Object.values(STAGES).forEach((s) => { const t = { ok: ["E5F4EC", "1F7A4D"], info: ["E7F0FA", "2F5F96"], gold: ["F7EFDC", "7A5A1F"], warn: ["FBEFE1", "9A5A12"], bad: ["FBE9E7", "A33A2F"] }[s.c] || ["F1EEEA", "6B5F5A"]; stageTone[s.l] = stageTone[s.s] = t; });
+  if (!plain) {
+    for (let c = 0; c < n; c++) {
+      cell(0, c).s = { font: F({ sz: 16, bold: true, color: { rgb: "FFFFFF" } }), fill: { fgColor: { rgb: "563331" } }, alignment: al() };
+      cell(1, c).s = { font: F({ sz: 10, color: { rgb: "5B3D35" } }), fill: { fgColor: { rgb: "F5EEDC" } }, alignment: al(), border: { bottom: { style: "medium", color: { rgb: "CEB26B" } } } };
+    }
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: n - 1 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: n - 1 } }, { s: { r: last + 2, c: 0 }, e: { r: last + 2, c: n - 1 } }];
+    cell(last + 2, 0).s = { font: F({ sz: 9, italic: true, color: { rgb: "9A8D86" } }), alignment: al() };
+  }
+  keys.forEach((k, c) => {
+    cell(H, c).s = { font: F({ bold: true, color: { rgb: plain ? "2B1A18" : "FFFFFF" } }), fill: { fgColor: { rgb: plain ? "F5EEDC" : "6B4340" } }, alignment: al("center"), border: { ...box, bottom: { style: "medium", color: { rgb: "CEB26B" } } } };
+    for (let r = H + 1; r <= last; r++) {
+      const x = cell(r, c), v = String(x.v ?? ""), zebra = (r - H) % 2 === 0;
+      const tone = k === "المرحلة" && stageTone[v];
+      x.s = { font: F(tone ? { bold: true, color: { rgb: tone[1] } } : k === "م" ? { color: { rgb: "9A8D86" } } : {}), alignment: al(k === "م" || x.t === "n" || /^[\d\s+()-]{7,}$/.test(v) ? "center" : "right"),
+        fill: { fgColor: { rgb: tone ? tone[0] : zebra ? "FBF8F2" : "FFFFFF" } }, border: box };
+    }
+  });
+  // عرض الأعمدة حسب أطول قيمة، وارتفاع صفوف الترويسة
+  ws["!cols"] = keys.map((k) => ({ wch: Math.min(48, Math.max(k === "م" ? 5 : 10, k.length + 3, ...rows.slice(0, 400).map((r) => String(r[k] ?? "").length + 2))) }));
+  ws["!rows"] = plain ? [{ hpt: 24 }] : [{ hpt: 34 }, { hpt: 22 }, { hpt: 8 }, { hpt: 26 }];
+  if (rows.length) ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: H, c: 0 }, e: { r: last, c: n - 1 } }) };
   const wb = XLSX.utils.book_new();
   wb.Workbook = { Views: [{ RTL: true }] };
-  XLSX.utils.book_append_sheet(wb, ws, sheet);
+  XLSX.utils.book_append_sheet(wb, ws, sheet.slice(0, 31));
+  wb.Props = { Title: title || sheet, Author: platform, Company: org };
   XLSX.writeFile(wb, filename);
 }
 
 // ───── الطباعة ─────
-function printDoc(title, inner, { landscape = false, file = "" } = {}) {
+function printDoc(title, inner, { landscape = false, file = "", meta = [] } = {}) {
   let el = $("#printdoc");
   if (!el) { el = document.createElement("div"); el.id = "printdoc"; document.body.appendChild(el); }
-  el.innerHTML = `${landscape ? "<style>@page { size: A4 landscape; margin: 10mm; }</style>" : ""}<div class="doc${landscape ? " wide" : ""}" dir="rtl"><div class="dh"><div style="width:110px;height:60px">${logoHtml(true)}</div>
-    <div><div class="t">${esc(S.settings.platform_name || "طيب")}</div><div class="s">${esc(S.settings.org_name || "")}</div><div class="s"><b>${esc(title)}</b> • ${fmtDateTime(new Date())}</div></div>
-    <img class="fl" style="margin-inline-start:auto" src="${foundationLogo()}" alt="مؤسسة أبناء علي الماجد"></div>
-    ${inner}<div class="foot">صدر من منصة ${esc(S.settings.platform_name || "طيب")} — ${esc(S.me?.name || "")}</div></div>`;
+  const platform = S.settings.platform_name || "طيب", org = S.settings.org_name || "";
+  const q = (t) => `"${String(t).replace(/["\\]/g, "")}"`;
+  // تذييل كل صفحة: اسم المنصة ورقم الصفحة (هوامش الصفحة في متصفحات Chrome الحديثة)
+  const page = `@page { size: A4${landscape ? " landscape" : ""}; margin: 12mm 11mm 15mm;
+    @bottom-right { content: ${q(`${platform} • ${org}`)}; font: 8pt sans-serif; color: #9a8d86; }
+    @bottom-left { content: "صفحة " counter(page) " من " counter(pages); font: 8pt sans-serif; color: #9a8d86; } }`;
+  el.innerHTML = `<style>${page}</style><div class="doc${landscape ? " wide" : ""}" dir="rtl">
+    <header class="dh">
+      <div class="dh-logo">${S.logoUrl ? `<img src="${esc(S.logoUrl)}" alt="">` : logoSvg()}</div>
+      <div class="dh-txt"><div class="dh-k">${esc(platform)} • ${esc(org)}</div><h1>${esc(title)}</h1></div>
+      <img class="dh-f" src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد">
+    </header>
+    <div class="dmeta">${[["تاريخ الإصدار", fmtDateTime(new Date())], ["أصدره", S.me?.name || ""], ...meta].filter(([, x]) => x !== "" && x != null)
+      .map(([k, x]) => `<span>${esc(k)}: <b>${esc(x)}</b></span>`).join("")}</div>
+    <main class="dbody">${inner}</main>
+    <div class="foot"><span>صدر من منصة ${esc(platform)}</span><span class="gold-rule"></span></div></div>`;
   document.body.classList.add("printing-doc");
   // عنوان الصفحة يصبح الاسم المقترح لملف PDF
   const oldTitle = document.title; if (file) document.title = file;
   const done = () => { document.body.classList.remove("printing-doc"); document.title = oldTitle; window.removeEventListener("afterprint", done); };
   window.addEventListener("afterprint", done);
-  setTimeout(() => window.print(), 250);
+  setTimeout(() => window.print(), 300);
 }
 
 // ───── التنقل ─────
@@ -2806,7 +2874,7 @@ function guessColumn(header) {
   return best;
 }
 function downloadTemplate() {
-  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "الجهة": "شمال", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد");
+  exportXlsx([{ "اسم المسجد": "", "النوع": "جامع", "الحي": "", "الجهة": "شمال", "العنوان": "", "رابط الموقع": "", "اسم الإمام": "", "جوال الإمام": "", "اسم المؤذن": "", "جوال المؤذن": "", "اسم الخادم": "", "جوال الخادم": "", "الجمعية": "", "ملاحظات": "" }], "نموذج-استيراد-المساجد.xlsx", "المساجد", { plain: true });
 }
 async function importDialog() {
   const body = document.createElement("div");
@@ -3057,7 +3125,7 @@ const PDF_COLS = [
   ["district", "الحي", true, (m) => esc(m.district || "—")],
   ["region", "الجهة", true, (m) => regionName(m.region) || "—"],
   ["assoc", "الجمعية", true, (m) => m.association_id ? esc(assocName(m.association_id)) : "غير مسند"],
-  ["stage", "المرحلة", true, (m) => esc(STAGES[m.stage]?.s || m.stage)],
+  ["stage", "المرحلة", true, (m) => { const c = statusOf(m.stage).c; return `<span class="st" style="--sc:${c};--sb:color-mix(in srgb, ${c} 13%, white)">${esc(STAGES[m.stage]?.s || m.stage)}</span>`; }],
   ["imam", "الإمام", true, (m) => personCell(m.imam_name, m.imam_phone)],
   ["muezzin", "المؤذن", true, (m) => personCell(m.muezzin_name, m.muezzin_phone)],
   ["servant", "الخادم", true, (m) => personCell(m.servant_name, m.servant_phone)],
@@ -3085,18 +3153,18 @@ async function exportDialog(list, conds, q) {
     $$('[name="fmt"]', mb).forEach((x) => x.onchange = sync);
   }, actions: [{ label: `${I.download} تصدير`, cls: "primary", onClick: (mb) => {
     const day = isoDay();
-    if ($('[name="fmt"]:checked', mb).value === "xlsx") { exportXlsx(list.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${day}.xlsx`, "المساجد"); return true; }
+    if ($('[name="fmt"]:checked', mb).value === "xlsx") { exportXlsx(list.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `مساجد-طيب-${day}.xlsx`, "المساجد", { title: "قائمة المساجد", note: conds || q ? `شروط البحث: ${[q ? `النص: ${q}` : "", conds].filter(Boolean).join(" • ")}` : "" }); return true; }
     const keys = $$("#xcols input:checked", mb).map((x) => x.value);
     try { localStorage.setItem("tayyib.pdfcols", JSON.stringify(keys)); } catch {}
     const cols = PDF_COLS.filter(([k]) => keys.includes(k));
     const by = (k) => list.filter((m) => m.stage === k).length;
-    const stats = [["إجمالي", list.length], ["قيد التشغيل", by("active")], ["تحت الإجراء", list.filter((m) => ["assigned", "data_done", "feasible", "study_done", "approved"].includes(m.stage)).length], ["بانتظار الإسناد", by("selected")]];
+    const stats = [["إجمالي المساجد", list.length, "#563331"], ["قيد التشغيل", by("active"), "#2f9e6a"], ["تحت الإجراء", list.filter((m) => ["assigned", "data_done", "feasible", "study_done", "approved"].includes(m.stage)).length, "#4f86c6"], ["بانتظار الإسناد", by("selected"), "#9b8f88"]];
     printDoc("قائمة المساجد", `
       ${conds || q ? `<div class="conds"><b>شروط البحث:</b> ${esc([q ? `النص: ${q}` : "", conds].filter(Boolean).join(" • "))}</div>` : ""}
-      <div class="dstats">${stats.map(([l, n]) => `<div><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</div>
+      <div class="dstats">${stats.map(([l, n, c]) => `<div style="--a:${c}"><b>${fmtNum(n)}</b><span>${l}</span></div>`).join("")}</div>
       <table class="list"><thead><tr><th class="n">م</th><th>المسجد</th>${cols.map(([, l]) => `<th>${l}</th>`).join("")}</tr></thead>
       <tbody>${list.map((m, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(m.name)}</b><div class="ph">${esc(m.code || "")}</div></td>${cols.map(([, , , fn]) => `<td>${fn(m)}</td>`).join("")}</tr>`).join("")}</tbody></table>`,
-      { landscape: cols.length > 4, file: `مساجد-طيب-${day}` });
+      { landscape: cols.length > 4, file: `مساجد-طيب-${day}`, meta: [["عدد المساجد", fmtNum(list.length)]] });
     return true;
   } }, { label: "إلغاء" }] });
 }
@@ -3311,7 +3379,7 @@ route("refills", {
     $$("tr[data-id]", v).forEach((tr) => tr.onclick = () => go("/mosque/" + tr.dataset.id));
     $$("[data-refill]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.refill), "refill")) render(); });
     $$("[data-visit]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(mosqueById(b.dataset.visit), "visit")) render(); });
-    $("#exp", v).onclick = () => exportXlsx(active.map(mosqueRow), `جدول-التعبئة-${isoDay()}.xlsx`, "التعبئة");
+    $("#exp", v).onclick = () => exportXlsx(active.map((m, i) => ({ "م": i + 1, ...mosqueRow(m) })), `جدول-التعبئة-${isoDay()}.xlsx`, "التعبئة", { title: "جدول التعبئة والزيارات" });
   },
 });
 
@@ -3351,7 +3419,7 @@ route("reports", {
     const upd = () => { f.type = $("#t", v).value; f.assoc = $("#a", v)?.value || ""; f.from = $("#from", v).value; f.to = $("#to", v).value; load(); };
     ["#t", "#a", "#from", "#to"].forEach((s) => $(s, v)?.addEventListener("change", upd));
     $("#exp", v).onclick = () => exportXlsx(rows.map((x) => { const m = mosqueById(x.mosque_id); return { "التاريخ": fmtDateTime(x.created_at), "الرمز": m?.code, "المسجد": m?.name, "الحي": m?.district, "الجمعية": assocName(m?.association_id),
-      "نوع التقرير": REPORT_TYPES[x.type]?.l || x.type, "الملخص": x.summary || "", "الجهة": ROLES[x.author_role] || "", ...Object.fromEntries(reportDetails(x)) }; }), `تقارير-طيب-${f.from}_${f.to}.xlsx`, "التقارير");
+      "نوع التقرير": REPORT_TYPES[x.type]?.l || x.type, "الملخص": x.summary || "", "الجهة": ROLES[x.author_role] || "", ...Object.fromEntries(reportDetails(x)) }; }), `تقارير-طيب-${f.from}_${f.to}.xlsx`, "التقارير", { title: "سجل التقارير", note: `الفترة: ${f.from} إلى ${f.to}` });
     $("#monthly", v).onclick = () => monthlyCompound();
     load();
   },
@@ -3526,7 +3594,7 @@ async function sendQueue(b) {
     if (mk) { rec[+mk.dataset.mark].sent = mk.checked; save(); draw(); return; }
     if (e.target.closest("[data-next]")) { const i = rec.findIndex((x) => !x.sent); if (i >= 0) { window.open(waLink(rec[i].phone, fillVars(b.body, rec[i])), "_blank", "noopener"); rec[i].sent = true; save(); draw(); } }
     if (e.target.closest("[data-copy]")) { navigator.clipboard.writeText(rec.map((x) => "+" + x.phone).join("\n")).then(() => toast("تم نسخ الأرقام")); }
-    if (e.target.closest("[data-xls]")) exportXlsx(rec.map((x) => ({ "الاسم": x.name, "الجوال": displayPhone(x.phone), "المسجد": x.mosque, "الحي": x.district, "الرسالة": fillVars(b.body, x), "أُرسلت": x.sent ? "نعم" : "لا" })), "قائمة-الإرسال.xlsx", "الإرسال");
+    if (e.target.closest("[data-xls]")) exportXlsx(rec.map((x) => ({ "الاسم": x.name, "الجوال": displayPhone(x.phone), "المسجد": x.mosque, "الحي": x.district, "الرسالة": fillVars(b.body, x), "أُرسلت": x.sent ? "نعم" : "لا" })), "قائمة-الإرسال.xlsx", "الإرسال", { title: "قائمة الإرسال الجماعي" });
   };
   draw();
   await modal({ title: "قائمة الإرسال عبر واتساب", body, wide: true, actions: [{ label: "إغلاق" }] });
