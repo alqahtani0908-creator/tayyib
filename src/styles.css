@@ -229,8 +229,6 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 16px; border-bottom: 1px solid var(--line); }
 .toolbar .search { flex: 1 1 260px; }
 .toolbar select.input { width: auto; min-width: 150px; }
-.filters { display: contents; }
-.filter-btn { display: none; }
 .actionsbar { display: flex; gap: 8px; align-items: center; padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .actionsbar .acts { display: flex; gap: 8px; margin-inline-start: auto; flex-wrap: wrap; }
 .pagehead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -718,11 +716,6 @@ a.fi[href]:hover { background: var(--surface-2); }
   .pagehead .btn.primary { width: 100%; }
   .toolbar { padding: 12px; gap: 8px; }
   .toolbar .search { flex-basis: calc(100% - 52px); }
-  .filter-btn { display: inline-flex; }
-  .filters { display: none; }
-  .filters.open { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
-  .filters.open select.input { width: 100%; min-width: 0; }
-  .filters.open label { grid-column: 1 / -1; }
   .actionsbar { padding: 10px 12px; }
   .actionsbar .acts { margin: 0; width: 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; padding-bottom: 2px; }
   .actionsbar .acts::-webkit-scrollbar { display: none; }
@@ -888,3 +881,57 @@ a.fi[href]:hover { background: var(--surface-2); }
 .rg-pick label span { display: inline-block; padding: 7px 16px; border-radius: 9px; font-weight: 600; }
 .rg-pick input:checked + span { background: var(--brand); color: var(--on-brand, #fff); }
 .rg-pick input:focus-visible + span { outline: 2px solid var(--gold); }
+
+/* البحث المتقدم */
+.adv-btn { position: relative; flex: none; }
+.adv-btn svg { width: 18px; height: 18px; }
+.adv-btn .dot { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--brand); color: var(--on-brand, #fff); font-size: 11px; display: inline-grid; place-items: center; }
+.adv-btn[aria-expanded="true"] { border-color: var(--gold); background: var(--gold-soft); }
+.adv { display: none; padding: 14px 16px 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.adv.open { display: grid; gap: 12px; }
+.adv-head { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.adv-head b { font-size: 15px; }
+.fc-key { font-weight: 700; padding: 0 5px; border-radius: 6px; margin: 0 2px; }
+.fc-key.inc { color: var(--brand); background: var(--gold-soft); }
+.fc-key.exc { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.adv-saved { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.adv-saved:empty { display: none; }
+.sv { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); overflow: hidden; }
+.sv button { all: unset; cursor: pointer; padding: 5px 10px; font-size: 13px; }
+.sv button + button { padding: 5px 9px 5px 10px; color: var(--ink-3); border-inline-start: 1px solid var(--line); }
+.sv.on { border-color: var(--gold); background: var(--gold-soft); }
+.adv-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.ag { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px 12px; display: grid; gap: 8px; align-content: start; }
+.ag-h { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.ag-q { height: 30px; padding: 4px 10px; font-size: 12.5px; flex: 1; min-width: 0; }
+.ag-clr { all: unset; cursor: pointer; margin-inline-start: auto; font-size: 12px; color: var(--ink-3); }
+.ag-clr:hover { color: var(--bad); }
+.ag:has(.ag-q) .chips { max-height: 168px; overflow-y: auto; }
+.ag .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fc { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; color: var(--ink-2); user-select: none; transition: background .12s, border-color .12s; }
+.fc:hover { border-color: var(--line-2); color: var(--ink); }
+.fc:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.fc small { color: var(--ink-3); font-size: 11px; }
+.fc[data-zero] { opacity: .5; }
+.fc .fc-i { display: none; font-weight: 800; font-size: 12px; }
+.fc.inc { background: var(--brand); border-color: var(--brand); color: var(--on-brand, #fff); opacity: 1; }
+.fc.inc small { color: inherit; opacity: .75; }
+.fc.inc .fc-i { display: inline; } .fc.inc .fc-i::before { content: "✓"; }
+.fc.exc { background: color-mix(in srgb, var(--bad) 10%, var(--surface)); border-color: var(--bad); color: var(--bad); text-decoration: line-through; opacity: 1; }
+.fc.exc .fc-i { display: inline; text-decoration: none; } .fc.exc .fc-i::before { content: "✕"; }
+.adv-sum { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); align-items: center; }
+.adv-sum .sc { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 11px; border-radius: 999px; font-size: 12.5px; background: var(--gold-soft); border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent); }
+.adv-sum .sc.ex { background: color-mix(in srgb, var(--bad) 9%, var(--surface)); border-color: color-mix(in srgb, var(--bad) 40%, transparent); color: var(--bad); }
+.adv-sum .sc button { all: unset; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
+.adv-sum .sc button:hover { background: rgba(0,0,0,.08); }
+.adv-sum .sc-clear { all: unset; cursor: pointer; font-size: 12.5px; color: var(--ink-3); text-decoration: underline; margin-inline-start: 4px; }
+@media (max-width: 860px) {
+  .adv-btn span:not(.dot) { display: none; }
+  .adv-btn { padding: 0 12px; gap: 6px; }
+  .toolbar:has(.adv-btn) { flex-wrap: nowrap; }
+  .toolbar:has(.adv-btn) .search { flex: 1 1 0; min-width: 0; }
+  .adv-head .btn { order: 2; }
+  .adv { padding: 12px; }
+  .adv-groups { grid-template-columns: 1fr; gap: 10px; }
+  .adv-sum { padding: 10px 12px; }
+}

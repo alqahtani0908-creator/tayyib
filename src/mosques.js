@@ -6,29 +6,53 @@ const MOSQUE_FIELDS = [
 ];
 const missingData = (m) => ["district", "imam_name", "imam_phone", "muezzin_name", "muezzin_phone", "servant_name", "servant_phone"].filter((k) => !m[k]);
 
+// مجموعات البحث المتقدم: لكل مجموعة دالة تعطي قيمة المسجد فيها، وخيارات [القيمة، الاسم]
+function searchGroups(r) {
+  const rh = S.settings.reminder_hours || 72;
+  const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
+  const g = [
+    { k: "stage", l: "المرحلة", val: (m) => m.stage, opts: Object.entries(STAGES).map(([k, s]) => [k, s.s]) },
+    { k: "region", l: "الجهة", val: (m) => m.region || "none", opts: [...Object.entries(REGIONS), ["none", "بدون جهة"]] },
+  ];
+  if (r === "admin" || r === "company") g.push({ k: "assoc", l: "الجمعية", val: (m) => m.association_id || "none", opts: [...S.associations.map((a) => [a.id, a.name]), ["none", "غير مسند"]] });
+  g.push({ k: "district", l: "الحي", search: districts.length > 12, val: (m) => m.district || "none", opts: [...districts.map((d) => [d, d]), ["none", "بدون حي"]] });
+  if (r !== "company") g.push({ k: "data", l: "البيانات", val: (m) => missingData(m).length ? "missing" : "complete", opts: [["complete", "مكتملة"], ["missing", "ناقصة"]] });
+  g.push({ k: "refill", l: "التعبئة", val: (m) => { if (m.stage !== "active" || !m.next_refill_at) return "na"; const h = (new Date(m.next_refill_at) - Date.now()) / 36e5; return h < 0 ? "overdue" : h <= rh ? "soon" : "later"; },
+    opts: [["overdue", "متأخرة"], ["soon", `خلال ${rh} ساعة`], ["later", "لاحقًا"]] });
+  g.push({ k: "kind", l: "النوع", val: (m) => m.kind || "جامع", opts: [["جامع", "جامع"], ["مسجد", "مسجد"], ["مصلى", "مصلى"]] });
+  g.push({ k: "loc", l: "رابط الموقع", val: (m) => m.map_url ? "yes" : "no", opts: [["yes", "متوفر"], ["no", "غير متوفر"]] });
+  return g;
+}
+// صيغة الرابط: stage=active,assigned,!suspended (علامة ! للاستبعاد)
+const parseSel = (s) => { const o = { inc: new Set(), exc: new Set() }; String(s || "").split(",").map((x) => x.trim()).filter(Boolean).forEach((x) => x.startsWith("!") ? o.exc.add(x.slice(1)) : o.inc.add(x)); return o; };
+const serSel = (o) => [...o.inc, ...[...o.exc].map((x) => "!" + x)].join(",");
+
 route("mosques", {
   title: "المساجد",
   async render(v) {
     await loadMosques();
     const p = S.params;
     const r = role();
-    const f = { q: p.q || "", stage: p.stage || "", assoc: p.assoc || "", region: p.region || "", district: p.district || "", missing: p.missing || "" };
-    const districts = [...new Set(S.mosques.map((m) => m.district).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ar"));
     const mobile = isMobile();
-    const activeFilters = () => [f.stage, f.assoc, f.region, f.district, f.missing].filter(Boolean).length;
+    // البحث المتقدم: كل مجموعة تقبل عدة خيارات للتضمين (✓) وعدة خيارات للاستبعاد (✕)؛ والمجموعات تُطابق معًا
+    const G = searchGroups(r);
+    const f = { q: p.q || "", g: Object.fromEntries(G.map((g) => [g.k, parseSel(p[g.k])])) };
+    if (p.missing) f.g.data?.inc.add("missing"); // روابط قديمة من لوحة المؤشرات
+    const activeFilters = () => G.reduce((n, g) => n + f.g[g.k].inc.size + f.g[g.k].exc.size, 0);
     v.innerHTML = `
       <div class="card">
         <div class="toolbar">
-          <div class="search">${I.search}<input class="input" id="q" type="search" placeholder="بحث بالاسم أو الرمز أو الحي أو الإمام…" value="${esc(f.q)}"></div>
-          <button class="iconbtn filter-btn" id="f-toggle" aria-label="التصفية" title="التصفية">${svg('<path d="M3 5h18M6 12h12M10 19h4"/>')}<span class="dot" ${activeFilters() ? "" : "hidden"}>${activeFilters()}</span></button>
-          <div class="filters" id="filters">
-            <select class="input" id="f-stage"><option value="">كل المراحل</option>${Object.entries(STAGES).map(([k, s]) => `<option value="${k}" ${f.stage === k ? "selected" : ""}>${esc(s.l)}</option>`).join("")}</select>
-            ${r === "admin" || r === "company" ? `<select class="input" id="f-assoc"><option value="">كل الجمعيات</option><option value="none" ${f.assoc === "none" ? "selected" : ""}>غير مسند</option>${S.associations.map((a) => `<option value="${a.id}" ${f.assoc === a.id ? "selected" : ""}>${esc(a.name)}</option>`).join("")}</select>` : ""}
-            <select class="input" id="f-region"><option value="">كل الجهات</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${f.region === k ? "selected" : ""}>${l}</option>`).join("")}<option value="none" ${f.region === "none" ? "selected" : ""}>بدون جهة</option></select>
-            <select class="input" id="f-district"><option value="">كل الأحياء</option>${districts.map((d) => `<option ${f.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
-            ${r !== "company" ? `<label class="row small" style="gap:6px;cursor:pointer"><input type="checkbox" id="f-missing" ${f.missing ? "checked" : ""}> بيانات ناقصة فقط</label>` : ""}
-          </div>
+          <div class="search">${I.search}<input class="input" id="q" type="search" placeholder="بحث بالاسم أو الرمز أو الحي أو الإمام… (افصل بفاصلة لعدة كلمات، و- للاستبعاد)" value="${esc(f.q)}"></div>
+          <button class="btn adv-btn" id="f-toggle" aria-expanded="false">${svg('<path d="M3 5h18M6 12h12M10 19h4"/>')}<span>بحث متقدم</span><span class="dot" ${activeFilters() ? "" : "hidden"}>${activeFilters()}</span></button>
         </div>
+        <div class="adv" id="filters">
+          <div class="adv-head"><div class="grow"><b>بحث متقدم</b><div class="muted small">اضغط الخيار مرة لـ<span class="fc-key inc">✓ تضمينه</span> ومرة ثانية لـ<span class="fc-key exc">✕ استبعاده</span> وثالثة لإلغائه.<span class="hide-sm"> الخيارات داخل المجموعة الواحدة تعني «أيٌّ منها»، والمجموعات المختلفة تُطبَّق معًا.</span></div></div>
+            <button class="btn sm" id="adv-save">${I.check} حفظ البحث</button><button class="btn sm ghost" id="adv-clear">مسح الكل</button></div>
+          <div class="adv-saved" id="adv-saved"></div>
+          <div class="adv-groups">${G.map((g) => `<div class="ag" data-g="${g.k}"><div class="ag-h"><b>${g.l}</b>${g.search ? `<input class="input ag-q" type="search" placeholder="بحث في ${g.l}…">` : ""}<button class="ag-clr" data-clr="${g.k}" hidden>مسح</button></div>
+            <div class="chips">${g.opts.map(([val, l]) => { const n = S.mosques.filter((m) => g.val(m) === val).length; return `<button type="button" class="fc" data-v="${esc(val)}" ${n ? "" : "data-zero"}><span class="fc-i"></span>${esc(l)}<small class="num">${fmtNum(n)}</small></button>`; }).join("")}</div></div>`).join("")}</div>
+        </div>
+        <div class="adv-sum" id="adv-sum" hidden></div>
         <div class="actionsbar">
           <span class="muted small nowrap" id="count"></span>
           <div class="acts">
@@ -45,7 +69,8 @@ route("mosques", {
           <th class="rn-h">م</th><th>المسجد</th>${r !== "association" ? "<th>الجمعية</th>" : ""}<th>المرحلة</th><th>فريق المسجد</th><th>التعبئة القادمة</th></tr></thead>
           <tbody id="rows"></tbody></table></div>`}
       </div>`;
-    $("#f-toggle", v).onclick = () => $("#filters", v).classList.toggle("open");
+    const toggleAdv = (open) => { const el = $("#filters", v); el.classList.toggle("open", open); $("#f-toggle", v).setAttribute("aria-expanded", el.classList.contains("open")); };
+    $("#f-toggle", v).onclick = () => toggleAdv();
     const sel = new Set();
     const person = (role, n, ph, label) => `<div class="prow"><span class="pr">${role}</span>${n || ph ? `<b>${esc(n || "—")}</b>${contactBtns({ phone: ph, name: n, text: `السلام عليكم ${label} ${n || ""}، ` })}` : `<span class="chip bad plain">ناقص</span>`}</div>`;
     const team = (m) => person("إمام", m.imam_name, m.imam_phone, "فضيلة الشيخ") + person("مؤذن", m.muezzin_name, m.muezzin_phone, "الأخ") + person("خادم", m.servant_name, m.servant_phone, "الأخ");
@@ -57,14 +82,29 @@ route("mosques", {
     };
     const emptyMsg = `<div class="empty">${I.mosque}لا توجد مساجد مطابقة${r === "admin" && !S.mosques.length ? " — ابدأ بإضافة مسجد أو استيراد ملف Excel" : ""}</div>`;
     const apply = () => {
-      const q = f.q.trim().toLowerCase();
-      const list = S.mosques.filter((m) =>
-        (!f.stage || m.stage === f.stage) &&
-        (!f.assoc || (f.assoc === "none" ? !m.association_id : m.association_id === f.assoc)) &&
-        (!f.region || (f.region === "none" ? !m.region : m.region === f.region)) &&
-        (!f.district || m.district === f.district) &&
-        (!f.missing || missingData(m).length) &&
-        (!q || [m.name, m.code, m.district, m.imam_name, m.imam_phone, m.muezzin_name, m.servant_name, m.address].some((x) => String(x || "").toLowerCase().includes(q))));
+      // النص: كلمات مفصولة بفاصلة = أيٌّ منها، والكلمة المسبوقة بـ - تُستبعد
+      const terms = f.q.split(/[,،]/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+      const want = terms.filter((t) => !t.startsWith("-")), not = terms.filter((t) => t.startsWith("-")).map((t) => t.slice(1).trim()).filter(Boolean);
+      const hay = (m) => [m.name, m.code, m.district, m.imam_name, m.imam_phone, m.muezzin_name, m.servant_name, m.address].map((x) => String(x || "").toLowerCase()).join(" ");
+      const list = S.mosques.filter((m) => {
+        for (const g of G) { const s = f.g[g.k], val = g.val(m); if (s.inc.size && !s.inc.has(val)) return false; if (s.exc.has(val)) return false; }
+        if (!want.length && !not.length) return true;
+        const h = hay(m);
+        return (!want.length || want.some((t) => h.includes(t))) && !not.some((t) => h.includes(t));
+      });
+      // حالة الأزرار وملخص البحث
+      for (const g of G) {
+        const s = f.g[g.k];
+        $$(`.ag[data-g="${g.k}"] .fc`, v).forEach((b) => { b.classList.toggle("inc", s.inc.has(b.dataset.v)); b.classList.toggle("exc", s.exc.has(b.dataset.v)); });
+        $(`[data-clr="${g.k}"]`, v).hidden = !s.inc.size && !s.exc.size;
+      }
+      const lbl = (g, val) => g.opts.find(([x]) => x === val)?.[1] || val;
+      const parts = G.flatMap((g) => [
+        f.g[g.k].inc.size ? `<span class="sc"><b>${g.l}:</b> ${[...f.g[g.k].inc].map((x) => esc(lbl(g, x))).join(" أو ")}<button data-rm="${g.k}:inc" aria-label="إزالة">×</button></span>` : "",
+        f.g[g.k].exc.size ? `<span class="sc ex"><b>ليس ${g.l}:</b> ${[...f.g[g.k].exc].map((x) => esc(lbl(g, x))).join("، ")}<button data-rm="${g.k}:exc" aria-label="إزالة">×</button></span>` : "",
+      ]).filter(Boolean);
+      $("#adv-sum", v).hidden = !parts.length;
+      $("#adv-sum", v).innerHTML = parts.join("") + (parts.length > 1 ? `<button class="sc-clear" data-rm="all">مسح الكل</button>` : "");
       $("#count", v).textContent = `${fmtNum(list.length)} من ${fmtNum(S.mosques.length)} مسجد`;
       const shown = list.slice(0, mobile ? 200 : 600);
       if (mobile) {
@@ -87,13 +127,56 @@ route("mosques", {
       v._list = list;
       const dot = $("#f-toggle .dot", v); dot.textContent = activeFilters(); dot.hidden = !activeFilters();
     };
-    const setParam = () => { const qs = new URLSearchParams(Object.entries(f).filter(([, x]) => x)).toString(); history.replaceState(null, "", "#/mosques" + (qs ? "?" + qs : "")); };
-    $("#q", v).oninput = (e) => { f.q = e.target.value; apply(); setParam(); };
-    $("#f-stage", v).onchange = (e) => { f.stage = e.target.value; apply(); setParam(); };
-    $("#f-assoc", v)?.addEventListener("change", (e) => { f.assoc = e.target.value; apply(); setParam(); });
-    $("#f-region", v).onchange = (e) => { f.region = e.target.value; apply(); setParam(); };
-    $("#f-district", v).onchange = (e) => { f.district = e.target.value; apply(); setParam(); };
-    $("#f-missing", v)?.addEventListener("change", (e) => { f.missing = e.target.checked ? "1" : ""; apply(); setParam(); });
+    const qsOf = () => { const o = {}; if (f.q) o.q = f.q; for (const g of G) { const s = serSel(f.g[g.k]); if (s) o[g.k] = s; } return new URLSearchParams(o).toString(); };
+    const setParam = () => { const qs = qsOf(); history.replaceState(null, "", "#/mosques" + (qs ? "?" + qs : "")); };
+    const update = () => { apply(); setParam(); paintSaved(); };
+    $("#q", v).oninput = (e) => { f.q = e.target.value; update(); };
+    // تدوير حالة الخيار: بلا ← تضمين ← استبعاد ← بلا
+    $("#filters", v).addEventListener("click", (e) => {
+      const b = e.target.closest(".fc"); if (b) {
+        const s = f.g[b.closest(".ag").dataset.g], val = b.dataset.v;
+        if (s.inc.has(val)) { s.inc.delete(val); s.exc.add(val); } else if (s.exc.has(val)) s.exc.delete(val); else s.inc.add(val);
+        return update();
+      }
+      const c = e.target.closest("[data-clr]"); if (c) { const s = f.g[c.dataset.clr]; s.inc.clear(); s.exc.clear(); return update(); }
+    });
+    // زر الفأرة الأيمن على الخيار يستبعده مباشرة
+    $("#filters", v).addEventListener("contextmenu", (e) => {
+      const b = e.target.closest(".fc"); if (!b) return;
+      e.preventDefault(); const s = f.g[b.closest(".ag").dataset.g], val = b.dataset.v;
+      s.inc.delete(val); s.exc.has(val) ? s.exc.delete(val) : s.exc.add(val); update();
+    });
+    $$(".ag-q", v).forEach((inp) => inp.oninput = () => { const q = inp.value.trim(); $$(".fc", inp.closest(".ag")).forEach((b) => b.hidden = q && !b.textContent.includes(q)); });
+    $("#adv-sum", v).onclick = (e) => {
+      const b = e.target.closest("[data-rm]"); if (!b) return;
+      if (b.dataset.rm === "all") G.forEach((g) => { f.g[g.k].inc.clear(); f.g[g.k].exc.clear(); });
+      else { const [k, part] = b.dataset.rm.split(":"); f.g[k][part].clear(); }
+      update();
+    };
+    $("#adv-clear", v).onclick = () => { G.forEach((g) => { f.g[g.k].inc.clear(); f.g[g.k].exc.clear(); }); f.q = ""; $("#q", v).value = ""; update(); };
+    // عمليات البحث المحفوظة (في هذا المتصفح)
+    const SKEY = "tayyib.searches";
+    const saved = () => { try { return JSON.parse(localStorage.getItem(SKEY)) || []; } catch { return []; } };
+    const paintSaved = () => {
+      const list = saved(), cur = qsOf();
+      $("#adv-saved", v).innerHTML = list.length ? `<span class="muted small">عمليات محفوظة:</span>${list.map((x, i) => `<span class="sv ${x.qs === cur ? "on" : ""}"><button data-sv="${i}">${esc(x.name)}</button><button data-svdel="${i}" aria-label="حذف">×</button></span>`).join("")}` : "";
+    };
+    $("#adv-saved", v).onclick = (e) => {
+      const a = e.target.closest("[data-sv]"), d = e.target.closest("[data-svdel]"), list = saved();
+      if (a) { history.replaceState(null, "", "#/mosques?" + list[+a.dataset.sv].qs); render(); }
+      if (d) { list.splice(+d.dataset.svdel, 1); try { localStorage.setItem(SKEY, JSON.stringify(list)); } catch {} paintSaved(); }
+    };
+    $("#adv-save", v).onclick = async () => {
+      const qs = qsOf(); if (!qs) return toast("اختر شروط البحث أولًا", "err");
+      const name = await modal({ title: "حفظ البحث", body: fld("name", "اسم البحث", { req: true, ph: "مثال: مساجد الشمال الناقصة البيانات" }),
+        actions: [{ label: `${I.check} حفظ`, cls: "primary", onClick: (mb) => $('[name="name"]', mb).value.trim() || false }, { label: "إلغاء" }] });
+      if (!name) return;
+      const list = saved().filter((x) => x.name !== name); list.push({ name, qs });
+      try { localStorage.setItem(SKEY, JSON.stringify(list)); } catch {}
+      paintSaved(); toast("تم حفظ البحث");
+    };
+    if (activeFilters()) toggleAdv(!mobile);
+    paintSaved();
     const paintSel = () => {
       $("#b-assign", v).disabled = $("#b-del", v).disabled = $("#b-region", v).disabled = !sel.size;
       $("#b-region", v).innerHTML = `${I.map} تحديد الجهة${sel.size ? ` (${sel.size})` : ""}`;
