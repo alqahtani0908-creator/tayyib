@@ -1,0 +1,401 @@
+# -*- coding: utf-8 -*-
+"""يبني أدلة الاستخدام لكل صلاحية في docs/guide/ — الصور من tests/shots.js على بيانات تجريبية."""
+import io, pathlib, html
+
+root = pathlib.Path(__file__).parent
+out = root / "docs" / "guide"
+VERSION = "نوفمبر 2026"
+SITE = "https://alqahtani0908-creator.github.io/tayyib/"
+
+GLYPH = '<g fill="#ceb26b"><path fill-rule="evenodd" d="M1655 53H1697V195H1830A115 115 0 0 1 1945 310A115 115 0 0 1 1830 425H1180A113 113 0 0 1 1067 312V240C1067 205 1050 184 1017 176L1029 133C1082 146 1110 185 1110 240V318A62 62 0 0 0 1172 380H1536V217H1578V380H1655ZM1697 238V310H1902A72 72 0 0 0 1830 238Z"/><path d="M1307 445l33 33-33 33-33-33zM1523 445l33 33-33 33-33-33zM1589 445l33 33-33 33-33-33z"/></g>'
+LOGO = f'<svg viewBox="1000 36 962 492" xmlns="http://www.w3.org/2000/svg">{GLYPH}</svg>'
+BADGE = f'<svg viewBox="952 0 1046 565" xmlns="http://www.w3.org/2000/svg"><rect x="952" width="1046" height="565" rx="62" fill="#563331"/>{GLYPH}</svg>'
+
+# ───── عناصر المحتوى ─────
+def P(t): return f"<p>{t}</p>"
+def steps(*items): return "<ol class='steps'>" + "".join(f"<li>{i}</li>" for i in items) + "</ol>"
+def bullets(*items): return "<ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul>"
+def tip(t, kind="tip"):
+    label = {"tip": "نصيحة", "note": "ملاحظة", "warn": "تنبيه"}[kind]
+    return f"<div class='call {kind}'><b>{label}</b><span>{t}</span></div>"
+def fig(img, cap, mobile=False): return f"<figure class='{'mob' if mobile else ''}'><img src='img/{img}.jpg' alt='{html.escape(cap)}' loading='lazy'><figcaption>{cap}</figcaption></figure>"
+def figs2(a, b): return f"<div class='pair'>{a}{b}</div>"
+def table(head, rows): return "<table><thead><tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr></thead><tbody>" + "".join("<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>" for r in rows) + "</tbody></table>"
+
+WORKFLOW = [
+    ("1", "إدخال المسجد في القائمة المختارة", "مدير النظام"), ("2", "إسناد المسجد لجمعية مشرفة", "مدير النظام"),
+    ("3", "استكمال بيانات المسجد (الحي، الإمام، المؤذن، الخادم)", "الجمعية"), ("4", "التواصل مع الإمام ورفع تقرير قابلية التطبيق", "الجمعية"),
+    ("5", "دراسة احتياج الجامع ورفع التقرير", "الشركة المنفذة"), ("6", "اعتماد التركيب", "مدير النظام"),
+    ("7", "التركيب ورفع تقرير التركيب", "الشركة المنفذة"), ("8", "الزيارات الأسبوعية", "الجمعية"),
+    ("9", "قياس رضا المصلين عن العطر", "الجمعية"), ("10", "التقرير الشهري لأداء التعطير", "الجمعية"),
+    ("11", "التعبئة الشهرية (مع تذكير آلي قبل ٧٢ ساعة)", "الشركة المنفذة"), ("12", "المتابعة والتقارير والمؤشرات", "الجميع"),
+]
+def workflow(mine):
+    rows = [(n, t, w) for n, t, w in WORKFLOW]
+    body = "".join(f"<tr class='{'me' if w in mine else ''}'><td class='n'>{n}</td><td>{t}</td><td>{w}</td></tr>" for n, t, w in rows)
+    return f"<table class='wf'><thead><tr><th>#</th><th>الخطوة</th><th>المسؤول</th></tr></thead><tbody>{body}</tbody></table>"
+
+def login_section(role_word):
+    return ("الدخول وتفعيل الحساب", [
+        P(f"يُنشئ مدير النظام حسابك ويرسل لك <b>رمز تفعيل</b> مع رابط المنصة عبر واتساب أو البريد. تفعّل الحساب مرة واحدة، ثم تدخل بعدها بالبريد وكلمة المرور."),
+        steps(f"افتح رابط المنصة: <span class='ltr'>{SITE}</span>",
+              "اختر تبويب <b>«تفعيل حساب جديد»</b>.",
+              "اكتب بريدك الإلكتروني كما سجّله المدير، ورمز التفعيل المكوّن من ٨ خانات.",
+              "اختر كلمة مرور من ٨ أحرف على الأقل، ثم اضغط <b>«تفعيل الحساب»</b> — تدخل المنصة مباشرة."),
+        figs2(fig("login-up", "تفعيل حساب جديد برمز التفعيل"), fig("login", "الدخول المعتاد بالبريد وكلمة المرور")),
+        tip("إذا نسيت كلمة المرور فاطلب من مدير النظام <b>«إعادة تعيين الدخول»</b>؛ يصلك رمز تفعيل جديد وتختار كلمة مرور جديدة.", "note"),
+    ])
+
+def shell_section(extra=""):
+    return ("التنقل في المنصة", [
+        P("القائمة الجانبية تعرض الصفحات المتاحة لصلاحيتك فقط. في الأعلى: زر <b>البحث السريع</b> للوصول لأي مسجد بالاسم أو الرمز أو الحي أو اسم الإمام وجواله، وزر <b>الإشعارات</b> وعليه عدد غير المقروء. وفي أسفل القائمة زر التبديل بين <b>الوضع الفاتح والداكن</b> وزر الخروج."),
+        P("المنصة تعمل على الجوال بنفس الحساب: تظهر القائمة شريطًا سفليًا بأهم الصفحات، وزر «المزيد» يفتح بقية القائمة، والمساجد تظهر بطاقات سهلة اللمس." + extra),
+        figs2(fig("mob-dash", "لوحة المؤشرات على الجوال", True), fig("mob-mosques", "قائمة المساجد على الجوال", True)),
+        tip("لإضافة المنصة إلى الشاشة الرئيسية في الآيفون: افتحها في Safari ← زر المشاركة ← «إضافة إلى الشاشة الرئيسية». وفي أندرويد: قائمة Chrome ← «إضافة إلى الشاشة الرئيسية»."),
+    ])
+
+def notif_section(img):
+    return ("الإشعارات", [
+        P("تصلك الإشعارات لحظيًا مع تنبيه صوتي خفيف عند كل ما يخصك: إسناد مسجد، تقرير جديد، اعتماد، مهمة، أو تذكير بموعد. اضغط الجرس لعرض آخر الإشعارات، واضغط أي إشعار للانتقال لصفحته مباشرة."),
+        fig(img, "لوحة الإشعارات السريعة"),
+        tip("فعّل <b>«تنبيهات المتصفح»</b> من لوحة الإشعارات ليصلك التنبيه حتى لو كانت المنصة في تبويب آخر."),
+    ])
+
+# ───── الأدلة ─────
+GUIDES = {}
+
+GUIDES["admin"] = dict(title="دليل مدير النظام", who="مدير النظام", lead="إدارة المشروع كاملًا: المساجد والجمعيات والحسابات، واعتماد التركيب، ومتابعة الأداء.", sections=[
+    ("دورك في المنصة", [
+        P("مدير النظام يملك كل الصلاحيات: يُدخل المساجد ويسندها للجمعيات، ويعتمد التركيب بعد دراسة الاحتياج، ويُنشئ حسابات الجمعيات والشركة وحسابات العرض، ويتابع المؤشرات والتقارير، ويضبط إعدادات المنصة. ويستطيع تنفيذ أي خطوة عن أي طرف عند الحاجة."),
+        P("يمر كل مسجد بالمسار التالي، وتنتقل المرحلة تلقائيًا عند رفع كل تقرير، ويصل الإشعار للطرف التالي:"),
+        workflow(["مدير النظام"]),
+    ]),
+    login_section("admin"),
+    shell_section(),
+    ("لوحة المؤشرات", [
+        P("أول ما يظهر بعد الدخول. اختر الفترة (٧ أيام، ٣٠ يومًا، ٩٠ يومًا، ١٢ شهرًا) أو جمعية معيّنة من الأعلى، فتتحدث كل الأرقام."),
+        bullets("<b>إنجاز المشروع:</b> المساجد المركّبة من الإجمالي، وعدد الأجهزة، واكتمال البيانات، ومتوسط مدة التنفيذ.",
+                "<b>مربعات المؤشرات:</b> التعبئات، والزيارات، ورضا المصلين، والالتزام بالمواعيد — مع مقارنة بالفترة السابقة.",
+                "<b>يحتاج انتباهك:</b> التعبئات المتأخرة والقريبة، والزيارات المتأخرة، والدراسات بانتظار اعتمادك… اضغط أي بند لفتح القائمة المعنية."),
+        fig("a-dash", "لوحة المؤشرات"),
+        fig("a-attn", "قسم «يحتاج انتباهك» ومسار التنفيذ"),
+        P("<b>قسم المقارنات</b> فيه أربعة تبويبات: الفترة مقابل السابقة، وشهر بشهر، والجمعيات، والأحياء. في تبويب الجمعيات رتّبها بأي مقياس، واعرض «الفرق عن المتوسط»، وقارن جمعيتين مباشرة."),
+        figs2(fig("a-cmp", "الفترة الحالية مقابل السابقة"), fig("a-cmp-assoc", "مقارنة الجمعيات")),
+        tip("زر الطباعة أعلى اللوحة يُخرج اللوحة بصيغة مناسبة للعرض أو الحفظ PDF."),
+    ]),
+    ("خريطة الأحياء", [
+        P("تعرض أحياء الرياض التي يتواجد فيها المشروع ملوّنة حسب عدد المساجد. اختر «كل المساجد» أو «قيد التشغيل» أو «تحت الإجراء»، وصفِّ بالجمعية. اضغط أي حي لعرض أرقامه والانتقال لمساجده."),
+        fig("a-map", "خريطة الأحياء وبطاقة الحي"),
+        tip("تظهر نقطة لكل مسجد إذا كان «رابط الموقع» يحتوي الإحداثيات. وإذا كُتب اسم الحي بصيغة غير معروفة يظهر في خانة «أحياء لم تُحدَّد على الخريطة».", "note"),
+    ]),
+    ("المساجد: القائمة والبحث", [
+        P("صفحة المساجد تعرض كل المساجد مرقّمة مع مرحلتها وفريقها (الإمام والمؤذن والخادم) وأزرار الاتصال والواتساب. ابحث بالاسم أو الرمز أو الحي، وافتح <b>التصفية</b> للتصفية بالمرحلة أو الجمعية أو الحي أو «البيانات الناقصة»."),
+        fig("a-mosques", "قائمة المساجد"),
+        fig("a-filters", "لوحة التصفية"),
+        tip("زر <b>«تصدير»</b> يحفظ القائمة المعروضة (بعد التصفية) كملف Excel."),
+    ]),
+    ("إضافة المساجد", [
+        P("<b>مسجد واحد:</b> اضغط «إضافة مسجد» واملأ البيانات. الاسم وحده إلزامي، والبقية يمكن أن تكملها الجمعية لاحقًا."),
+        fig("a-add", "نموذج إضافة مسجد"),
+        P("<b>عدة مساجد من Excel:</b> اضغط «استيراد Excel»، ويمكنك تنزيل النموذج الجاهز أولًا. ارفع الملف فتتعرف المنصة على الأعمدة تلقائيًا (الاسم، الحي، الإمام، الجوال…) مع إمكانية تعديل المطابقة، ويظهر لك معاينة قبل الحفظ. المساجد المكررة (نفس الاسم والحي) تُستبعد تلقائيًا."),
+        fig("a-import", "استيراد المساجد من ملف Excel"),
+    ]),
+    ("إسناد المساجد للجمعيات", [
+        steps("في قائمة المساجد حدّد المساجد بمربع الاختيار (أو حدّد الكل من رأس الجدول).",
+              "اضغط <b>«إسناد المحدد»</b> واختر الجمعية المشرفة.",
+              "تنتقل المساجد لمرحلة «استكمال البيانات» ويصل إشعار للجمعية."),
+        fig("a-assign", "إسناد عدة مساجد لجمعية"),
+        P("ويمكن الإسناد من صفحة المسجد نفسه عبر زر «إسناد الآن» في بطاقة الإجراء التالي."),
+    ]),
+    ("صفحة المسجد", [
+        P("تجمع كل ما يخص المسجد: بياناته وفريقه، و<b>بطاقة الإجراء التالي</b> (ما المطلوب ومن المسؤول)، ومسار المراحل الاثنتي عشرة، وتبويبات التقارير والمهام والملفات والسجل."),
+        fig("a-m-selected", "صفحة مسجد في مرحلة الإسناد"),
+        P("أزرار الأعلى: تعديل البيانات، تغيير الجمعية، إسناد مهمة، طباعة ملف المسجد، <b>إجراءات</b> (تغيير المرحلة يدويًا مع ذكر السبب — للإيقاف أو إعادة التفعيل أو التصحيح)، و<b>حذف</b> المسجد."),
+        fig("a-more", "إجراءات المدير: تغيير المرحلة يدويًا"),
+        tip("الحذف نهائي ويحذف معه التقارير والمهام والملفات. ويمكن حذف عدة مساجد معًا من القائمة بزر «حذف المحدد».", "warn"),
+    ]),
+    ("اعتماد التركيب", [
+        P("بعد أن ترفع الشركة تقرير دراسة الاحتياج، يصلك إشعار وتظهر في صفحة المسجد بطاقة <b>«اعتماد التركيب»</b>."),
+        steps("افتح المسجد واضغط <b>«مراجعة واعتماد»</b>.",
+              "راجع تقرير الدراسة (عدد الأجهزة، العطر، مواقع التركيب، والمرفقات).",
+              "اكتب ملاحظة إن وجدت، ثم اختر <b>«اعتماد التركيب»</b> أو <b>«إعادة الدراسة للشركة»</b>.",
+              "يصل القرار وملاحظتك للشركة والجمعية."),
+        figs2(fig("a-decide-card", "بطاقة الإجراء: بانتظار اعتمادك"), fig("a-decide", "نافذة مراجعة الدراسة واتخاذ القرار")),
+    ]),
+    ("المهام والطلبات", [
+        P("لإسناد عمل محدد لطرف (الجمعية أو الشركة) مع موعد وأولوية، مرتبط بمسجد أو عام. يتابع الطرفان المهمة بالتعليقات والمرفقات حتى إغلاقها، وتظهر المهام المتأخرة في لوحة المؤشرات."),
+        figs2(fig("a-tasks", "قائمة المهام والطلبات"), fig("a-task-new", "إنشاء مهمة جديدة")),
+    ]),
+    ("جدول التعبئة والتقارير والمنجزات", [
+        P("<b>جدول التعبئة:</b> المساجد قيد التشغيل مقسّمة: متأخرة، وخلال ٧٢ ساعة، ومجدولة لاحقًا، والزيارات الأسبوعية المستحقة."),
+        fig("a-refills", "جدول التعبئة والزيارات"),
+        P("<b>التقارير:</b> كل التقارير المرفوعة مع التصفية بالنوع والفترة، وطباعة أي تقرير، و<b>التقرير الشهري المجمّع</b> لكل المساجد."),
+        fig("a-reports", "مركز التقارير"),
+        P("<b>المنجزات:</b> معرض المساجد المركّبة بصورها وأرقام المشروع، مناسب للعرض على الجهات."),
+        fig("a-ach", "صفحة المنجزات"),
+    ]),
+    ("الرسائل الجماعية", [
+        steps("اختر المستلمين: الأئمة، المؤذنون، الخدام، مسؤولو الجمعيات، أو الحسابات — وصفِّهم بالجمعية والمرحلة والحي.",
+              "أضف أرقامًا إضافية إن أردت (رقم في كل سطر، ويمكن إضافة الاسم بعد فاصلة).",
+              "اكتب الرسالة واستخدم المتغيرات <b>{الاسم}</b> و<b>{المسجد}</b> و<b>{الحي}</b> لتخصيصها لكل مستلم.",
+              "اضغط «تجهيز قائمة الإرسال» ثم أرسل لكل مستلم عبر واتساب بضغطة، ويُحفظ ما أُرسل في السجل."),
+        fig("a-messages", "إعداد رسالة جماعية"),
+    ]),
+    ("الجمعيات", [
+        P("أضف الجمعيات المشرفة وبيانات التواصل معها، وتابع لكل جمعية عدد مساجدها ونسبة التركيب."),
+        figs2(fig("a-assocs", "قائمة الجمعيات المشرفة"), fig("a-assoc-new", "إضافة جمعية")),
+    ]),
+    ("الحسابات والدعوات", [
+        steps("من «الحسابات» اضغط <b>«إنشاء حساب»</b>: الاسم، البريد (اسم الدخول)، الجوال، والصلاحية (مدير، جمعية مشرفة مع اختيار الجمعية، الشركة المنفذة، حساب عرض).",
+              "بعد الحفظ تظهر نافذة الدعوة: أرسل للمستخدم رابط المنصة ورمز التفعيل عبر واتساب أو البريد بضغطة.",
+              "يفعّل المستخدم حسابه بنفسه ويختار كلمة مروره."),
+        fig("a-accounts", "قائمة الحسابات وحالة كل حساب"),
+        figs2(fig("a-acc-new", "إنشاء حساب وتحديد الصلاحية"), fig("a-invite", "إرسال رمز التفعيل")),
+        bullets("<b>إعادة تعيين الدخول</b> (أيقونة المفتاح): عند نسيان كلمة المرور أو تغيّر الشخص — يُلغى الدخول الحالي ويصدر رمز تفعيل جديد.",
+                "<b>تعطيل الحساب:</b> من تعديل الحساب، فيُمنع من الدخول دون حذف سجله.",
+                "<b>حساب العرض:</b> يرى لوحة المؤشرات والخريطة والمنجزات فقط، دون أرقام الجوالات أو تعديل أي شيء."),
+    ]),
+    ("الإعدادات", [
+        bullets("<b>هوية المنصة:</b> اسم المنصة والمشروع والشركة المنفذة، واستبدال الشعار.",
+                "<b>التشغيل والتذكيرات:</b> دورة التعبئة الافتراضية (يوم)، والتذكير قبل التعبئة (ساعة)، وتكرار الزيارة الدورية (يوم). يفحص الخادم المواعيد كل ساعة ويرسل التذكيرات تلقائيًا.",
+                "<b>خط الهوية:</b> رفع ملفات خط المؤسسة لتظهر المنصة به."),
+        fig("a-settings", "الإعدادات"),
+    ]),
+    notif_section("a-notif"),
+    ("البحث السريع", [P("زر البحث أعلى الصفحة يبحث في كل المساجد بالاسم أو الرمز أو الحي أو اسم الإمام أو جواله، ويفتح المسجد مباشرة."), fig("a-search", "البحث السريع")]),
+])
+
+GUIDES["association"] = dict(title="دليل الجمعية المشرفة", who="الجمعية المشرفة", lead="متابعة المساجد المسندة لجمعيتكم: استكمال البيانات، والتواصل مع الأئمة، والزيارات الأسبوعية، وقياس الرضا، والتقرير الشهري.", sections=[
+    ("دورك في المنصة", [
+        P("ترى الجمعية <b>مساجدها فقط</b>، ويصلها إشعار عند إسناد مسجد جديد لها. الخطوات المظللة في الجدول من مسؤولية الجمعية:"),
+        workflow(["الجمعية"]),
+        P("في صفحة كل مسجد تظهر <b>بطاقة الإجراء التالي</b> لتعرف المطلوب منك، أو «بانتظار…» إذا كانت الخطوة عند طرف آخر."),
+    ]),
+    login_section("association"),
+    shell_section(),
+    ("لوحة المؤشرات", [
+        P("تعرض أرقام جمعيتكم: المساجد المركّبة، والتعبئات والزيارات، ورضا المصلين، والالتزام بالمواعيد، وما يحتاج انتباهك (زيارات متأخرة، مساجد بانتظار استكمال البيانات…)، مع مقارنات بالفترات السابقة."),
+        fig("s-dash", "لوحة المؤشرات للجمعية"),
+    ]),
+    ("مساجدي", [
+        P("قائمة مساجد الجمعية مرقّمة مع المرحلة والفريق. البيانات الناقصة تظهر بالأحمر (مثل: «ناقص: مؤذن، خادم»). اضغط أيقونة الواتساب أو الاتصال بجانب أي اسم للتواصل مباشرة."),
+        fig("s-mosques", "قائمة مساجد الجمعية"),
+        tip("استخدم التصفية «بيانات ناقصة فقط» لترى المساجد التي تحتاج استكمالًا."),
+    ]),
+    ("الخطوة ٣: استكمال البيانات", [
+        steps("افتح المسجد الذي في مرحلة «استكمال البيانات».",
+              "اضغط <b>«استكمال البيانات»</b> في بطاقة الإجراء التالي.",
+              "أكمل الحي، واسم وجوال كل من الإمام والمؤذن والخادم، ويُفضل رابط الموقع من خرائط Google.",
+              "احفظ ثم اضغط <b>«اعتماد اكتمال البيانات»</b> — ينتقل المسجد لمرحلة التواصل مع الإمام."),
+        figs2(fig("s-assigned", "مسجد بانتظار استكمال بياناته"), fig("s-complete", "نموذج استكمال البيانات")),
+        tip("ضع في «رابط الموقع» رابطًا يحتوي الإحداثيات (اضغط مطولًا على الموقع في خرائط Google وانسخه) ليظهر المسجد نقطةً على خريطة الأحياء."),
+    ]),
+    ("الخطوة ٤: التواصل مع الإمام", [
+        steps("تواصل مع الإمام (اتصال أو زيارة أو واتساب) لعرض المشروع والتأكد من قابلية التطبيق.",
+              "في صفحة المسجد اضغط <b>«رفع التقرير»</b>.",
+              "املأ: تاريخ التواصل، الطريقة، مع من تم التواصل، <b>قابلية التطبيق</b>، والوقت المناسب للزيارة والتركيب، وأي ملاحظات أو مرفقات.",
+              "إذا كان قابلًا للتطبيق يصل الإشعار للشركة لدراسة الاحتياج."),
+        figs2(fig("s-datadone", "المسجد في مرحلة التواصل مع الإمام"), fig("s-feas", "تقرير التواصل مع الإمام")),
+    ]),
+    ("بعد التركيب: المتابعة الدورية", [
+        P("عند تركيب الأجهزة يصبح المسجد <b>«قيد التشغيل»</b> وتظهر في صفحته أزرار المتابعة الدورية."),
+        fig("s-active", "مسجد قيد التشغيل وأزرار المتابعة"),
+        P("<b>الخطوة ٨ — الزيارة الأسبوعية:</b> حالة الأجهزة (سليمة أو توجد ملاحظة فنية)، وعدد الأجهزة العاملة، ومستوى الرائحة، ونظافة الأجهزة، مع صور. الملاحظة الفنية تصل للشركة والمدير فورًا."),
+        fig("s-visit", "تقرير الزيارة الأسبوعية"),
+        P("<b>الخطوة ٩ — قياس الرضا:</b> الفئة المستطلعة وعددها، والرضا عن نوع العطر وقوة الرائحة، و<b>الرضا العام</b> من ٥، مع الآراء والمقترحات."),
+        fig("s-sat", "قياس رضا المصلين"),
+        P("<b>الخطوة ١٠ — التقرير الشهري:</b> اختر الشهر فتُحسب الزيارات ومتوسط الرضا والتعبئات تلقائيًا، ثم قيّم أداء التعطير وأضف الملاحظات والتوصيات."),
+        fig("s-monthly", "التقرير الشهري لأداء التعطير"),
+        P("كل التقارير تظهر في تبويب <b>«التقارير»</b> بصفحة المسجد بالترتيب الزمني، ويمكن طباعة أي تقرير."),
+        fig("s-reports-tab", "سجل تقارير المسجد"),
+        tip("يصلك تذكير آلي عندما تتأخر الزيارة الأسبوعية لأي مسجد، وعند حلول موعد التقرير الشهري.", "note"),
+    ]),
+    ("جدول التعبئة والزيارات", [
+        P("يعرض مواعيد تعبئة مساجد الجمعية (المتأخرة والقريبة واللاحقة) والزيارات الأسبوعية المستحقة، لتنسيق زياراتكم مع مواعيد الشركة."),
+        fig("s-refills", "جدول التعبئة والزيارات الأسبوعية"),
+    ]),
+    ("المهام والطلبات", [
+        P("تظهر هنا المهام المسندة لجمعيتكم من المدير. افتح المهمة لقراءة تفاصيلها، وأضف تعليقًا أو مرفقًا، وغيّر حالتها عند الإنجاز. ويمكنكم رفع <b>طلب</b> للمدير (مثل طلب صيانة أو إضافة مسجد)."),
+        figs2(fig("s-tasks", "مهام وطلبات الجمعية"), fig("s-task-detail", "تفاصيل المهمة والتعليقات")),
+    ]),
+    ("الرسائل الجماعية", [
+        P("أرسل رسالة واتساب لأئمة أو مؤذني أو خدام مساجد الجمعية دفعة واحدة، مع تخصيص الرسالة بالمتغيرات <b>{الاسم}</b> و<b>{المسجد}</b> و<b>{الحي}</b>."),
+        fig("s-messages", "رسالة جماعية لفرق المساجد"),
+    ]),
+    notif_section("s-notif"),
+])
+
+GUIDES["company"] = dict(title="دليل الشركة المنفذة", who="الشركة المنفذة", lead="دراسة احتياج الجوامع، والتركيب، والتعبئة الشهرية في مواعيدها مع رفع التقارير.", sections=[
+    ("دورك في المنصة", [
+        P("ترى الشركة المساجد التي وصلت لمرحلة <b>دراسة الاحتياج</b> وما بعدها. الخطوات المظللة من مسؤولية الشركة:"),
+        workflow(["الشركة المنفذة"]),
+    ]),
+    login_section("company"),
+    shell_section(),
+    ("لوحة المؤشرات", [
+        P("تعرض التعبئات المتأخرة والقريبة، والدراسات والتركيبات المطلوبة، والالتزام بمواعيد التعبئة، ورضا المصلين، مع المقارنة بالفترة السابقة."),
+        fig("c-dash", "لوحة المؤشرات للشركة"),
+    ]),
+    ("المساجد", [
+        P("قائمة المساجد الموجهة للشركة مع مرحلتها وبيانات التواصل مع الإمام والخادم لتنسيق الزيارة."),
+        fig("c-mosques", "مساجد الشركة"),
+    ]),
+    ("الخطوة ٥: دراسة الاحتياج", [
+        steps("بعد أن تؤكد الجمعية قابلية التطبيق يصلك إشعار. نسّق الزيارة مع الإمام (الوقت المناسب مذكور في تقرير الجمعية).",
+              "افتح المسجد واضغط <b>«رفع التقرير»</b>.",
+              "املأ: تاريخ الزيارة، <b>عدد الأجهزة المقترحة</b>، نوع الجهاز، المساحة، توفر الكهرباء، العطر المقترح، ومواقع التركيب، وأرفق الصور.",
+              "يصل التقرير لمدير النظام للاعتماد."),
+        fig("c-study", "تقرير دراسة الاحتياج"),
+        tip("إذا أعاد المدير الدراسة تصلك ملاحظته في الإشعار وفي سجل المسجد؛ عدّل وارفع تقريرًا جديدًا.", "note"),
+    ]),
+    ("الخطوة ٧: التركيب", [
+        steps("بعد اعتماد المدير يصلك إشعار «معتمد — بانتظار التركيب».",
+              "نفّذ التركيب ثم اضغط <b>«رفع التقرير»</b> في صفحة المسجد.",
+              "املأ: تاريخ التركيب، عدد الأجهزة المركّبة، العطر المستخدم، <b>دورة التعبئة</b> بالأيام، والأرقام التسلسلية، وأرفق صور الأجهزة بعد التركيب.",
+              "يصبح المسجد «قيد التشغيل» ويُحسب <b>موعد التعبئة التالية تلقائيًا</b>."),
+        fig("c-install", "تقرير التركيب"),
+    ]),
+    ("الخطوة ١١: التعبئة الشهرية", [
+        P("صفحة <b>جدول التعبئة</b> هي مرجعك اليومي: المتأخرة بالأحمر، والمستحقة خلال ٧٢ ساعة، والمجدولة لاحقًا. ويصلك وللمدير <b>تذكير آلي قبل الموعد بـ٧٢ ساعة</b>، وتنبيه عند التأخر."),
+        fig("c-refills", "جدول التعبئة"),
+        steps("بعد التعبئة اضغط <b>«تسجيل التعبئة»</b> من الجدول، أو «تعبئة العطر» من صفحة المسجد.",
+              "املأ: تاريخ ووقت التعبئة، العطر، الكمية (مل)، وعدد الأجهزة التي عُبّئت، وأرفق صورة.",
+              "يُحدّث موعد التعبئة التالية تلقائيًا حسب دورة المسجد."),
+        fig("c-refill", "تقرير التعبئة"),
+        tip("تُحتسب التعبئة «في موعدها» إذا سُجلت حتى يوم واحد بعد الموعد، وتظهر نسبة الالتزام في لوحة المؤشرات والمقارنات.", "note"),
+    ]),
+    ("المهام والطلبات", [
+        P("مهام الصيانة أو المتابعة التي يسندها المدير للشركة، مع الموعد والأولوية. افتح المهمة، وأضف التعليقات والصور، وغيّر حالتها عند الإنجاز."),
+        figs2(fig("c-tasks", "مهام الشركة"), fig("c-task-detail", "تفاصيل المهمة")),
+        tip("الملاحظات الفنية التي ترفعها الجمعية في زياراتها تصلك فورًا كإشعار — راجعها في سجل تقارير المسجد."),
+    ]),
+    notif_section("c-notif"),
+])
+
+GUIDES["viewer"] = dict(title="دليل حساب العرض", who="حساب العرض", lead="متابعة مؤشرات المشروع وإنجازاته دون صلاحية تعديل.", sections=[
+    ("صلاحياتك", [
+        P("حساب العرض مخصص للجهات والمسؤولين الذين يتابعون المشروع. يرى: <b>لوحة المؤشرات</b> بكل مقارناتها، و<b>خريطة الأحياء</b>، و<b>المنجزات</b>، و<b>الإشعارات</b>. ولا يرى أرقام جوالات فرق المساجد، ولا يعدّل أي بيانات."),
+    ]),
+    login_section("viewer"),
+    ("لوحة المؤشرات", [
+        P("اختر الفترة من الأعلى (٧ أيام إلى ١٢ شهرًا) أو جمعية معينة. تعرض اللوحة إنجاز المشروع، والتعبئات والزيارات، ورضا المصلين، والالتزام بالمواعيد، ومسار التنفيذ، والتوزيع على الأحياء، وأداء الجمعيات."),
+        fig("v-dash", "لوحة المؤشرات"),
+        P("في <b>قسم المقارنات</b>: الفترة الحالية مقابل السابقة، وشهر بشهر، وترتيب الجمعيات والأحياء بأي مقياس مع الفرق عن المتوسط، ومقارنة مباشرة بين جمعيتين."),
+        fig("a-cmp", "المقارنات بين الفترات"),
+        tip("زر الطباعة أعلى اللوحة يُخرجها مناسبة للعرض أو الحفظ PDF."),
+    ]),
+    ("خريطة الأحياء", [
+        P("أحياء الرياض التي يتواجد فيها المشروع، ملوّنة حسب عدد المساجد. اضغط أي حي لترى عدد مساجده وما هو قيد التشغيل وتحت الإجراء وعدد أجهزة التعطير والجمعيات العاملة فيه."),
+        fig("v-map", "خريطة الأحياء"),
+    ]),
+    ("المنجزات", [
+        P("معرض المساجد المركّبة بصورها مع أرقام المشروع: عدد المساجد المعطّرة، وأجهزة التعطير، وعمليات التعبئة، ومتوسط رضا المصلين."),
+        fig("v-ach", "المنجزات"),
+    ]),
+    notif_section("v-notif"),
+])
+
+CSS = """
+:root{--brown:#563331;--gold:#ceb26b;--gold-soft:#f5eedc;--cream:#fbfaf6;--ink:#2b1a18;--ink2:#5e4d4a;--ink3:#8e817e;--line:#ebe4d8}
+*{box-sizing:border-box}
+html{background:var(--cream)}
+body{margin:0;font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--ink);line-height:1.85;font-size:15.5px;background:var(--cream)}
+.ltr{direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:#fff;border:1px solid var(--line);padding:1px 6px;border-radius:6px}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px 80px}
+.cover{background:var(--brown);color:#fff;padding:56px 24px 48px;position:relative;overflow:hidden}
+.cover::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 15% 120%,rgba(206,178,107,.25),transparent 70%)}
+.cover .in{max-width:980px;margin:0 auto;position:relative;z-index:1;display:grid;gap:14px}
+.cover .logo{width:150px;height:auto}
+.cover h1{font-size:40px;margin:10px 0 0;line-height:1.3}
+.cover p{margin:0;color:#ead9b5;font-size:17px;max-width:640px}
+.cover .meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:13.5px;color:#d9c9a8}
+.cover .meta b{color:#fff}
+.cover .gold-line{width:72px;height:3px;background:var(--gold);border-radius:3px}
+nav.toc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 26px;margin:-28px 0 30px;position:relative;z-index:2;box-shadow:0 10px 30px rgba(86,51,49,.08)}
+nav.toc h2{margin:0 0 8px;font-size:18px;border:0;padding:0}
+nav.toc ol{margin:0;padding:0 20px 0 0;columns:2;column-gap:36px;font-size:14.5px}
+nav.toc a{color:var(--ink);text-decoration:none}
+nav.toc a:hover{color:var(--brown);text-decoration:underline}
+section{padding-top:18px}
+h2{font-size:24px;margin:30px 0 12px;display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--line);padding-bottom:10px}
+h2 .no{display:inline-grid;place-items:center;min-width:36px;height:36px;border-radius:11px;background:var(--brown);color:var(--gold);font-size:17px;flex:none}
+p{margin:10px 0}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0;display:grid;gap:8px}
+ol.steps li{counter-increment:s;position:relative;padding:10px 52px 10px 14px;background:#fff;border:1px solid var(--line);border-radius:12px}
+ol.steps li::before{content:counter(s);position:absolute;right:12px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--gold-soft);color:var(--brown);font-weight:700;display:grid;place-items:center;font-size:14px}
+ul{padding-right:22px}
+ul li{margin:5px 0}
+figure{margin:18px 0 22px;break-inside:avoid}
+figure img{width:100%;display:block;border-radius:14px;border:1px solid var(--line);box-shadow:0 12px 34px rgba(43,26,24,.12);background:#fff}
+figure.mob img{max-width:300px;margin:0 auto;border-radius:22px}
+figcaption{text-align:center;font-size:13px;color:var(--ink3);margin-top:8px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.pair figure{margin:12px 0}
+.call{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:12px;margin:14px 0;font-size:14.5px;break-inside:avoid}
+.call b{flex:none;font-size:12.5px;padding:2px 10px;border-radius:999px;margin-top:2px}
+.call.tip{background:#f5eedc}.call.tip b{background:var(--gold);color:var(--ink)}
+.call.note{background:#eaf1f8}.call.note b{background:#3b74a8;color:#fff}
+.call.warn{background:#fbecea}.call.warn b{background:#9a4a3a;color:#fff}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--gold-soft);font-weight:700}
+table.wf{break-inside:avoid}
+table.wf td.n{width:44px;text-align:center;color:var(--ink3);font-weight:700}
+table.wf tr.me td{background:#fff8e6;font-weight:700}
+table.wf tr.me td.n{color:var(--brown)}
+footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.dl{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);text-decoration:none;font-weight:700;padding:9px 18px;border-radius:12px;font-size:14px;margin-top:12px;width:max-content}
+@media (max-width:720px){.wrap{padding:0 16px 60px}.cover h1{font-size:30px}nav.toc ol{columns:1}.pair{grid-template-columns:1fr}h2{font-size:20px}}
+@media print{
+  @page{size:A4;margin:14mm 13mm}
+  @page :first{margin:0}
+  html,body{background:#fff;font-size:12.5px}
+  .dl,.noprint{display:none!important}
+  .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;height:297mm;display:flex;align-items:center;padding:0 22mm;margin:0;break-after:page}
+  .cover .in{gap:18px}.cover .logo{width:200px}.cover h1{font-size:46px}
+  nav.toc{margin:0 0 6px;box-shadow:none}
+  section{break-before:page;padding-top:0}
+  section:first-of-type{break-before:auto}
+  h2{margin-top:0}
+  figure img{box-shadow:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+"""
+
+HEAD = """<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title} — منصة طيب</title><link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="guide.css"></head><body>"""
+
+def build(key, g):
+    toc = "".join(f"<li><a href='#s{i}'>{t}</a></li>" for i, (t, _) in enumerate(g["sections"], 1))
+    secs = "".join(f"<section id='s{i}'><h2><span class='no'>{i}</span>{t}</h2>{''.join(body)}</section>" for i, (t, body) in enumerate(g["sections"], 1))
+    page = HEAD.format(title=g["title"]) + f"""
+<header class="cover"><div class="in"><div class="logo">{LOGO}</div><div class="gold-line"></div>
+<h1>{g['title']}</h1><p>{g['lead']}</p>
+<div class="meta"><span>المنصة: <b>طيب — مشروع تعطير مساجد الرياض</b></span><span>الإصدار: <b>{VERSION}</b></span></div>
+<a class="dl noprint" href="pdf/{key}.pdf" download>⤓ تنزيل الدليل PDF</a></div></header>
+<main class="wrap"><nav class="toc"><h2>المحتويات</h2><ol>{toc}</ol></nav>{secs}
+<footer><span>منصة طيب • {g['title']}</span><span>الصور من بيانات تجريبية للتوضيح</span></footer></main></body></html>"""
+    (out / f"{key}.html").write_text(page, encoding="utf-8")
+
+def index():
+    cards = "".join(f"""<a class="card" href="{k}.html"><b>{g['title']}</b><span>{g['lead']}</span><i>فتح الدليل ←</i></a>""" for k, g in GUIDES.items())
+    page = HEAD.format(title="أدلة الاستخدام") + f"""
+<style>.cards{{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:-28px;position:relative;z-index:2}}
+.cards .card{{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;text-decoration:none;color:var(--ink);display:grid;gap:6px;box-shadow:0 10px 30px rgba(86,51,49,.08)}}
+.cards .card b{{font-size:19px}}.cards .card span{{color:var(--ink2);font-size:14px}}.cards .card i{{font-style:normal;color:var(--brown);font-weight:700;font-size:14px;margin-top:6px}}
+.cards .card:hover{{border-color:var(--gold)}}@media(max-width:720px){{.cards{{grid-template-columns:1fr}}}}</style>
+<header class="cover"><div class="in"><div class="logo">{LOGO}</div><div class="gold-line"></div><h1>أدلة استخدام منصة طيب</h1>
+<p>اختر الدليل حسب صلاحية حسابك. كل دليل يشرح خطوات عملك في المنصة بالصور، ويمكن تنزيله PDF.</p></div></header>
+<main class="wrap"><div class="cards">{cards}</div><footer><span>منصة طيب — مشروع تعطير مساجد الرياض</span><span>الإصدار: {VERSION}</span></footer></main></body></html>"""
+    (out / "index.html").write_text(page, encoding="utf-8")
+
+if __name__ == "__main__":
+    (out / "pdf").mkdir(parents=True, exist_ok=True)
+    (out / "guide.css").write_text(CSS, encoding="utf-8")
+    for k, g in GUIDES.items(): build(k, g)
+    index()
+    missing = sorted({s.split("img/")[1].split(".jpg")[0] for f in out.glob("*.html") for s in f.read_text(encoding="utf-8").split("src='")[1:] if "img/" in s} - {p.stem for p in (out / "img").glob("*.jpg")})
+    print("built guides:", ", ".join(GUIDES), "| missing images:", missing or "none")

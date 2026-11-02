@@ -7,31 +7,31 @@
   const id = () => crypto.randomUUID();
   const A1 = id(), A2 = id(), A3 = id();
   const acc = {
-    admin: { id: id(), name: "مدير الاختبار", email: "admin@test.local", role: "admin", user_id: "u-admin", active: true, invite_code: "AAAA1111", created_at: iso(now) },
+    admin: { id: id(), name: "مدير النظام", email: "admin@test.local", role: "admin", user_id: "u-admin", active: true, invite_code: "AAAA1111", created_at: iso(now) },
     association: { id: id(), name: "مشرف الجمعية", email: "assoc@test.local", role: "association", association_id: A1, user_id: "u-assoc", active: true, invite_code: "BBBB1111", phone: "0500000010", created_at: iso(now) },
     company: { id: id(), name: "مهندس الشركة", email: "co@test.local", role: "company", user_id: "u-co", active: true, invite_code: "CCCC1111", created_at: iso(now) },
     viewer: { id: id(), name: "حساب العرض", email: "view@test.local", role: "viewer", user_id: "u-view", active: true, invite_code: "DDDD1111", created_at: iso(now) },
   };
   const db = {
-    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "شركة الاختبار", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
-    associations: [{ id: A1, name: "جمعية اختبار أ", district: "شمال الرياض", contact_name: "مسؤول أ", phone: "0500000001", active: true }, { id: A2, name: "جمعية اختبار ب", active: true }, { id: A3, name: "جمعية اختبار ج", active: true }],
+    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
+    associations: [{ id: A1, name: "جمعية عمارة المساجد بالشمال", district: "شمال الرياض", contact_name: "خالد العتيبي", phone: "0500000001", active: true }, { id: A2, name: "جمعية بيوت الله", active: true }, { id: A3, name: "جمعية مساجدنا", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
     mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [],
   };
   let seq = 0;
   const M = (o) => { const m = { id: id(), code: "M-" + String(++seq).padStart(4, "0"), kind: "جامع", stage: "selected", created_at: iso(now - seq * day), ...o }; db.mosques.push(m); return m; };
-  const full = { imam_name: "إمام اختبار", imam_phone: "0501111111", muezzin_name: "مؤذن اختبار", muezzin_phone: "0502222222", servant_name: "خادم اختبار", servant_phone: "0503333333" };
-  M({ name: "جامع اختبار ١", district: "حي النرجس" });
-  M({ name: "جامع اختبار ٢", district: "الملقا", association_id: A1, stage: "assigned", imam_name: "إمام ناقص" });
-  M({ name: "جامع اختبار ٣", district: "حي النرجس", association_id: A1, stage: "data_done", ...full });
-  M({ name: "جامع اختبار ٤", district: "العليا", association_id: A1, stage: "feasible", ...full });
-  const m5 = M({ name: "جامع اختبار ٥", district: "الملقا", association_id: A2, stage: "study_done", ...full });
-  M({ name: "جامع اختبار ٦", district: "العليا", association_id: A1, stage: "approved", ...full });
-  const m7 = M({ name: "جامع اختبار ٧", district: "حي النرجس", association_id: A1, stage: "active", ...full, devices_count: 4, fragrance: "عطر اختبار", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
-  const m8 = M({ name: "جامع اختبار ٨", district: "حي الروضة", association_id: A2, stage: "active", ...full, devices_count: 2, fragrance: "عطر اختبار", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
+  const full = { imam_name: "الشيخ عبدالله السالم", imam_phone: "0501111111", muezzin_name: "محمد الحربي", muezzin_phone: "0502222222", servant_name: "سعيد أحمد", servant_phone: "0503333333" };
+  M({ name: "جامع الإحسان", district: "حي النرجس" });
+  M({ name: "جامع النور", district: "الملقا", association_id: A1, stage: "assigned", imam_name: "الشيخ فهد القحطاني" });
+  M({ name: "جامع الهدى", district: "حي النرجس", association_id: A1, stage: "data_done", ...full });
+  M({ name: "جامع الرحمة", district: "العليا", association_id: A1, stage: "feasible", ...full });
+  const m5 = M({ name: "جامع الفاروق", district: "الملقا", association_id: A2, stage: "study_done", ...full });
+  M({ name: "جامع السلام", district: "العليا", association_id: A1, stage: "approved", ...full });
+  const m7 = M({ name: "جامع التقوى", district: "حي النرجس", association_id: A1, stage: "active", ...full, devices_count: 4, fragrance: "عود ملكي", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
+  const m8 = M({ name: "جامع البر", district: "حي الروضة", association_id: A2, stage: "active", ...full, devices_count: 2, fragrance: "عود ملكي", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
   db.reports.push(
-    { id: id(), mosque_id: m5.id, type: "needs_study", data: { date: "2026-10-01", devices: "3", fragrance: "عطر اختبار", placement: "المصلى الرئيسي" }, summary: "3 أجهزة", author_role: "company", created_at: iso(now - 5 * day) },
-    { id: id(), mosque_id: m7.id, type: "installation", data: { date: iso(now - 40 * day), devices: "4", fragrance: "عطر اختبار" }, summary: "تركيب 4 أجهزة", author_role: "company", created_at: iso(now - 40 * day) },
+    { id: id(), mosque_id: m5.id, type: "needs_study", data: { date: "2026-10-01", devices: "3", fragrance: "عود ملكي", placement: "المصلى الرئيسي" }, summary: "3 أجهزة", author_role: "company", created_at: iso(now - 5 * day) },
+    { id: id(), mosque_id: m7.id, type: "installation", data: { date: iso(now - 40 * day), devices: "4", fragrance: "عود ملكي" }, summary: "تركيب 4 أجهزة", author_role: "company", created_at: iso(now - 40 * day) },
     { id: id(), mosque_id: m7.id, type: "visit", data: { date: iso(now - 9 * day), status: "ok", scent: "مناسب", cleanliness: 4 }, summary: "الأجهزة سليمة", author_role: "association", created_at: iso(now - 9 * day) },
     { id: id(), mosque_id: m7.id, type: "satisfaction", data: { date: "2026-10-10", overall: 5, scent: 5, intensity: 4, respondent: "الإمام" }, summary: "الرضا العام 5/5", author_role: "association", created_at: iso(now - 12 * day) },
     { id: id(), mosque_id: m8.id, type: "refill", data: { date: iso(now - 33 * day), quantity: "500" }, summary: "تعبئة", author_role: "company", created_at: iso(now - 33 * day) },
@@ -40,14 +40,15 @@
 
   // بيانات اختبار إضافية لملء اللوحة
   const rnd = (() => { let x = 7; return () => (x = (x * 16807) % 2147483647) / 2147483647; })();
-  const DIST = ["حي النرجس", "الملقا", "العليا", "حي الروضة", "الياسمين", "السليمانية", "النسيم الغربي", "حي التجربة"];
+  const NAMES = ["جامع الصديق", "جامع عمر بن الخطاب", "جامع عثمان بن عفان", "جامع علي بن أبي طالب", "جامع الملك عبدالعزيز", "جامع الأمير سلطان", "جامع الرضوان", "جامع الفلاح", "جامع اليقين", "جامع الإيمان", "جامع الهداية", "جامع المغفرة", "جامع الصفا", "جامع المروة", "جامع الأنصار", "جامع المهاجرين", "جامع الريان", "جامع الفردوس", "جامع النعيم", "جامع البشائر", "جامع الخير", "جامع الإخلاص", "جامع الوفاء", "جامع العدل", "جامع الصبر", "جامع الشكر", "جامع الحمد", "جامع الكوثر", "جامع الفتح", "جامع النصر", "جامع البركة", "جامع الأمل", "جامع السكينة", "جامع الطمأنينة", "جامع الرشد", "جامع الهدي", "جامع البيان", "جامع الفرقان", "جامع القدس", "جامع الحرمين", "جامع طيبة", "جامع قباء", "جامع الضياء", "جامع المنار", "جامع الوسطية", "جامع الأمانة"];
+  const DIST = ["حي النرجس", "الملقا", "العليا", "حي الروضة", "الياسمين", "السليمانية", "النسيم الغربي", "حي الشهداء"];
   const LL = { "حي النرجس": [24.86, 46.66], "الملقا": [24.8, 46.61], "العليا": [24.69, 46.68], "حي الروضة": [24.73, 46.77], "الياسمين": [24.82, 46.64], "السليمانية": [24.7, 46.7], "النسيم الغربي": [24.73, 46.82] };
   const STG = ["selected", "assigned", "assigned", "data_done", "feasible", "study_done", "approved", "active", "active", "active", "active", "not_feasible"];
   for (let i = 0; i < 46; i++) {
     const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
     const inst = now - (20 + rnd() * 70) * day;
-    const m = M({ name: "جامع تجريبي " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
-      ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عطر اختبار", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
+    const m = M({ name: NAMES[i] || "جامع " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
+      ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عود ملكي", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
     m.created_at = iso(inst - (10 + rnd() * 30) * day);
     const ll = LL[m.district]; if (ll && rnd() > .3) m.map_url = `https://www.google.com/maps?q=${(ll[0] + (rnd() - .5) * .02).toFixed(5)},${(ll[1] + (rnd() - .5) * .02).toFixed(5)}`;
     if (act) for (let w = 0; w < 12; w++) {
@@ -59,11 +60,11 @@
     }
     if (act) db.reports.push({ id: id(), mosque_id: m.id, type: "installation", data: { date: iso(inst) }, author_role: "company", created_at: iso(inst) });
   }
-  db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "مهمة اختبار للشركة", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
+  db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "صيانة جهاز التعطير في المصلى", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
   const me = acc[as] || acc.admin;
   const loggedOut = as === "none"; // لمعاينة شاشة الدخول
-  db.notifications.push({ id: id(), account_id: me.id, kind: "reminder", title: "إشعار اختبار: موعد تعبئة", body: "جامع اختبار ٧", mosque_id: m7.id, created_at: iso(now - 3600e3) },
-    { id: id(), account_id: me.id, kind: "approval", title: "إشعار اختبار مقروء", created_at: iso(now - 2 * day), read_at: iso(now - day) });
+  db.notifications.push({ id: id(), account_id: me.id, kind: "reminder", title: "تذكير: موعد تعبئة خلال ٤٠ ساعة", body: "جامع التقوى", mosque_id: m7.id, created_at: iso(now - 3600e3) },
+    { id: id(), account_id: me.id, kind: "approval", title: "اعتُمد تركيب جامع الفاروق", created_at: iso(now - 2 * day), read_at: iso(now - day) });
 
   const companyStage = (s) => ["feasible", "study_done", "approved", "active", "suspended"].includes(s);
   const seeM = (m) => me.role === "admin" || (me.role === "association" && m.association_id === me.association_id) || (me.role === "company" && companyStage(m.stage));

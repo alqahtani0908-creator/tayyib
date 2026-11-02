@@ -45,6 +45,6 @@ def page(extra_head=""):
 docs = root / "docs"; docs.mkdir(exist_ok=True)
 (docs / "index.html").write_text(page(), encoding="utf-8")
 # نسخة الاختبار المحلي: عميل وهمي في الذاكرة بدل Supabase
-(root / "tests" / "index.html").write_text(page('<script>window.TAYYIB_ASSETS = "../docs/assets/";</script>\n<script src="mock.js"></script>\n').replace('<script src="config.js"></script>\n', ""), encoding="utf-8")
+(root / "tests" / "index.html").write_text(page('<script>window.TAYYIB_ASSETS = "../docs/assets/";</script>\n<script src="mock.js"></script>\n').replace('<script src="config.js"></script>\n', "").replace("</body>", '<script src="shots.js"></script>\n</body>'), encoding="utf-8")
 (docs / ".nojekyll").write_text("", encoding="utf-8")
 print("built docs/index.html", (docs / "index.html").stat().st_size // 1024, "KB")

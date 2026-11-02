@@ -84,6 +84,8 @@ h1, h2, h3, h4 { font-weight: 700; letter-spacing: 0; }
 .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; color: #e6d8cf; font-weight: 500; font-size: 14.5px; position: relative; }
 .nav a:hover { background: rgba(255,255,255,.07); color: #fff; }
 .nav a.on { background: #ceb26b; color: #2b1a18; font-weight: 700; }
+.nav a.nav-guide { margin-top: 10px; border: 1px dashed rgba(206,178,107,.45); color: #ead9b5; }
+.nav a.nav-guide:hover { border-style: solid; }
 .nav a.on svg { color: #2b1a18; }
 .nav a svg { width: 20px; height: 20px; flex: none; color: #ceb26b; }
 .nav .badge { margin-inline-start: auto; background: #ceb26b; color: #2b1a18; border-radius: 99px; font-size: 11px; padding: 0 7px; font-weight: 700; min-width: 20px; text-align: center; }
