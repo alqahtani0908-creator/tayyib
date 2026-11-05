@@ -59,6 +59,7 @@ route("mosques", {
             ${r === "admin" ? `<button class="btn sm primary" id="b-add">${I.plus} إضافة مسجد</button>
               <button class="btn sm" id="b-assign" disabled>${I.org} إسناد المحدد</button>
               <button class="btn sm" id="b-region" disabled>${I.map} تحديد الجهة</button>
+              <button class="btn sm" id="b-qr" disabled>${I.qr} باركود المحدد</button>
               <button class="btn sm danger" id="b-del" disabled>${I.trash} حذف المحدد</button>
               <button class="btn sm" id="b-import">${I.upload} استيراد Excel</button>` : ""}
             <button class="btn sm" id="b-export">${I.download} تصدير</button>
@@ -178,7 +179,8 @@ route("mosques", {
     if (activeFilters()) toggleAdv(!mobile);
     paintSaved();
     const paintSel = () => {
-      $("#b-assign", v).disabled = $("#b-del", v).disabled = $("#b-region", v).disabled = !sel.size;
+      $("#b-assign", v).disabled = $("#b-del", v).disabled = $("#b-region", v).disabled = $("#b-qr", v).disabled = !sel.size;
+      $("#b-qr", v).innerHTML = `${I.qr} باركود المحدد${sel.size ? ` (${sel.size})` : ""}`;
       $("#b-region", v).innerHTML = `${I.map} تحديد الجهة${sel.size ? ` (${sel.size})` : ""}`;
       $("#b-assign", v).innerHTML = `${I.org} إسناد المحدد${sel.size ? ` (${sel.size})` : ""}`;
       $("#b-del", v).innerHTML = `${I.trash} حذف المحدد${sel.size ? ` (${sel.size})` : ""}`;
@@ -199,6 +201,7 @@ route("mosques", {
     $("#b-add", v)?.addEventListener("click", async () => { if (await mosqueForm()) render(); });
     $("#b-import", v)?.addEventListener("click", () => importDialog());
     $("#b-assign", v)?.addEventListener("click", async () => { if (await assignDialog([...sel])) { sel.clear(); render(); } });
+    $("#b-qr", v)?.addEventListener("click", () => printPosters(S.mosques.filter((m) => sel.has(m.id))));
     $("#b-region", v)?.addEventListener("click", async () => { if (await regionDialog([...sel])) { sel.clear(); render(); } });
     $("#b-del", v)?.addEventListener("click", async () => { if (await deleteMosques([...sel])) { sel.clear(); render(); } });
     $("#b-export", v).onclick = () => exportDialog(v._list || [], $("#adv-sum", v).hidden ? "" : [...$$("#adv-sum .sc", v)].map((x) => x.textContent.replace(/×$/, "").trim()).join(" • "), f.q);
@@ -427,6 +430,7 @@ route("mosque", {
           ${r === "admin" ? `<button class="btn sm" data-assign>${I.org} ${m.association_id ? "تغيير الجمعية" : "إسناد"}</button>` : ""}
           ${r !== "viewer" ? `<button class="btn sm" data-task>${I.tasks} ${r === "admin" ? "إيعاز مهمة" : "رفع طلب"}</button>` : ""}
           <button class="btn sm" data-print-m>${I.print} ملف المسجد</button>
+          ${r === "admin" || r === "association" ? `<button class="btn sm" data-qr>${I.qr} الباركود</button><a class="btn sm" href="#/complaints?st=all&mosque=${m.id}">${I.chat} الشكاوى</a>` : ""}
           ${r === "admin" ? `<button class="btn sm" data-more title="إجراءات المدير">${I.gear} إجراءات</button>
           <button class="btn sm danger" data-del-m>${I.trash} حذف</button>` : ""}
         </div>
@@ -506,6 +510,7 @@ route("mosque", {
     $("[data-assign]", v)?.addEventListener("click", async () => { if (await assignDialog([id])) render(); });
     $("[data-task]", v)?.addEventListener("click", async () => { if (await taskForm({ mosque_id: id })) render(); });
     $("[data-print-m]", v).onclick = () => printMosque(m, reports || []);
+    $("[data-qr]", v)?.addEventListener("click", () => qrDialog(m));
     $("[data-del-m]", v)?.addEventListener("click", async () => { if (await deleteMosques([m.id])) go("/mosques"); });
     $("[data-more]", v)?.addEventListener("click", () => adminStageDialog(m));
     $$("[data-op]", v).forEach((b) => b.onclick = async () => { if (await openReportForm(m, b.dataset.op)) render(); });

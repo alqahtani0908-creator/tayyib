@@ -94,7 +94,8 @@ async function markRead(ids) {
 function openNotification(n) {
   if (!n.read_at) markRead([n.id]);
   closeNotifPanel();
-  if (n.task_id) go("/tasks/" + n.task_id);
+  if (n.link) go(n.link);
+  else if (n.task_id) go("/tasks/" + n.task_id);
   else if (n.mosque_id) go("/mosque/" + n.mosque_id);
 }
 const N_ICON = { reminder: I.clock, alert: I.alert, approval: I.star, refill: I.drop, stage: I.check, task: I.tasks, assign: I.mosque, report: I.report, info: I.bell };

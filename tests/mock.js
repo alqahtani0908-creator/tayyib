@@ -16,10 +16,10 @@
     settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
     associations: [{ id: A1, name: "جمعية عمارة المساجد بالشمال", district: "شمال الرياض", contact_name: "خالد العتيبي", phone: "0500000001", active: true }, { id: A2, name: "جمعية بيوت الله", active: true }, { id: A3, name: "جمعية مساجدنا", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
-    mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [],
+    mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [], complaints: [], complaint_events: [], surveys: [], survey_questions: [], survey_responses: [],
   };
   let seq = 0;
-  const M = (o) => { const m = { id: id(), code: "M-" + String(++seq).padStart(4, "0"), kind: "جامع", stage: "selected", created_at: iso(now - seq * day), ...o }; db.mosques.push(m); return m; };
+  const M = (o) => { const m = { id: id(), code: "M-" + String(++seq).padStart(4, "0"), public_token: "T" + String(seq).padStart(7, "0"), kind: "جامع", stage: "selected", created_at: iso(now - seq * day), ...o }; db.mosques.push(m); return m; };
   const full = { imam_name: "الشيخ عبدالله السالم", imam_phone: "0501111111", muezzin_name: "محمد الحربي", muezzin_phone: "0502222222", servant_name: "سعيد أحمد", servant_phone: "0503333333" };
   M({ name: "جامع الإحسان", district: "حي النرجس" });
   M({ name: "جامع النور", district: "الملقا", association_id: A1, stage: "assigned", imam_name: "الشيخ فهد القحطاني" });
@@ -65,6 +65,30 @@
   db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "صيانة جهاز التعطير في المصلى", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
   const me = acc[as] || acc.admin;
   const loggedOut = as === "none"; // لمعاينة شاشة الدخول
+  // شكاوى واقتراحات تجريبية
+  const act = db.mosques.filter((m) => m.stage === "active");
+  const CB = [["complaint", "الرائحة ضعيفة جدًا في مصلى النساء منذ أسبوع", "أبو محمد", "0551112233"], ["suggestion", "نقترح تغيير العطر إلى دهن العود في رمضان", "", ""],
+    ["complaint", "الجهاز عند المدخل لا يعمل", "", "0559998877"], ["complaint", "الرائحة قوية أكثر من اللازم وقت صلاة الفجر", "سالم", ""], ["suggestion", "شكرًا لكم، نقترح إضافة جهاز في دورات المياه", "عبدالرحمن", "0541234567"]];
+  const STS = ["new", "new", "assigned", "responded", "closed"];
+  CB.forEach(([kind, body, name, phone], i) => {
+    const m = act[i % act.length], st = STS[i], cid = id(), t = now - (i * 2 + 1) * day;
+    db.complaints.push({ id: cid, ref: 101 + i, mosque_id: m.id, kind, body, name: name || null, phone: phone || null, status: st, action: st === "new" ? null : ["contact", "fix", "other"][i % 3], association_id: st === "new" ? null : m.association_id, created_at: iso(t), closed_at: st === "closed" ? iso(t + day) : null });
+    db.complaint_events.push({ id: id(), complaint_id: cid, kind: "created", created_at: iso(t) });
+    if (st !== "new") { db.complaint_events.push({ id: id(), complaint_id: cid, kind: "action", action: ["contact", "fix", "other"][i % 3], actor_role: "admin", note: "تم التواصل مع خادم المسجد", created_at: iso(t + 3600e3) }, { id: id(), complaint_id: cid, kind: "assigned", actor_role: "admin", note: "الجمعية المشرفة", created_at: iso(t + 3700e3) }); }
+    if (st === "responded" || st === "closed") db.complaint_events.push({ id: id(), complaint_id: cid, kind: "response", actor_role: "association", note: "تمت زيارة المسجد ومعالجة الملاحظة", created_at: iso(t + 0.5 * day) });
+    if (st === "closed") db.complaint_events.push({ id: id(), complaint_id: cid, kind: "closed", actor_role: "admin", created_at: iso(t + day) });
+  });
+  // استبيان تجريبي وإجابات
+  const SV = "SV1"; db.surveys.push({ id: SV, title: "استبيان رضا المصلين عن تعطير المسجد", intro: "إجابتك تساعدنا على تحسين تعطير المسجد.", thanks: "شكرًا لك، وصلت إجابتك", active: true, created_at: iso(now - 40 * day) });
+  const SQ = [["كيف تقيّم رائحة المسجد بشكل عام؟", "rating", 3, []], ["هل نوع العطر مناسب لك؟", "yesno", 2, [{ label: "نعم", score: 1 }, { label: "لا", score: 0 }]],
+    ["كيف تصف قوة الرائحة وانتشارها؟", "choice", 2, [{ label: "مناسبة", score: 4 }, { label: "قوية أكثر من اللازم", score: 2 }, { label: "ضعيفة", score: 1 }, { label: "لا ألاحظها", score: 0 }]], ["ملاحظاتك واقتراحاتك", "text", 0, []]];
+  SQ.forEach(([text, kind, weight, options], i) => db.survey_questions.push({ id: "SQ" + i, survey_id: SV, ord: i + 1, text, kind, weight, required: kind !== "text", options }));
+  for (let i = 0; i < 64; i++) {
+    const m = act[Math.floor(rnd() * act.length)], st = 3 + Math.floor(rnd() * 3), yn = rnd() > .2 ? 0 : 1, ch = [0, 0, 0, 1, 2, 3][Math.floor(rnd() * 6)];
+    const ans = [{ q: "SQ0", v: st, score: st, max: 5 }, { q: "SQ1", v: yn, label: yn ? "لا" : "نعم", score: yn ? 0 : 1, max: 1 }, { q: "SQ2", v: ch, label: SQ[2][3][ch].label, score: SQ[2][3][ch].score, max: 4 }, ...(rnd() > .7 ? [{ q: "SQ3", v: ["رائحة جميلة جزاكم الله خيرًا", "نتمنى تعطير مصلى النساء", "الرائحة تختفي بعد العصر"][Math.floor(rnd() * 3)] }] : [])];
+    const pct = Math.round((3 * st / 5 + 2 * (yn ? 0 : 1) + 2 * SQ[2][3][ch].score / 4) / 7 * 1000) / 10;
+    db.survey_responses.push({ id: id(), survey_id: SV, mosque_id: m.id, answers: ans, pct, created_at: iso(now - rnd() * 80 * day) });
+  }
   db.notifications.push({ id: id(), account_id: me.id, kind: "reminder", title: "تذكير: موعد تعبئة خلال ٤٠ ساعة", body: "جامع التقوى", mosque_id: m7.id, created_at: iso(now - 3600e3) },
     { id: id(), account_id: me.id, kind: "approval", title: "اعتُمد تركيب جامع الفاروق", created_at: iso(now - 2 * day), read_at: iso(now - day) });
 
@@ -78,6 +102,9 @@
     notifications: (n) => n.account_id === me.id, accounts: (a) => me.role === "admin" || a.id === me.id,
     associations: (a) => me.role !== "association" || a.id === me.association_id,
     broadcasts: (b) => me.role === "admin" || b.created_by === me.id,
+    complaints: (c) => me.role === "admin" || (me.role === "association" && c.association_id === me.association_id),
+    complaint_events: (e) => { const c = db.complaints.find((x) => x.id === e.complaint_id); return c && (me.role === "admin" || (me.role === "association" && c.association_id === me.association_id)); },
+    survey_responses: (r) => me.role === "admin" || me.role === "viewer" || (me.role === "association" && seeMid(r.mosque_id)),
   };
   const log = (mid, action, details = null) => db.activity.push({ id: id(), mosque_id: mid, actor_id: me.id, action, details, created_at: iso(Date.now()) });
   const notify = (role, assoc, mid, title, body, kind = "info") => db.accounts.filter((a) => a.active && a.role === role && (role !== "association" || a.association_id === assoc) && a.id !== me.id)
@@ -86,7 +113,7 @@
 
   class Q {
     constructor(t) { this.t = t; this.f = []; this.op = "select"; this.one = null; }
-    select() { if (this.op === "select") this.op = "select"; this.ret = true; return this; }
+    select(_c, o = {}) { if (this.op === "select") this.op = "select"; this.ret = true; if (o.count) { this.cnt = true; this.head = o.head; } return this; }
     insert(rows) { this.op = "insert"; this.payload = [].concat(rows); return this; }
     update(o) { this.op = "update"; this.payload = o; return this; }
     delete() { this.op = "delete"; return this; }
@@ -134,6 +161,7 @@
       if (this.rng) rows = rows.slice(this.rng[0], this.rng[1] + 1);
       if (this.lim) rows = rows.slice(0, this.lim);
       rows = rows.map((r) => JSON.parse(JSON.stringify(r)));
+      if (this.cnt) return { data: this.head ? null : rows, count: rows.length, error: null };
       if (this.one) return rows.length || this.one === "maybe" ? { data: rows[0] || null, error: null } : err("no rows");
       return { data: rows, error: null };
     }
@@ -145,6 +173,35 @@
     touch_seen: () => null,
     claim_account: () => me,
     activate_account: () => null,
+    complaint_act: ({ p_id, p_action, p_note, p_assoc, p_close, p_reopen }) => {
+      if (me.role !== "admin") throw "صلاحية المدير فقط";
+      const c = db.complaints.find((x) => x.id === p_id), ev = (o) => db.complaint_events.push({ id: id(), complaint_id: p_id, actor_id: me.id, actor_role: "admin", created_at: iso(Date.now()), ...o });
+      if (p_reopen) { c.status = c.association_id ? "assigned" : "new"; c.closed_at = null; ev({ kind: "reopened", note: p_note }); return null; }
+      if (p_action || p_note) { if (p_action) c.action = p_action; ev({ kind: p_action ? "action" : "note", action: p_action, note: p_note }); }
+      if (p_assoc) { c.association_id = p_assoc; c.status = "assigned"; ev({ kind: "assigned", note: db.associations.find((a) => a.id === p_assoc)?.name }); }
+      if (p_close) { c.status = "closed"; c.closed_at = iso(Date.now()); ev({ kind: "closed" }); }
+      return null;
+    },
+    complaint_respond: ({ p_id, p_note, p_done }) => {
+      const c = db.complaints.find((x) => x.id === p_id);
+      if (me.role !== "association" || c.association_id !== me.association_id) throw "غير مصرح";
+      db.complaint_events.push({ id: id(), complaint_id: p_id, actor_id: me.id, actor_role: "association", kind: "response", note: p_note, created_at: iso(Date.now()) });
+      if (p_done) c.status = "responded"; return null;
+    },
+    survey_results: ({ p_survey, p_days }) => {
+      const since = Date.now() - p_days * day;
+      const rs = db.survey_responses.filter((r) => r.survey_id === p_survey && new Date(r.created_at) >= since && (me.role === "admin" || me.role === "viewer" || seeMid(r.mosque_id)));
+      const avg = (a) => a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length * 10) / 10 : null;
+      const ans = rs.flatMap((r) => r.answers);
+      const wk = {}; rs.forEach((r) => { const d = new Date(r.created_at); d.setDate(d.getDate() - d.getDay()); const k = d.toISOString().slice(0, 10); (wk[k] = wk[k] || []).push(r.pct); });
+      const byM = {}; rs.forEach((r) => (byM[r.mosque_id] = byM[r.mosque_id] || []).push(r.pct));
+      return { n: rs.length, pct: avg(rs.map((r) => r.pct)),
+        weekly: Object.entries(wk).sort().map(([w, a]) => ({ w, n: a.length, pct: avg(a) })),
+        questions: db.survey_questions.filter((q) => q.survey_id === p_survey).sort((a, b) => a.ord - b.ord).map((q) => { const a = ans.filter((x) => x.q === q.id);
+          const dist = {}; a.forEach((x) => { if (q.kind !== "text") dist[x.v] = (dist[x.v] || 0) + 1; });
+          return { ...q, n: a.length, pct: q.kind === "text" ? null : avg(a.map((x) => x.score / x.max * 100)), dist, texts: q.kind === "text" ? a.map((x) => x.v).slice(0, 30) : [] }; }),
+        mosques: Object.entries(byM).map(([mid, a]) => { const m = db.mosques.find((x) => x.id === mid); return { id: mid, name: m.name, district: m.district, region: m.region, n: a.length, pct: avg(a) }; }).sort((x, y) => y.pct - x.pct) };
+    },
     map_data: () => (me.role === "viewer" ? db.mosques : db.mosques.filter(seeM)).map(({ id, code, name, district, region, stage, association_id, devices_count, map_url, next_refill_at }) => ({ id, code, name, district, region, stage, association_id, devices_count, map_url, next_refill_at })),
     reset_account_login: () => "NEWC0DE1",
     assign_mosques: ({ p_ids, p_assoc }) => { if (me.role !== "admin") throw "صلاحية المدير فقط"; let n = 0; db.mosques.forEach((m) => { if (p_ids.includes(m.id)) { m.association_id = p_assoc; if (m.stage === "selected") m.stage = "assigned"; n++; log(m.id, "إسناد للجمعية"); } }); notify("association", p_assoc, null, "مساجد جديدة مسندة لجمعيتكم", `تم إسناد ${n}`, "assign"); return n; },
