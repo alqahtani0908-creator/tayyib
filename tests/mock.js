@@ -188,6 +188,34 @@
       db.complaint_events.push({ id: id(), complaint_id: p_id, actor_id: me.id, actor_role: "association", kind: "response", note: p_note, created_at: iso(Date.now()) });
       if (p_done) c.status = "responded"; return null;
     },
+    my_tasks: () => {
+      const sla = { ...{ assign: 3, complete: 7, feasibility: 7, study: 10, decide: 3, install: 14, complaint: 2, assoc_complaint: 3, monthly: 5 }, ...(db.settings[0]?.task_sla || {}) };
+      const at = (m) => new Date(m.stage_at || m.updated_at || m.created_at).getTime();
+      const T = (k, title, m, due, link, x = {}) => ({ k, title, mosque_id: m?.id, mosque: m?.name, district: m?.district, due: iso(due), link, ...x });
+      const M = db.mosques, mine = (m) => m.association_id === me.association_id, out = [];
+      const vd = db.settings[0]?.visit_every_days || 7, now = Date.now();
+      const cm = (c) => c.kind === "suggestion" ? "اقتراح" : "شكوى";
+      if (me.role === "admin") {
+        M.filter((m) => m.stage === "selected").forEach((m) => out.push(T("assign", "إسناد المسجد لجمعية مشرفة", m, at(m) + sla.assign * day, "/mosque/" + m.id)));
+        M.filter((m) => m.stage === "study_done").forEach((m) => out.push(T("decide", "مراجعة دراسة الاحتياج واعتماد التركيب", m, at(m) + sla.decide * day, "/mosque/" + m.id)));
+        db.complaints.filter((c) => ["new", "responded"].includes(c.status)).forEach((c) => out.push(T("complaint", c.status === "responded" ? `إغلاق ${cm(c)} بعد ردّ الجمعية` : `التعامل مع ${cm(c)} جديدة`, M.find((m) => m.id === c.mosque_id),
+          new Date(c.created_at).getTime() + sla.complaint * day, "/complaints/" + c.id, { note: c.body.slice(0, 90) })));
+      } else if (me.role === "association") {
+        M.filter((m) => mine(m) && m.stage === "assigned").forEach((m) => out.push(T("complete", "استكمال بيانات المسجد", m, at(m) + sla.complete * day, "/mosque/" + m.id)));
+        M.filter((m) => mine(m) && m.stage === "data_done").forEach((m) => out.push(T("feasibility", "التواصل مع الإمام ورفع التقرير", m, at(m) + sla.feasibility * day, "/mosque/" + m.id)));
+        M.filter((m) => mine(m) && m.stage === "active").forEach((m) => { const due = new Date(m.last_visit_at || m.installed_at).getTime() + vd * day; if (due <= now + 2 * day) out.push(T("visit", "الزيارة الأسبوعية", m, due, "/mosque/" + m.id)); });
+        db.complaints.filter((c) => c.association_id === me.association_id && c.status === "assigned").forEach((c) => out.push(T("complaint", `الرد على ${cm(c)} موجّهة للجمعية`, M.find((m) => m.id === c.mosque_id),
+          new Date(c.updated_at || c.created_at).getTime() + sla.assoc_complaint * day, "/complaints/" + c.id, { note: c.body.slice(0, 90) })));
+      } else if (me.role === "company") {
+        M.filter((m) => m.stage === "feasible").forEach((m) => out.push(T("study", "دراسة احتياج الجامع ورفع التقرير", m, at(m) + sla.study * day, "/mosque/" + m.id)));
+        M.filter((m) => m.stage === "approved").forEach((m) => out.push(T("install", "تركيب الأجهزة ورفع تقرير التركيب", m, m.planned_install_at ? new Date(m.planned_install_at).getTime() : at(m) + sla.install * day, "/mosque/" + m.id)));
+        M.filter((m) => m.stage === "active" && m.next_refill_at && new Date(m.next_refill_at) <= now + 14 * day).forEach((m) => out.push(T("refill", "تعبئة العطر", m, new Date(m.next_refill_at).getTime(), "/mosque/" + m.id)));
+      } else return [];
+      (db.tasks || []).filter((t) => !["done", "cancelled", "closed"].includes(t.status) && t.assignee === me.role && (me.role !== "association" || t.association_id === me.association_id))
+        .forEach((t) => out.push(T("task", (t.kind === "request" ? "طلب: " : "مهمة: ") + t.title, M.find((m) => m.id === t.mosque_id),
+          t.due_date ? new Date(t.due_date + "T20:00:00").getTime() : new Date(t.created_at).getTime() + 3 * day, "/tasks/" + t.id, { note: (t.details || "").slice(0, 90), priority: t.priority })));
+      return out;
+    },
     survey_results: ({ p_survey, p_days }) => {
       const since = Date.now() - p_days * day;
       const rs = db.survey_responses.filter((r) => r.survey_id === p_survey && new Date(r.created_at) >= since && (me.role === "admin" || me.role === "viewer" || seeMid(r.mosque_id)));

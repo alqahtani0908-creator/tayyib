@@ -1,6 +1,7 @@
 // ───────────────────────── الهيكل والدخول ─────────────────────────
 const NAV = [
   { r: "dashboard", l: "لوحة المؤشرات", i: "dash", roles: ["admin", "association", "company", "viewer"] },
+  { r: "my", l: "مهامي", i: "check", roles: ["admin", "association", "company"], count: true },
   { r: "mosques", l: "المساجد", i: "mosque", roles: ["admin", "association", "company"] },
   { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
   { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
@@ -16,9 +17,9 @@ const NAV = [
   { r: "settings", l: "الإعدادات", i: "gear", roles: ["admin"] },
 ];
 // شريط الجوال السفلي: أربع وجهات + «المزيد» يفتح القائمة الكاملة
-const BNAV = { admin: ["dashboard", "mosques", "tasks", "refills"], association: ["dashboard", "mosques", "tasks", "refills"],
-  company: ["dashboard", "mosques", "refills", "tasks"], viewer: ["dashboard", "achievements", "notifications"] };
-const BNAV_LABEL = { dashboard: "الرئيسية", mosques: "المساجد", tasks: "المهام", refills: "التعبئة", achievements: "المنجزات", notifications: "الإشعارات" };
+const BNAV = { admin: ["dashboard", "my", "mosques", "tasks"], association: ["dashboard", "my", "mosques", "refills"],
+  company: ["dashboard", "my", "mosques", "refills"], viewer: ["dashboard", "achievements", "notifications"] };
+const BNAV_LABEL = { dashboard: "الرئيسية", my: "مهامي", mosques: "المساجد", tasks: "المهام", refills: "التعبئة", achievements: "المنجزات", notifications: "الإشعارات" };
 const isDark = () => document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
 
 let shellBound = false;
@@ -39,7 +40,7 @@ function paintShell() {
   const bn = BNAV[role()] || [];
   const more = role() !== "viewer";
   $(".bnav").style.gridTemplateColumns = `repeat(${bn.length + (more ? 1 : 0)}, minmax(0, 1fr))`;
-  $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
+  $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" || r === "my" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
     (more ? `<button type="button" id="more">${I.menu}<span>المزيد</span><span class="badge" hidden></span></button>` : "");
   $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
   $("#theme").onclick = () => {
@@ -60,6 +61,7 @@ function paintShell() {
   }
   paintBell();
   paintComplaintBadge();
+  paintMyBadge();
 }
 const isMobile = () => matchMedia("(max-width: 860px)").matches;
 

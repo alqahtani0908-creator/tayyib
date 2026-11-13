@@ -1131,6 +1131,46 @@ a.fi[href]:hover { background: var(--surface-2); }
 .s-formula { padding: 10px 12px; border-radius: 12px; background: var(--gold-soft); font-weight: 600; line-height: 1.8; }
 @media (max-width: 860px) { .s-top { grid-template-columns: 1fr; } }
 
+/* ───── مهامي ───── */
+.mt-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.mt-head h2 { margin: 4px 0; font-size: 22px; }
+.mt-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.mt-stat { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--line-2); transition: transform .15s, box-shadow .15s; }
+.mt-stat span { color: var(--ink-3); font-size: 13px; }
+.mt-stat b { font-size: 26px; line-height: 1.1; color: var(--ink); }
+.mt-stat:hover { transform: translateY(-1px); }
+.mt-stat.on { box-shadow: 0 0 0 2px var(--gold) inset; }
+.mt-stat:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.mt-stat.t-bad { border-top-color: var(--bad); } .mt-stat.t-bad b { color: var(--bad); }
+.mt-stat.t-warn { border-top-color: var(--warn); } .mt-stat.t-warn b { color: var(--warn); }
+.mt-stat.t-gold { border-top-color: var(--gold); }
+.mt-stat.t-info { border-top-color: var(--info); }
+.mt-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.mt-group { margin-bottom: 18px; }
+.mt-gh { display: flex; align-items: center; gap: 8px; margin: 0 2px 8px; font-size: 15px; }
+.mt-gh i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); }
+.mt-gh span { color: var(--ink-3); font-size: 13px; }
+.mt-gh.t-bad i { background: var(--bad); } .mt-gh.t-warn i { background: var(--warn); } .mt-gh.t-gold i { background: var(--gold); } .mt-gh.t-info i { background: var(--info); }
+.mt-list { display: flex; flex-direction: column; gap: 8px; }
+.mt-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: var(--ink); text-decoration: none; border-inline-start: 4px solid var(--line-2); transition: transform .15s, box-shadow .15s; }
+.mt-item:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(0 0 0 / .06); }
+.mt-item.t-bad { border-inline-start-color: var(--bad); } .mt-item.t-warn { border-inline-start-color: var(--warn); } .mt-item.t-gold { border-inline-start-color: var(--gold); } .mt-item.t-info { border-inline-start-color: var(--info); }
+.mt-item > .grow { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mt-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold-ink); }
+.mt-ic svg { width: 20px; height: 20px; }
+.mt-m { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-size: 13px; }
+.mt-m svg { width: 14px; height: 14px; opacity: .7; }
+.mt-note { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mt-due { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: none; }
+@media (max-width: 860px) {
+  .mt-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mt-stats .mt-stat:nth-child(n+4) { display: none; }
+  .mt-head h2 { font-size: 18px; }
+  .mt-item { flex-wrap: wrap; align-items: flex-start; }
+  .mt-item > .grow { flex: 1 1 calc(100% - 56px); }
+  .mt-due { width: 100%; justify-content: flex-start; padding-inline-start: 52px; }
+}
+
 </style>
 <script src="config.js"></script>
 </head>
@@ -3904,6 +3944,9 @@ route("settings", {
           ${fld("reminder_hours", "التذكير قبل موعد التعبئة (ساعة)", { type: "number", value: s.reminder_hours })}
           ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}</form>
         <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
+      <div class="card span2"><div class="hd"><h3>مهل «مهامي» (بالأيام)</h3></div><div class="bd">
+        <div class="hint" style="margin-bottom:10px">المدة المتاحة لكل إجراء منذ وصول المسجد إلى مرحلته؛ بعدها تظهر المهمة «متأخرة» عند صاحبها ويُذكَّر بها في الملخص اليومي (7 صباحًا).</div>
+        <form class="form" id="f3" onsubmit="return false" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">${MT_SLA.map(([k, l]) => fld("sla_" + k, l, { type: "number", value: (s.task_sla || MT_DEFAULT)[k] ?? MT_DEFAULT[k] })).join("")}</form></div></div>
       <div class="card span2"><div class="hd"><h3>خط الهوية (Brando Arabic)</h3></div><div class="bd stack">
         <div class="hint">ملفات الخط لا تُنشر في المستودع العام؛ ارفعها هنا مرة واحدة (OTF/TTF/WOFF) لتظهر المنصة بخط هوية المؤسسة. تأكد أن ترخيص الخط يسمح باستخدامه على الويب.</div>
         <div class="form" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${Object.entries({ regular: "العادي (Regular)", semibold: "شبه العريض (SemiBold)", bold: "العريض (Bold)" }).map(([k, l]) =>
@@ -3913,6 +3956,8 @@ route("settings", {
     $("#save", v).onclick = async () => {
       const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
       ["refill_cycle_days", "reminder_hours", "visit_every_days"].forEach((k) => d[k] = Math.max(1, +d[k] || 1));
+      const f3 = formData($("#f3", v));
+      d.task_sla = Object.fromEntries(MT_SLA.map(([k]) => [k, Math.min(90, Math.max(k === "monthly" ? 1 : 0, Math.round(+f3["sla_" + k]) || MT_DEFAULT[k]))]));
       if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }
     };
     $$("[data-fontbtn]", v).forEach((b) => b.onclick = () => $(`[data-font="${b.dataset.fontbtn}"]`, v).click());
@@ -4285,9 +4330,89 @@ async function surveyShare(el, s) {
   $("#p-active", el).onclick = () => { const l = S.mosques.filter((m) => m.stage === "active"); if (!l.length) return toast("لا توجد مساجد قيد التشغيل", "err"); printPosters(l); };
 }
 
+// ───────────────────────── مهامي ─────────────────────────
+// كل ما يجب على المستخدم اتخاذ إجراء فيه حسب الموعد، محسوب في الخادم (my_tasks) حسب صلاحيته،
+// ويصله ملخص يومي بالمتأخر والمستحق اليوم (send_task_digest).
+const MT_KIND = {
+  assign: [I.org, "الإسناد", "إسناد الآن"], decide: [I.check, "اعتماد التركيب", "مراجعة واعتماد"], complaint: [I.chat, "الشكاوى", "فتح الشكوى"],
+  complete: [I.edit, "استكمال البيانات", "استكمال البيانات"], feasibility: [I.phone, "التواصل مع الإمام", "رفع التقرير"], visit: [I.visit, "الزيارات", "تسجيل الزيارة"],
+  monthly: [I.report, "التقارير الشهرية", "رفع التقرير"], study: [I.study, "دراسة الاحتياج", "رفع الدراسة"], install: [I.install, "التركيب", "رفع تقرير التركيب"],
+  refill: [I.drop, "التعبئة", "تسجيل التعبئة"], task: [I.tasks, "المهام والطلبات", "فتح المهمة"],
+};
+const MT_SLA = [["assign", "إسناد المسجد لجمعية (المدير)"], ["decide", "اعتماد التركيب بعد الدراسة (المدير)"], ["complaint", "التعامل مع شكوى جديدة (المدير)"],
+  ["complete", "استكمال بيانات المسجد (الجمعية)"], ["feasibility", "التواصل مع الإمام (الجمعية)"], ["assoc_complaint", "الرد على شكوى موجّهة (الجمعية)"],
+  ["monthly", "التقرير الشهري: يوم من بداية الشهر (الجمعية)"], ["study", "دراسة الاحتياج (الشركة)"], ["install", "التركيب بعد الاعتماد (الشركة)"]];
+const MT_DEFAULT = { assign: 3, complete: 7, feasibility: 7, study: 10, decide: 3, install: 14, complaint: 2, assoc_complaint: 3, monthly: 5 };
+const mtState = { filter: "", kind: "" };
+
+// تصنيف الموعد: متأخرة / اليوم / غدًا / هذا الأسبوع / لاحقًا (بتوقيت الجهاز)
+function mtBucket(due) {
+  const d = new Date(due), now = new Date(), sod = new Date(now); sod.setHours(0, 0, 0, 0);
+  const day = 864e5, t = d - sod;
+  if (d < now) return "late";
+  if (t < day) return "today";
+  if (t < 2 * day) return "tomorrow";
+  if (t < 7 * day) return "week";
+  return "later";
+}
+const MT_BUCKETS = [["late", "متأخرة", "bad"], ["today", "اليوم", "warn"], ["tomorrow", "غدًا", "gold"], ["week", "خلال الأسبوع", "info"], ["later", "لاحقًا", "plain"]];
+function mtDueText(due) {
+  const d = new Date(due), now = new Date(), days = Math.round((d - now) / 864e5), b = mtBucket(due);
+  if (b === "late") { const n = Math.max(1, Math.floor((now - d) / 864e5)); return n <= 1 && now - d < 864e5 ? `متأخرة منذ ${Math.max(1, Math.round((now - d) / 36e5))} ساعة` : `متأخرة ${fmtNum(n)} ${n <= 10 ? "أيام" : "يومًا"}`; }
+  if (b === "today") return `اليوم ${d.toLocaleTimeString(AR_LOCALE, { hour: "numeric", minute: "2-digit" })}`;
+  if (b === "tomorrow") return "غدًا";
+  return `${fmtDate(due)} • بعد ${fmtNum(Math.max(2, days))} ${days <= 10 ? "أيام" : "يومًا"}`;
+}
+
+// شارة عدد المتأخر والمستحق اليوم في القائمة
+async function paintMyBadge() {
+  if (!["admin", "association", "company"].includes(role())) return;
+  const { data } = await sb.rpc("my_tasks");
+  const n = (data || []).filter((x) => ["late", "today"].includes(mtBucket(x.due))).length;
+  $$('.nav a[data-r="my"] .badge, .bnav a[data-r="my"] .badge').forEach((b) => { b.textContent = n || ""; b.hidden = !n; });
+  return data || [];
+}
+
+route("my", {
+  title: "مهامي",
+  async render(v) {
+    v.innerHTML = `<div class="empty">${I.tasks}جارٍ التحميل…</div>`;
+    const { data, error } = await sb.rpc("my_tasks");
+    if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
+    const items = (data || []).map((x) => ({ ...x, b: mtBucket(x.due) })).sort((a, b) => new Date(a.due) - new Date(b.due));
+    const count = (b) => items.filter((x) => x.b === b).length;
+    const kinds = [...new Set(items.map((x) => x.k))];
+    if (mtState.kind && !kinds.includes(mtState.kind)) mtState.kind = "";
+    const draw = () => {
+      const list = items.filter((x) => (!mtState.filter || x.b === mtState.filter) && (!mtState.kind || x.k === mtState.kind));
+      v.innerHTML = `<div class="mt-head">
+          <div class="grow"><div class="muted small">${esc(new Date().toLocaleDateString(AR_LOCALE, { weekday: "long", day: "numeric", month: "long" }))}</div>
+            <h2>${items.length ? `لديك ${fmtNum(items.length)} ${items.length <= 10 ? "مهام" : "مهمة"} تنتظر إجراءك` : "لا توجد مهام تنتظرك"}</h2>
+            <div class="muted small">تُرتَّب حسب الموعد، ويصلك تذكير يومي الساعة 7 صباحًا بالمتأخر والمستحق اليوم.</div></div>
+          <button class="iconbtn" id="mt-refresh" title="تحديث" aria-label="تحديث">${svg('<path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/>')}</button></div>
+        <div class="mt-stats">${MT_BUCKETS.slice(0, 4).map(([b, l, c]) => `<button class="card mt-stat t-${c} ${mtState.filter === b ? "on" : ""}" data-b="${b}"><span>${l}</span><b class="num">${fmtNum(count(b) + (b === "week" ? 0 : 0))}</b></button>`).join("")}
+          <button class="card mt-stat ${!mtState.filter ? "on" : ""}" data-b=""><span>الكل</span><b class="num">${fmtNum(items.length)}</b></button></div>
+        ${kinds.length > 1 ? `<div class="mt-kinds"><button class="fc ${!mtState.kind ? "inc" : ""}" data-k=""><span class="fc-i"></span>كل الأنواع</button>${kinds.map((k) => `<button class="fc ${mtState.kind === k ? "inc" : ""}" data-k="${k}"><span class="fc-i"></span>${MT_KIND[k]?.[1] || k}<small class="num">${fmtNum(items.filter((x) => x.k === k).length)}</small></button>`).join("")}</div>` : ""}
+        <div class="mt-groups">${MT_BUCKETS.map(([b, l, c]) => {
+          const g = list.filter((x) => x.b === b); if (!g.length) return "";
+          return `<section class="mt-group"><div class="mt-gh t-${c}"><i></i><b>${l}</b><span class="num">${fmtNum(g.length)}</span></div><div class="mt-list">${g.map((x) => `<a class="card mt-item t-${c}" href="#${esc(x.link)}">
+            <span class="mt-ic">${MT_KIND[x.k]?.[0] || I.tasks}</span>
+            <span class="grow"><b>${esc(x.title)}</b>${x.mosque ? `<span class="mt-m">${I.mosque}${esc(x.mosque)}${x.district ? ` • ${esc(x.district)}` : ""}</span>` : ""}${x.note ? `<span class="mt-note">${esc(x.note)}</span>` : ""}</span>
+            <span class="mt-due"><span class="chip ${c}">${esc(mtDueText(x.due))}</span>${x.priority === "urgent" || x.priority === "high" ? `<span class="chip bad plain">${x.priority === "urgent" ? "عاجلة" : "مهمة"}</span>` : ""}<span class="btn sm">${MT_KIND[x.k]?.[2] || "فتح"} ←</span></span></a>`).join("")}</div></section>`;
+        }).join("") || `<div class="card"><div class="bd empty" style="padding:40px">${I.check}<b style="display:block;font-size:17px;margin:6px 0">${items.length ? "لا توجد مهام في هذا التصنيف" : "أحسنت! لا توجد مهام تنتظرك الآن"}</b><span class="muted small">تظهر هنا تلقائيًا كل خطوة تحتاج إجراءك مع موعدها.</span></div></div>`}</div>`;
+      $$(".mt-stat", v).forEach((b) => b.onclick = () => { mtState.filter = mtState.filter === b.dataset.b ? "" : b.dataset.b; draw(); });
+      $$(".mt-kinds [data-k]", v).forEach((b) => b.onclick = () => { mtState.kind = b.dataset.k; draw(); });
+      $("#mt-refresh", v).onclick = () => render();
+    };
+    draw();
+    paintMyBadge();
+  },
+});
+
 // ───────────────────────── الهيكل والدخول ─────────────────────────
 const NAV = [
   { r: "dashboard", l: "لوحة المؤشرات", i: "dash", roles: ["admin", "association", "company", "viewer"] },
+  { r: "my", l: "مهامي", i: "check", roles: ["admin", "association", "company"], count: true },
   { r: "mosques", l: "المساجد", i: "mosque", roles: ["admin", "association", "company"] },
   { r: "tasks", l: "المهام والطلبات", i: "tasks", roles: ["admin", "association", "company"] },
   { r: "refills", l: "جدول التعبئة", i: "drop", roles: ["admin", "association", "company"] },
@@ -4303,9 +4428,9 @@ const NAV = [
   { r: "settings", l: "الإعدادات", i: "gear", roles: ["admin"] },
 ];
 // شريط الجوال السفلي: أربع وجهات + «المزيد» يفتح القائمة الكاملة
-const BNAV = { admin: ["dashboard", "mosques", "tasks", "refills"], association: ["dashboard", "mosques", "tasks", "refills"],
-  company: ["dashboard", "mosques", "refills", "tasks"], viewer: ["dashboard", "achievements", "notifications"] };
-const BNAV_LABEL = { dashboard: "الرئيسية", mosques: "المساجد", tasks: "المهام", refills: "التعبئة", achievements: "المنجزات", notifications: "الإشعارات" };
+const BNAV = { admin: ["dashboard", "my", "mosques", "tasks"], association: ["dashboard", "my", "mosques", "refills"],
+  company: ["dashboard", "my", "mosques", "refills"], viewer: ["dashboard", "achievements", "notifications"] };
+const BNAV_LABEL = { dashboard: "الرئيسية", my: "مهامي", mosques: "المساجد", tasks: "المهام", refills: "التعبئة", achievements: "المنجزات", notifications: "الإشعارات" };
 const isDark = () => document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
 
 let shellBound = false;
@@ -4326,7 +4451,7 @@ function paintShell() {
   const bn = BNAV[role()] || [];
   const more = role() !== "viewer";
   $(".bnav").style.gridTemplateColumns = `repeat(${bn.length + (more ? 1 : 0)}, minmax(0, 1fr))`;
-  $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
+  $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" || r === "my" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
     (more ? `<button type="button" id="more">${I.menu}<span>المزيد</span><span class="badge" hidden></span></button>` : "");
   $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
   $("#theme").onclick = () => {
@@ -4347,6 +4472,7 @@ function paintShell() {
   }
   paintBell();
   paintComplaintBadge();
+  paintMyBadge();
 }
 const isMobile = () => matchMedia("(max-width: 860px)").matches;
 

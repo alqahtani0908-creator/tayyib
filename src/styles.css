@@ -1113,3 +1113,43 @@ a.fi[href]:hover { background: var(--surface-2); }
 .s-opt { gap: 8px; flex-wrap: nowrap; } .s-opt label { display: flex; align-items: center; gap: 6px; white-space: nowrap; } .s-opt input[type=number] { width: 80px; }
 .s-formula { padding: 10px 12px; border-radius: 12px; background: var(--gold-soft); font-weight: 600; line-height: 1.8; }
 @media (max-width: 860px) { .s-top { grid-template-columns: 1fr; } }
+
+/* ───── مهامي ───── */
+.mt-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.mt-head h2 { margin: 4px 0; font-size: 22px; }
+.mt-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.mt-stat { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--line-2); transition: transform .15s, box-shadow .15s; }
+.mt-stat span { color: var(--ink-3); font-size: 13px; }
+.mt-stat b { font-size: 26px; line-height: 1.1; color: var(--ink); }
+.mt-stat:hover { transform: translateY(-1px); }
+.mt-stat.on { box-shadow: 0 0 0 2px var(--gold) inset; }
+.mt-stat:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.mt-stat.t-bad { border-top-color: var(--bad); } .mt-stat.t-bad b { color: var(--bad); }
+.mt-stat.t-warn { border-top-color: var(--warn); } .mt-stat.t-warn b { color: var(--warn); }
+.mt-stat.t-gold { border-top-color: var(--gold); }
+.mt-stat.t-info { border-top-color: var(--info); }
+.mt-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.mt-group { margin-bottom: 18px; }
+.mt-gh { display: flex; align-items: center; gap: 8px; margin: 0 2px 8px; font-size: 15px; }
+.mt-gh i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); }
+.mt-gh span { color: var(--ink-3); font-size: 13px; }
+.mt-gh.t-bad i { background: var(--bad); } .mt-gh.t-warn i { background: var(--warn); } .mt-gh.t-gold i { background: var(--gold); } .mt-gh.t-info i { background: var(--info); }
+.mt-list { display: flex; flex-direction: column; gap: 8px; }
+.mt-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: var(--ink); text-decoration: none; border-inline-start: 4px solid var(--line-2); transition: transform .15s, box-shadow .15s; }
+.mt-item:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgb(0 0 0 / .06); }
+.mt-item.t-bad { border-inline-start-color: var(--bad); } .mt-item.t-warn { border-inline-start-color: var(--warn); } .mt-item.t-gold { border-inline-start-color: var(--gold); } .mt-item.t-info { border-inline-start-color: var(--info); }
+.mt-item > .grow { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mt-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold-ink); }
+.mt-ic svg { width: 20px; height: 20px; }
+.mt-m { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-size: 13px; }
+.mt-m svg { width: 14px; height: 14px; opacity: .7; }
+.mt-note { color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mt-due { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: none; }
+@media (max-width: 860px) {
+  .mt-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mt-stats .mt-stat:nth-child(n+4) { display: none; }
+  .mt-head h2 { font-size: 18px; }
+  .mt-item { flex-wrap: wrap; align-items: flex-start; }
+  .mt-item > .grow { flex: 1 1 calc(100% - 56px); }
+  .mt-due { width: 100%; justify-content: flex-start; padding-inline-start: 52px; }
+}
