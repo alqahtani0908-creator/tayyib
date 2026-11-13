@@ -189,7 +189,7 @@
       if (p_done) c.status = "responded"; return null;
     },
     my_tasks: () => {
-      const sla = { ...{ assign: 3, complete: 7, feasibility: 7, study: 10, decide: 3, install: 14, complaint: 2, assoc_complaint: 3, monthly: 5 }, ...(db.settings[0]?.task_sla || {}) };
+      const sla = { ...{ assign: 3, complete: 7, feasibility: 7, study: 10, decide: 3, install: 14, complaint: 2, assoc_complaint: 3, monthly: 5, weekly: 5 }, ...(db.settings[0]?.task_sla || {}) };
       const at = (m) => new Date(m.stage_at || m.updated_at || m.created_at).getTime();
       const T = (k, title, m, due, link, x = {}) => ({ k, title, mosque_id: m?.id, mosque: m?.name, district: m?.district, due: iso(due), link, ...x });
       const M = db.mosques, mine = (m) => m.association_id === me.association_id, out = [];
@@ -203,7 +203,12 @@
       } else if (me.role === "association") {
         M.filter((m) => mine(m) && m.stage === "assigned").forEach((m) => out.push(T("complete", "استكمال بيانات المسجد", m, at(m) + sla.complete * day, "/mosque/" + m.id)));
         M.filter((m) => mine(m) && m.stage === "data_done").forEach((m) => out.push(T("feasibility", "التواصل مع الإمام ورفع التقرير", m, at(m) + sla.feasibility * day, "/mosque/" + m.id)));
-        M.filter((m) => mine(m) && m.stage === "active").forEach((m) => { const due = new Date(m.last_visit_at || m.installed_at).getTime() + vd * day; if (due <= now + 2 * day) out.push(T("visit", "الزيارة الأسبوعية", m, due, "/mosque/" + m.id)); });
+        const ws = new Date(); ws.setHours(0, 0, 0, 0); ws.setDate(ws.getDate() - ws.getDay());
+        const dd = (x) => `${String(x.getDate()).padStart(2, "0")}/${String(x.getMonth() + 1).padStart(2, "0")}`;
+        [0, 1].forEach((off) => { const s0 = ws.getTime() - off * 7 * day;
+          M.filter((m) => mine(m) && m.stage === "active" && new Date(m.installed_at) < s0 && !db.reports.some((r) => r.mosque_id === m.id && r.type === "visit" && +new Date(r.data?.date || r.created_at) >= s0 && +new Date(r.data?.date || r.created_at) < s0 + 7 * day))
+            .forEach((m) => out.push(T("visit", off ? "التقرير الأسبوعي — الأسبوع الماضي" : "التقرير الأسبوعي — هذا الأسبوع", m, s0 + (sla.weekly || 5) * day, "/mosque/" + m.id,
+              { note: `أسبوع ${dd(new Date(s0))} – ${dd(new Date(s0 + 6 * day))} • يتكرر أسبوعيًا` }))); });
         db.complaints.filter((c) => c.association_id === me.association_id && c.status === "assigned").forEach((c) => out.push(T("complaint", `الرد على ${cm(c)} موجّهة للجمعية`, M.find((m) => m.id === c.mosque_id),
           new Date(c.updated_at || c.created_at).getTime() + sla.assoc_complaint * day, "/complaints/" + c.id, { note: c.body.slice(0, 90) })));
       } else if (me.role === "company") {

@@ -217,7 +217,7 @@ route("settings", {
         <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
       <div class="card span2"><div class="hd"><h3>مهل «مهامي» (بالأيام)</h3></div><div class="bd">
         <div class="hint" style="margin-bottom:10px">المدة المتاحة لكل إجراء منذ وصول المسجد إلى مرحلته؛ بعدها تظهر المهمة «متأخرة» عند صاحبها ويُذكَّر بها في الملخص اليومي (7 صباحًا).</div>
-        <form class="form" id="f3" onsubmit="return false" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">${MT_SLA.map(([k, l]) => fld("sla_" + k, l, { type: "number", value: (s.task_sla || MT_DEFAULT)[k] ?? MT_DEFAULT[k] })).join("")}</form></div></div>
+        <form class="form" id="f3" onsubmit="return false" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">${MT_SLA.map(([k, l]) => { const val = String((s.task_sla || MT_DEFAULT)[k] ?? MT_DEFAULT[k]); return k === "weekly" ? fld("sla_" + k, l, { opts: MT_WEEKDAYS, value: val, hint: "الأسبوع يبدأ الأحد، والتقرير مطلوب لكل مسجد مركّب كل أسبوع" }) : fld("sla_" + k, l, { type: "number", value: val }); }).join("")}</form></div></div>
       <div class="card span2"><div class="hd"><h3>خط الهوية (Brando Arabic)</h3></div><div class="bd stack">
         <div class="hint">ملفات الخط لا تُنشر في المستودع العام؛ ارفعها هنا مرة واحدة (OTF/TTF/WOFF) لتظهر المنصة بخط هوية المؤسسة. تأكد أن ترخيص الخط يسمح باستخدامه على الويب.</div>
         <div class="form" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${Object.entries({ regular: "العادي (Regular)", semibold: "شبه العريض (SemiBold)", bold: "العريض (Bold)" }).map(([k, l]) =>
@@ -228,7 +228,7 @@ route("settings", {
       const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
       ["refill_cycle_days", "reminder_hours", "visit_every_days"].forEach((k) => d[k] = Math.max(1, +d[k] || 1));
       const f3 = formData($("#f3", v));
-      d.task_sla = Object.fromEntries(MT_SLA.map(([k]) => [k, Math.min(90, Math.max(k === "monthly" ? 1 : 0, Math.round(+f3["sla_" + k]) || MT_DEFAULT[k]))]));
+      d.task_sla = Object.fromEntries(MT_SLA.map(([k]) => [k, Math.min(k === "weekly" ? 7 : 90, Math.max(k === "monthly" || k === "weekly" ? 1 : 0, Math.round(+f3["sla_" + k]) || MT_DEFAULT[k]))]));
       if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }
     };
     $$("[data-fontbtn]", v).forEach((b) => b.onclick = () => $(`[data-font="${b.dataset.fontbtn}"]`, v).click());
