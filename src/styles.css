@@ -1218,3 +1218,32 @@ a.fi[href]:hover { background: var(--surface-2); }
 .doc .sg-img { display: block; max-height: 62px; max-width: 100%; margin: 4px 0; }
 .doc .sg-v { margin-top: 6px; font-size: 8.5pt; color: #563331; }
 .doc .sg-line { border-bottom: 1px dotted #b7a991; padding: 12px 0 2px; font-size: 8.5pt; color: #8a7c74; }
+
+/* ───── إشعارات الجوال والتثبيت ───── */
+.push-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); position: relative; }
+.push-card .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.push-card .grow span { color: var(--ink-3); font-size: 13.5px; }
+.push-card .pc-ic { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); }
+.push-card .pc-ic svg { width: 22px; height: 22px; }
+.push-card .pc-act { display: flex; gap: 6px; flex-wrap: wrap; flex: none; }
+.push-card.t-gold { background: linear-gradient(135deg, var(--gold-soft), var(--surface)); border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.push-card.t-gold .pc-ic { background: var(--brand); color: var(--gold); }
+.push-card.t-ok .pc-ic { background: var(--ok-soft); color: var(--ok); }
+.push-card.t-warn { background: var(--warn-soft); border-color: transparent; } .push-card.t-warn .pc-ic { background: var(--surface); color: var(--warn); }
+.push-card.t-bad .pc-ic { background: var(--bad-soft); color: var(--bad); }
+.push-banner { margin-bottom: 14px; }
+.push-banner .push-card { padding-inline-end: 44px; }
+.pb-x { position: absolute; top: 8px; inset-inline-end: 8px; border: 0; background: none; color: var(--ink-3); cursor: pointer; padding: 4px; border-radius: 8px; }
+.pb-x svg { width: 16px; height: 16px; }
+.ins-steps { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ins-steps li { display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.ins-steps .ins-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.ins-steps .ins-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--surface); display: grid; place-items: center; color: var(--info); border: 1px solid var(--line); }
+.ins-steps .ins-ic svg { width: 22px; height: 22px; }
+.ins-steps div { display: flex; flex-direction: column; gap: 2px; }
+.ins-steps div span { font-size: 13px; color: var(--ink-3); }
+.nav-install { margin-top: 6px; }
+@media (max-width: 860px) {
+  .push-card { flex-wrap: wrap; }
+  .push-card .pc-act { width: 100%; padding-inline-start: 58px; }
+}

@@ -1236,6 +1236,35 @@ a.fi[href]:hover { background: var(--surface-2); }
 .doc .sg-v { margin-top: 6px; font-size: 8.5pt; color: #563331; }
 .doc .sg-line { border-bottom: 1px dotted #b7a991; padding: 12px 0 2px; font-size: 8.5pt; color: #8a7c74; }
 
+/* ───── إشعارات الجوال والتثبيت ───── */
+.push-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); position: relative; }
+.push-card .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.push-card .grow span { color: var(--ink-3); font-size: 13.5px; }
+.push-card .pc-ic { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); }
+.push-card .pc-ic svg { width: 22px; height: 22px; }
+.push-card .pc-act { display: flex; gap: 6px; flex-wrap: wrap; flex: none; }
+.push-card.t-gold { background: linear-gradient(135deg, var(--gold-soft), var(--surface)); border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.push-card.t-gold .pc-ic { background: var(--brand); color: var(--gold); }
+.push-card.t-ok .pc-ic { background: var(--ok-soft); color: var(--ok); }
+.push-card.t-warn { background: var(--warn-soft); border-color: transparent; } .push-card.t-warn .pc-ic { background: var(--surface); color: var(--warn); }
+.push-card.t-bad .pc-ic { background: var(--bad-soft); color: var(--bad); }
+.push-banner { margin-bottom: 14px; }
+.push-banner .push-card { padding-inline-end: 44px; }
+.pb-x { position: absolute; top: 8px; inset-inline-end: 8px; border: 0; background: none; color: var(--ink-3); cursor: pointer; padding: 4px; border-radius: 8px; }
+.pb-x svg { width: 16px; height: 16px; }
+.ins-steps { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ins-steps li { display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.ins-steps .ins-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: var(--on-brand); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.ins-steps .ins-ic { flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--surface); display: grid; place-items: center; color: var(--info); border: 1px solid var(--line); }
+.ins-steps .ins-ic svg { width: 22px; height: 22px; }
+.ins-steps div { display: flex; flex-direction: column; gap: 2px; }
+.ins-steps div span { font-size: 13px; color: var(--ink-3); }
+.nav-install { margin-top: 6px; }
+@media (max-width: 860px) {
+  .push-card { flex-wrap: wrap; }
+  .push-card .pc-act { width: 100%; padding-inline-start: 58px; }
+}
+
 </style>
 <script src="config.js"></script>
 </head>
@@ -3680,8 +3709,8 @@ route("notifications", {
     const kinds = { all: "الكل", unread: "غير المقروءة", reminder: "التذكيرات", alert: "التنبيهات", approval: "الاعتمادات", task: "المهام", report: "التقارير" };
     v.innerHTML = `<div class="pagehead"><div class="seg" id="seg">${Object.entries(kinds).map(([k, l]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l}</button>`).join("")}</div>
       <div class="right row"><button class="btn sm" id="mute">${localStorage.getItem("tayyib.mute") === "1" ? "🔕 الصوت متوقف" : "🔔 الصوت مفعّل"}</button>
-      ${"Notification" in window && Notification.permission !== "granted" ? `<button class="btn sm" id="perm">تفعيل تنبيهات المتصفح</button>` : ""}
-      <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div class="card" id="list"></div>`;
+      <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div id="push-box" style="margin-bottom:14px"></div><div class="card" id="list"></div>`;
+    pushCard($("#push-box", v));
     const draw = () => {
       const list = S.notifications.filter((n) => f === "all" || (f === "unread" ? !n.read_at : f === "task" ? ["task", "assign"].includes(n.kind) : f === "report" ? ["report", "stage", "refill"].includes(n.kind) : n.kind === f));
       $("#list", v).innerHTML = list.length ? list.map(notifItem).join("") : `<div class="empty">${I.bell}لا توجد إشعارات</div>`;
@@ -4419,7 +4448,7 @@ function oilCalc(devices, per = oilPer(), gal = oilGal()) {
   return { ml, gallons, spare: gallons * gal - ml };
 }
 const canWarehouse = () => ["admin", "company"].includes(realRole());
-const oilState = { st: "", sel: {}, q: "", due: false };
+const oilState = { st: "", sel: {}, q: "", view: "" };
 
 route("warehouse", {
   title: "المستودع",
@@ -4466,7 +4495,10 @@ async function oilNew(v) {
   if (realRole() !== "company") { go("/warehouse"); return; }
   await loadMosques();
   const list = S.mosques.filter((m) => m.stage === "active").sort((a, b) => (a.next_refill_at || "9") < (b.next_refill_at || "9") ? -1 : 1);
-  const soon = Date.now() + 7 * 864e5, isDue = (m) => m.next_refill_at && new Date(m.next_refill_at) <= soon;
+  // «وصلت للتعبئة»: المتأخرة والمستحقة خلال نافذة التذكير (افتراضيًا ٧٢ ساعة)
+  const soon = Date.now() + (+S.settings.reminder_hours || 72) * 36e5, isDue = (m) => m.next_refill_at && new Date(m.next_refill_at) <= soon;
+  const nDue = list.filter(isDue).length;
+  if (!oilState.view) oilState.view = nDue ? "due" : "all";
   const sel = oilState.sel;
   if (!Object.keys(sel).length) list.filter(isDue).forEach((m) => sel[m.id] = Math.max(1, +m.devices_count || 1));
   v.innerHTML = `<div class="pagehead"><a class="btn ghost sm" href="#/warehouse">→ المستودع</a><h2 style="margin:0;font-size:19px">طلب زيت عطري جديد</h2></div>
@@ -4474,15 +4506,22 @@ async function oilNew(v) {
     <div class="oil-new">
       <div class="card"><div class="toolbar">
         <div class="search">${I.search}<input class="input" id="o-q" type="search" placeholder="ابحث بالاسم أو الرمز أو الحي…" value="${esc(oilState.q)}"></div>
-        <button class="btn sm" id="o-due">${I.drop} المستحقة خلال 7 أيام <span class="num">${list.filter(isDue).length}</span></button>
-        <button class="btn sm" id="o-all">تحديد الكل</button><button class="btn sm ghost" id="o-none">إلغاء التحديد</button></div>
+        <div class="seg" id="o-view"><button data-v="due">${I.drop} وصلت للتعبئة <span class="num">${nDue}</span></button><button data-v="all">كل المساجد المركّبة <span class="num">${list.length}</span></button></div>
+        <button class="btn sm" id="o-all">تحديد المعروض</button><button class="btn sm ghost" id="o-none">إلغاء التحديد</button></div>
+        <div class="hint" id="o-vhint" style="margin:0 16px 10px"></div>
         <div class="oil-list" id="o-list"></div></div>
       <aside class="card oil-sum" id="o-sum"></aside>
     </div>`}`;
   if (!list.length) return;
   const paintList = () => {
     const q = oilState.q.trim().toLowerCase();
-    const rows = list.filter((m) => !q || [m.name, m.code, m.district].some((x) => String(x || "").toLowerCase().includes(q)));
+    $$("#o-view [data-v]", v).forEach((b) => b.classList.toggle("on", b.dataset.v === oilState.view));
+    const extra = Object.keys(sel).filter((k) => !isDue(list.find((m) => m.id === k) || {})).length;
+    $("#o-vhint", v).innerHTML = oilState.view === "due"
+      ? `تظهر المساجد التي وصل موعد تعبئتها (المتأخرة والمستحقة خلال ${fmtNum(+S.settings.reminder_hours || 72)} ساعة) ومحددة مسبقًا. لإضافة غيرها افتح «كل المساجد المركّبة».${extra ? ` <b>محدد من خارجها: ${fmtNum(extra)}</b>` : ""}`
+      : "كل المساجد المركّبة — حدّد ما تريد إضافته للطلب.";
+    const rows = list.filter((m) => (oilState.view === "all" || isDue(m) || m.id in sel) && (!q || [m.name, m.code, m.district].some((x) => String(x || "").toLowerCase().includes(q))));
+    if (!rows.length && oilState.view === "due" && !q) { $("#o-list", v).innerHTML = `<div class="empty" style="padding:30px">${I.drop}لا توجد مساجد وصلت للتعبئة الآن — افتح «كل المساجد المركّبة» للاختيار منها.</div>`; return; }
     $("#o-list", v).innerHTML = rows.map((m) => {
       const on = m.id in sel, due = m.next_refill_at ? new Date(m.next_refill_at) : null;
       return `<label class="oil-row ${on ? "on" : ""}" data-m="${m.id}"><input type="checkbox" ${on ? "checked" : ""}>
@@ -4515,12 +4554,12 @@ async function oilNew(v) {
       const b = $("#o-send", v); b.disabled = true;
       const id = await run(sb.rpc("oil_request_create", { p_items: ids.map((k) => ({ mosque_id: k, devices: sel[k] })), p_note: oilState.note || null }), "أُرسل الطلب لمدير النظام للاعتماد");
       b.disabled = false;
-      if (id) { oilState.sel = {}; oilState.note = ""; oilState.q = ""; go("/warehouse/" + id); }
+      if (id) { oilState.sel = {}; oilState.note = ""; oilState.q = ""; oilState.view = ""; go("/warehouse/" + id); }
     };
   };
   $("#o-q", v).oninput = (e) => { oilState.q = e.target.value; paintList(); };
-  $("#o-due", v).onclick = () => { list.filter(isDue).forEach((m) => { if (!(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
-  $("#o-all", v).onclick = () => { list.forEach((m) => { if (!(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
+  $("#o-view", v).onclick = (e) => { const b = e.target.closest("[data-v]"); if (!b) return; oilState.view = b.dataset.v; paintList(); };
+  $("#o-all", v).onclick = () => { $$("#o-list [data-m]", v).forEach((r) => { const m = list.find((x) => x.id === r.dataset.m); if (m && !(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
   $("#o-none", v).onclick = () => { Object.keys(sel).forEach((k) => delete sel[k]); paintList(); paintSum(); };
   paintList(); paintSum();
 }
@@ -4742,6 +4781,148 @@ route("my", {
   },
 });
 
+// ───────────────────────── تثبيت المنصة كتطبيق + إشعارات الجوال ─────────────────────────
+// الإشعار يُرسل من الخادم (الدالة الطرفية push) لكل جهاز مشترك، فيصل والتطبيق مغلق.
+// على الآيفون: تعمل الإشعارات فقط بعد إضافة المنصة إلى الشاشة الرئيسية وفتحها من أيقونتها (iOS 16.4+).
+const isMockEnv = () => location.pathname.includes("/tests/");
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isAndroid = () => /android/i.test(navigator.userAgent);
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const pushCapable = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const SHARE_I = svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/>');
+const DOTS_I = svg('<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>');
+const PHONE_I = svg('<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/>');
+let swRegP = null, installEvt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; });
+window.addEventListener("appinstalled", () => { installEvt = null; toast("تم تثبيت «طيب» على جهازك — فعّل الإشعارات من داخل التطبيق"); });
+
+function swReg() {
+  if (isMockEnv() || !("serviceWorker" in navigator)) return Promise.resolve(null);
+  return swRegP ||= navigator.serviceWorker.register("sw.js").catch(() => null);
+}
+// رسائل عامل الخدمة: فتح صفحة الإشعار، أو تحديث القائمة عند وصول إشعار
+if ("serviceWorker" in navigator && !isMockEnv()) {
+  navigator.serviceWorker.addEventListener("message", (e) => {
+    if (e.data?.type === "open") { const h = new URL(e.data.url).hash; if (h) location.hash = h.slice(1); }
+    if (e.data?.type === "push" && S.me) { loadNotifications?.().then(() => paintBell?.()).catch(() => {}); }
+  });
+}
+const b64u = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), (c) => c.charCodeAt(0));
+const deviceName = () => `${isIOS() ? "iPhone/iPad" : isAndroid() ? "Android" : "متصفح"}${isStandalone() ? " • تطبيق" : ""}`;
+
+// الحالة: on | off | install (آيفون من Safari) | denied | unsupported
+async function pushState() {
+  if (isMockEnv()) return window.__pushMock || "off";
+  if (isIOS() && !isStandalone()) return "install";
+  if (!pushCapable()) return "unsupported";
+  if (Notification.permission === "denied") return "denied";
+  const reg = await swReg(); if (!reg) return "unsupported";
+  const sub = await reg.pushManager.getSubscription();
+  return sub && Notification.permission === "granted" ? "on" : "off";
+}
+async function pushEnable() {
+  if (isMockEnv()) { window.__pushMock = "on"; toast("تم تفعيل الإشعارات على هذا الجهاز"); return true; }
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") { toast(perm === "denied" ? "تم رفض الإشعارات — فعّلها من إعدادات الجوال" : "لم يتم التفعيل", "err"); return false; }
+  try {
+    const reg = await swReg(); await navigator.serviceWorker.ready;
+    const { data: key, error } = await sb.rpc("push_public_key"); if (error || !key) throw error || new Error("مفتاح الإشعارات غير متاح");
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(key) });
+    const j = sub.toJSON();
+    const ok = await run(sb.rpc("push_subscribe", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_device: deviceName() }));
+    if (ok) { await sb.rpc("push_test"); toast("تم التفعيل — وصلك إشعار تجريبي"); }
+    return !!ok;
+  } catch (e) { toast("تعذّر تفعيل الإشعارات: " + errMsg(e), "err"); return false; }
+}
+async function pushDisable() {
+  if (isMockEnv()) { window.__pushMock = "off"; return; }
+  const reg = await swReg(); const sub = await reg?.pushManager.getSubscription();
+  if (sub) { await sb.rpc("push_unsubscribe", { p_endpoint: sub.endpoint }); await sub.unsubscribe().catch(() => {}); }
+  toast("تم إيقاف الإشعارات على هذا الجهاز");
+}
+// بعد الدخول: ربط اشتراك الجهاز بالحساب الحالي (لو تغيّر المستخدم على نفس الجهاز)
+async function pushSync() {
+  if (isMockEnv() || !pushCapable() || Notification.permission !== "granted") { swReg(); return; }
+  const reg = await swReg(); const sub = await reg?.pushManager.getSubscription(); if (!sub) return;
+  const j = sub.toJSON();
+  sb.rpc("push_subscribe", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_device: deviceName() });
+  if ("clearAppBadge" in navigator && !S.notifications?.some((n) => !n.read_at)) navigator.clearAppBadge().catch(() => {});
+}
+// عند الخروج: يتوقف وصول إشعارات هذا الحساب لهذا الجهاز
+async function pushLogout() {
+  if (isMockEnv() || !("serviceWorker" in navigator)) return;
+  const sub = await (await swReg())?.pushManager.getSubscription();
+  if (sub) { try { await sb.rpc("push_unsubscribe", { p_endpoint: sub.endpoint }); } catch {} }
+}
+
+// بطاقة الحالة (صفحة الإشعارات + النافذة)
+const PUSH_TXT = {
+  on: ["ok", "إشعارات الجوال مفعّلة على هذا الجهاز", "تصلك تنبيهات المهام والاعتمادات والتذكيرات فورًا حتى والتطبيق مغلق."],
+  off: ["gold", "فعّل إشعارات الجوال", "ليصلك كل جديد فورًا على جوالك حتى والتطبيق مغلق — كأي تطبيق."],
+  install: ["warn", "ثبّت المنصة على الشاشة الرئيسية أولًا", "في الآيفون تعمل الإشعارات بعد إضافة «طيب» إلى الشاشة الرئيسية وفتحه من أيقونته."],
+  denied: ["bad", "الإشعارات مرفوضة على هذا الجهاز", "فعّلها من: الإعدادات ← الإشعارات ← طيب (أو إعدادات الموقع في المتصفح)، ثم عد هنا."],
+  unsupported: ["plain", "هذا المتصفح لا يدعم إشعارات الجوال", "استخدم Chrome على أندرويد، أو Safari على آيفون (iOS 16.4 فأحدث) بعد تثبيت المنصة."],
+};
+async function pushCard(el, { compact = false } = {}) {
+  const st = await pushState(), [tone, title, sub] = PUSH_TXT[st];
+  el.innerHTML = `<div class="push-card t-${tone}${compact ? " compact" : ""}"><div class="pc-ic">${st === "on" ? I.check : st === "install" ? PHONE_I : I.bell}</div>
+    <div class="grow"><b>${title}</b><span>${sub}</span></div>
+    <div class="pc-act">${st === "on" ? `<button class="btn sm" data-p="test">إشعار تجريبي</button><button class="btn sm ghost" data-p="off">إيقاف</button>`
+      : st === "off" ? `<button class="btn primary sm" data-p="on">${I.bell} تفعيل الإشعارات</button>`
+      : st === "install" ? `<button class="btn primary sm" data-p="help">${PHONE_I} طريقة التثبيت</button>`
+      : `<button class="btn sm" data-p="help">المساعدة</button>`}</div></div>`;
+  el.onclick = async (e) => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    b.disabled = true;
+    if (b.dataset.p === "on") await pushEnable();
+    if (b.dataset.p === "off") await pushDisable();
+    if (b.dataset.p === "test") await run(sb.rpc("push_test"), "أُرسل إشعار تجريبي — يصل خلال ثوانٍ");
+    if (b.dataset.p === "help") installDialog();
+    b.disabled = false; pushCard(el, { compact });
+  };
+}
+
+// شرح التثبيت للآيفون والأندرويد
+function installDialog(tab = isAndroid() ? "android" : "ios") {
+  const url = location.origin + location.pathname.replace(/[^/]*$/, "");
+  const STEPS = {
+    ios: [[I.search, "افتح المنصة في <b>Safari</b>", `اكتب <b dir="ltr">${esc(url.replace(/^https?:\/\//, ""))}</b> — يجب أن يكون Safari وليس متصفحًا آخر.`],
+      [SHARE_I, "اضغط زر <b>المشاركة</b>", "المربع والسهم للأعلى، أسفل الشاشة (أو أعلاها في الآيباد)."],
+      [I.plus, "اختر <b>«إضافة إلى الشاشة الرئيسية»</b>", "مرّر القائمة للأسفل إن لم يظهر، ثم اضغط <b>«إضافة»</b>."],
+      [I.bell, "افتح «طيب» من أيقونته وفعّل الإشعارات", "من «الإشعارات» اضغط <b>«تفعيل الإشعارات»</b> ثم <b>«سماح»</b>."]],
+    android: [[I.search, "افتح المنصة في <b>Chrome</b>", `اكتب <b dir="ltr">${esc(url.replace(/^https?:\/\//, ""))}</b>`],
+      [DOTS_I, "اضغط قائمة <b>⋮</b> أعلى الشاشة", "ثم <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>."],
+      [I.plus, "اضغط <b>«تثبيت»</b>", "تظهر أيقونة «طيب» مع تطبيقاتك."],
+      [I.bell, "افتح «طيب» وفعّل الإشعارات", "من «الإشعارات» اضغط <b>«تفعيل الإشعارات»</b> ثم <b>«سماح»</b>."]],
+  };
+  const body = document.createElement("div");
+  const draw = () => {
+    body.innerHTML = `<div class="seg" id="ins-tabs" style="margin-bottom:14px"><button data-t="ios" class="${tab === "ios" ? "on" : ""}">آيفون</button><button data-t="android" class="${tab === "android" ? "on" : ""}">أندرويد</button></div>
+      ${tab === "android" && installEvt ? `<button class="btn primary" id="ins-now" style="width:100%;margin-bottom:12px">${PHONE_I} تثبيت «طيب» الآن</button>` : ""}
+      <ol class="ins-steps">${STEPS[tab].map(([ic, t, d], i) => `<li><span class="ins-n">${i + 1}</span><span class="ins-ic">${ic}</span><div><b>${t}</b><span>${d}</span></div></li>`).join("")}</ol>
+      <div class="hint">${tab === "ios" ? "الإشعارات على الآيفون تتطلب iOS 16.4 فأحدث، وتعمل فقط من أيقونة التطبيق على الشاشة الرئيسية." : "إن لم يظهر خيار التثبيت، حدّث Chrome من المتجر. يمكن تفعيل الإشعارات أيضًا من المتصفح مباشرة."}
+        <a href="${esc(guideBase())}install.html" target="_blank" rel="noopener">الشرح المصوّر ←</a></div>`;
+    $("#ins-tabs", body).onclick = (e) => { const b = e.target.closest("[data-t]"); if (b) { tab = b.dataset.t; draw(); } };
+    $("#ins-now", body)?.addEventListener("click", async () => { installEvt.prompt(); await installEvt.userChoice; installEvt = null; draw(); });
+  };
+  draw();
+  modal({ title: "تثبيت «طيب» كتطبيق وتفعيل الإشعارات", body });
+}
+
+// تنبيه لطيف في الرئيسية لمن لم يفعّل الإشعارات (يمكن إخفاؤه)
+async function pushBanner(host) {
+  try { if (localStorage.getItem("tayyib.pushBanner") === "hide") return; } catch {}
+  const st = await pushState();
+  if (!["off", "install"].includes(st) || !host.isConnected) return;
+  const el = document.createElement("div"); el.className = "push-banner";
+  host.prepend(el);
+  await pushCard(el, { compact: true });
+  const x = document.createElement("button"); x.className = "pb-x"; x.setAttribute("aria-label", "إخفاء"); x.innerHTML = I.x;
+  x.onclick = () => { el.remove(); try { localStorage.setItem("tayyib.pushBanner", "hide"); } catch {} };
+  $(".push-card", el)?.appendChild(x);
+}
+
 // ───────────────────────── الهيكل والدخول ─────────────────────────
 const NAV = [
   { r: "dashboard", l: "لوحة المؤشرات", i: "dash", roles: ["admin", "association", "company", "viewer"] },
@@ -4775,7 +4956,7 @@ function paintShell() {
   let lastSec = null;
   $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div>
     <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge || n.count ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}
-      <a href="${ASSETS.replace(/assets\/$/, "guide/")}${role()}.html" target="_blank" rel="noopener" class="nav-guide" data-l="دليل الاستخدام">${I.report}<span>دليل الاستخدام</span></a></nav>
+      <a href="${ASSETS.replace(/assets\/$/, "guide/")}${role()}.html" target="_blank" rel="noopener" class="nav-guide" data-l="دليل الاستخدام">${I.report}<span>دليل الاستخدام</span></a>${isStandalone() ? "" : `<a href="#" class="nav-guide nav-install" id="nav-install" data-l="ثبّت التطبيق">${PHONE_I}<span>ثبّت التطبيق والإشعارات</span></a>`}</nav>
     <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[realRole()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
@@ -4787,7 +4968,8 @@ function paintShell() {
   $(".bnav").style.gridTemplateColumns = `repeat(${bn.length + (more ? 1 : 0)}, minmax(0, 1fr))`;
   $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" || r === "my" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
     (more ? `<button type="button" id="more">${I.menu}<span>المزيد</span><span class="badge" hidden></span></button>` : "");
-  $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
+  $("#nav-install")?.addEventListener("click", (e) => { e.preventDefault(); installDialog(); });
+  $("#logout").onclick = async () => { await pushLogout(); await sb.auth.signOut(); location.hash = ""; location.reload(); };
   $("#theme").onclick = () => {
     document.documentElement.dataset.theme = isDark() ? "light" : "dark";
     try { localStorage.setItem("tayyib.theme", document.documentElement.dataset.theme); } catch {}
@@ -4838,6 +5020,7 @@ async function render() {
   const v = $("#view");
   v.scrollTop = 0; window.scrollTo(0, 0);
   try { await current.render(v); } catch (e) { console.error(e); v.innerHTML = `<div class="empty">${I.alert}حدث خطأ: ${esc(errMsg(e))}</div>`; }
+  if (S.route === "dashboard") pushBanner(v);
 }
 
 // ───── شاشة الدخول والتفعيل ─────
@@ -4912,6 +5095,7 @@ async function boot() {
   sb.rpc("touch_seen").then(() => {});
   paintShell();
   subscribeNotifications();
+  pushSync();
   if (!location.hash) location.hash = "/dashboard";
   render();
 }

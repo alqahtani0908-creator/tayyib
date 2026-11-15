@@ -15,7 +15,7 @@ function oilCalc(devices, per = oilPer(), gal = oilGal()) {
   return { ml, gallons, spare: gallons * gal - ml };
 }
 const canWarehouse = () => ["admin", "company"].includes(realRole());
-const oilState = { st: "", sel: {}, q: "", due: false };
+const oilState = { st: "", sel: {}, q: "", view: "" };
 
 route("warehouse", {
   title: "المستودع",
@@ -62,7 +62,10 @@ async function oilNew(v) {
   if (realRole() !== "company") { go("/warehouse"); return; }
   await loadMosques();
   const list = S.mosques.filter((m) => m.stage === "active").sort((a, b) => (a.next_refill_at || "9") < (b.next_refill_at || "9") ? -1 : 1);
-  const soon = Date.now() + 7 * 864e5, isDue = (m) => m.next_refill_at && new Date(m.next_refill_at) <= soon;
+  // «وصلت للتعبئة»: المتأخرة والمستحقة خلال نافذة التذكير (افتراضيًا ٧٢ ساعة)
+  const soon = Date.now() + (+S.settings.reminder_hours || 72) * 36e5, isDue = (m) => m.next_refill_at && new Date(m.next_refill_at) <= soon;
+  const nDue = list.filter(isDue).length;
+  if (!oilState.view) oilState.view = nDue ? "due" : "all";
   const sel = oilState.sel;
   if (!Object.keys(sel).length) list.filter(isDue).forEach((m) => sel[m.id] = Math.max(1, +m.devices_count || 1));
   v.innerHTML = `<div class="pagehead"><a class="btn ghost sm" href="#/warehouse">→ المستودع</a><h2 style="margin:0;font-size:19px">طلب زيت عطري جديد</h2></div>
@@ -70,15 +73,22 @@ async function oilNew(v) {
     <div class="oil-new">
       <div class="card"><div class="toolbar">
         <div class="search">${I.search}<input class="input" id="o-q" type="search" placeholder="ابحث بالاسم أو الرمز أو الحي…" value="${esc(oilState.q)}"></div>
-        <button class="btn sm" id="o-due">${I.drop} المستحقة خلال 7 أيام <span class="num">${list.filter(isDue).length}</span></button>
-        <button class="btn sm" id="o-all">تحديد الكل</button><button class="btn sm ghost" id="o-none">إلغاء التحديد</button></div>
+        <div class="seg" id="o-view"><button data-v="due">${I.drop} وصلت للتعبئة <span class="num">${nDue}</span></button><button data-v="all">كل المساجد المركّبة <span class="num">${list.length}</span></button></div>
+        <button class="btn sm" id="o-all">تحديد المعروض</button><button class="btn sm ghost" id="o-none">إلغاء التحديد</button></div>
+        <div class="hint" id="o-vhint" style="margin:0 16px 10px"></div>
         <div class="oil-list" id="o-list"></div></div>
       <aside class="card oil-sum" id="o-sum"></aside>
     </div>`}`;
   if (!list.length) return;
   const paintList = () => {
     const q = oilState.q.trim().toLowerCase();
-    const rows = list.filter((m) => !q || [m.name, m.code, m.district].some((x) => String(x || "").toLowerCase().includes(q)));
+    $$("#o-view [data-v]", v).forEach((b) => b.classList.toggle("on", b.dataset.v === oilState.view));
+    const extra = Object.keys(sel).filter((k) => !isDue(list.find((m) => m.id === k) || {})).length;
+    $("#o-vhint", v).innerHTML = oilState.view === "due"
+      ? `تظهر المساجد التي وصل موعد تعبئتها (المتأخرة والمستحقة خلال ${fmtNum(+S.settings.reminder_hours || 72)} ساعة) ومحددة مسبقًا. لإضافة غيرها افتح «كل المساجد المركّبة».${extra ? ` <b>محدد من خارجها: ${fmtNum(extra)}</b>` : ""}`
+      : "كل المساجد المركّبة — حدّد ما تريد إضافته للطلب.";
+    const rows = list.filter((m) => (oilState.view === "all" || isDue(m) || m.id in sel) && (!q || [m.name, m.code, m.district].some((x) => String(x || "").toLowerCase().includes(q))));
+    if (!rows.length && oilState.view === "due" && !q) { $("#o-list", v).innerHTML = `<div class="empty" style="padding:30px">${I.drop}لا توجد مساجد وصلت للتعبئة الآن — افتح «كل المساجد المركّبة» للاختيار منها.</div>`; return; }
     $("#o-list", v).innerHTML = rows.map((m) => {
       const on = m.id in sel, due = m.next_refill_at ? new Date(m.next_refill_at) : null;
       return `<label class="oil-row ${on ? "on" : ""}" data-m="${m.id}"><input type="checkbox" ${on ? "checked" : ""}>
@@ -111,12 +121,12 @@ async function oilNew(v) {
       const b = $("#o-send", v); b.disabled = true;
       const id = await run(sb.rpc("oil_request_create", { p_items: ids.map((k) => ({ mosque_id: k, devices: sel[k] })), p_note: oilState.note || null }), "أُرسل الطلب لمدير النظام للاعتماد");
       b.disabled = false;
-      if (id) { oilState.sel = {}; oilState.note = ""; oilState.q = ""; go("/warehouse/" + id); }
+      if (id) { oilState.sel = {}; oilState.note = ""; oilState.q = ""; oilState.view = ""; go("/warehouse/" + id); }
     };
   };
   $("#o-q", v).oninput = (e) => { oilState.q = e.target.value; paintList(); };
-  $("#o-due", v).onclick = () => { list.filter(isDue).forEach((m) => { if (!(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
-  $("#o-all", v).onclick = () => { list.forEach((m) => { if (!(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
+  $("#o-view", v).onclick = (e) => { const b = e.target.closest("[data-v]"); if (!b) return; oilState.view = b.dataset.v; paintList(); };
+  $("#o-all", v).onclick = () => { $$("#o-list [data-m]", v).forEach((r) => { const m = list.find((x) => x.id === r.dataset.m); if (m && !(m.id in sel)) sel[m.id] = Math.max(1, +m.devices_count || 1); }); paintList(); paintSum(); };
   $("#o-none", v).onclick = () => { Object.keys(sel).forEach((k) => delete sel[k]); paintList(); paintSum(); };
   paintList(); paintSum();
 }

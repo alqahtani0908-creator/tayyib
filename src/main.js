@@ -31,7 +31,7 @@ function paintShell() {
   let lastSec = null;
   $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div>
     <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge || n.count ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}
-      <a href="${ASSETS.replace(/assets\/$/, "guide/")}${role()}.html" target="_blank" rel="noopener" class="nav-guide" data-l="دليل الاستخدام">${I.report}<span>دليل الاستخدام</span></a></nav>
+      <a href="${ASSETS.replace(/assets\/$/, "guide/")}${role()}.html" target="_blank" rel="noopener" class="nav-guide" data-l="دليل الاستخدام">${I.report}<span>دليل الاستخدام</span></a>${isStandalone() ? "" : `<a href="#" class="nav-guide nav-install" id="nav-install" data-l="ثبّت التطبيق">${PHONE_I}<span>ثبّت التطبيق والإشعارات</span></a>`}</nav>
     <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[realRole()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
@@ -43,7 +43,8 @@ function paintShell() {
   $(".bnav").style.gridTemplateColumns = `repeat(${bn.length + (more ? 1 : 0)}, minmax(0, 1fr))`;
   $(".bnav").innerHTML = bn.map((r) => `<a href="#/${r}" data-r="${r}">${I[NAV.find((x) => x.r === r).i]}<span>${BNAV_LABEL[r]}</span>${r === "notifications" || r === "my" ? `<span class="badge" hidden></span>` : ""}</a>`).join("") +
     (more ? `<button type="button" id="more">${I.menu}<span>المزيد</span><span class="badge" hidden></span></button>` : "");
-  $("#logout").onclick = async () => { await sb.auth.signOut(); location.hash = ""; location.reload(); };
+  $("#nav-install")?.addEventListener("click", (e) => { e.preventDefault(); installDialog(); });
+  $("#logout").onclick = async () => { await pushLogout(); await sb.auth.signOut(); location.hash = ""; location.reload(); };
   $("#theme").onclick = () => {
     document.documentElement.dataset.theme = isDark() ? "light" : "dark";
     try { localStorage.setItem("tayyib.theme", document.documentElement.dataset.theme); } catch {}
@@ -94,6 +95,7 @@ async function render() {
   const v = $("#view");
   v.scrollTop = 0; window.scrollTo(0, 0);
   try { await current.render(v); } catch (e) { console.error(e); v.innerHTML = `<div class="empty">${I.alert}حدث خطأ: ${esc(errMsg(e))}</div>`; }
+  if (S.route === "dashboard") pushBanner(v);
 }
 
 // ───── شاشة الدخول والتفعيل ─────
@@ -168,6 +170,7 @@ async function boot() {
   sb.rpc("touch_seen").then(() => {});
   paintShell();
   subscribeNotifications();
+  pushSync();
   if (!location.hash) location.hash = "/dashboard";
   render();
 }

@@ -243,6 +243,7 @@
           t.due_date ? new Date(t.due_date + "T20:00:00").getTime() : new Date(t.created_at).getTime() + 3 * day, "/tasks/" + t.id, { note: (t.details || "").slice(0, 90), priority: t.priority })));
       return out;
     },
+    push_test: () => { db.notifications.push({ id: id(), account_id: me.id, kind: "info", title: "تم تفعيل إشعارات الجوال ✓", body: "ستصلك تنبيهات منصة طيب على هذا الجهاز حتى والتطبيق مغلق.", link: "/my", created_at: iso(Date.now()) }); return null; },
     oil_request_create: ({ p_items, p_note }) => {
       if (realR !== "company") throw "طلب الزيت من صلاحية الشركة المنفذة";
       if (!p_items?.length) throw "اختر مسجدًا واحدًا على الأقل";

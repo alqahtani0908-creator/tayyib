@@ -140,8 +140,8 @@ route("notifications", {
     const kinds = { all: "الكل", unread: "غير المقروءة", reminder: "التذكيرات", alert: "التنبيهات", approval: "الاعتمادات", task: "المهام", report: "التقارير" };
     v.innerHTML = `<div class="pagehead"><div class="seg" id="seg">${Object.entries(kinds).map(([k, l]) => `<button data-f="${k}" class="${k === f ? "on" : ""}">${l}</button>`).join("")}</div>
       <div class="right row"><button class="btn sm" id="mute">${localStorage.getItem("tayyib.mute") === "1" ? "🔕 الصوت متوقف" : "🔔 الصوت مفعّل"}</button>
-      ${"Notification" in window && Notification.permission !== "granted" ? `<button class="btn sm" id="perm">تفعيل تنبيهات المتصفح</button>` : ""}
-      <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div class="card" id="list"></div>`;
+      <button class="btn sm" id="all">تحديد الكل كمقروء</button></div></div><div id="push-box" style="margin-bottom:14px"></div><div class="card" id="list"></div>`;
+    pushCard($("#push-box", v));
     const draw = () => {
       const list = S.notifications.filter((n) => f === "all" || (f === "unread" ? !n.read_at : f === "task" ? ["task", "assign"].includes(n.kind) : f === "report" ? ["report", "stage", "refill"].includes(n.kind) : n.kind === f));
       $("#list", v).innerHTML = list.length ? list.map(notifItem).join("") : `<div class="empty">${I.bell}لا توجد إشعارات</div>`;
