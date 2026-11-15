@@ -74,6 +74,8 @@ function contactBtns({ phone, email, text = "", name = "" } = {}) {
 // ───── الأيقونات ─────
 const svg = (p, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${p}</svg>`;
 const I = {
+  box: svg('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>'),
+  sign: svg('<path d="M3 17c2.5-2.5 4.5-9 6.5-9 1.8 0-.8 8.5 1 8.5 1.6 0 2.6-3.5 4.2-3.5 1.3 0 .8 2.5 2.3 2.5 1 0 2-1 3-2"/><path d="M3 21h18"/>'),
   dash: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
   mosque: svg('<path d="M12 3c-3 2.2-5 4.2-5 6.5V11h10V9.5C17 7.2 15 5.2 12 3z"/><path d="M4 21V13h16v8"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/><path d="M2 21h20"/><path d="M12 1.5V3"/>'),
   tasks: svg('<path d="M9 11l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="3"/>'),
@@ -126,7 +128,7 @@ const logoHtml = (badge = false) => S.logoUrl ? `<img src="${esc(S.logoUrl)}" al
 const foundationLogo = (white = false) => `${ASSETS}foundation-${white ? "white" : "primary"}.png`;
 
 // ───── الأدوار والمراحل ─────
-const ROLES = { admin: "مدير النظام", association: "جمعية مشرفة", company: "الشركة المنفذة", viewer: "حساب عرض" };
+const ROLES = { admin: "مدير النظام", supervisor: "مشرف المشروع", association: "جمعية مشرفة", company: "الشركة المنفذة", viewer: "حساب عرض" };
 const STAGES = {
   selected: { l: "مختار — بانتظار الإسناد", s: "بانتظار الإسناد", c: "plain", who: "مدير النظام" },
   assigned: { l: "استكمال البيانات", s: "استكمال البيانات", c: "info", who: "الجمعية" },
@@ -147,8 +149,10 @@ const regionKey = (t) => { const s = String(t || "").trim().toLowerCase(); if (!
   return hit ? hit[0] : null; };
 const STAGE_ORDER = ["selected", "assigned", "data_done", "feasible", "study_done", "approved", "active"];
 const stageChip = (s) => `<span class="chip ${STAGES[s]?.c || ""}">${esc(STAGES[s]?.s || s)}</span>`;
-const isAdmin = () => S.me?.role === "admin";
-const role = () => S.me?.role;
+// مشرف المشروع يعمل بصلاحيات مدير النظام في كل الأقسام عدا المستودع (realRole يعيد الصلاحية الفعلية)
+const realRole = () => S.me?.role;
+const role = () => S.me?.role === "supervisor" ? "admin" : S.me?.role;
+const isAdmin = () => role() === "admin";
 const assocName = (id) => S.associations.find((a) => a.id === id)?.name || "—";
 
 // ───── واجهة عامة ─────

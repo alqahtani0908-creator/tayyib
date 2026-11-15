@@ -10,13 +10,14 @@
     admin: { id: id(), name: "مدير النظام", email: "admin@test.local", role: "admin", user_id: "u-admin", active: true, invite_code: "AAAA1111", created_at: iso(now) },
     association: { id: id(), name: "مشرف الجمعية", email: "assoc@test.local", role: "association", association_id: A1, user_id: "u-assoc", active: true, invite_code: "BBBB1111", phone: "0500000010", created_at: iso(now) },
     company: { id: id(), name: "مهندس الشركة", email: "co@test.local", role: "company", user_id: "u-co", active: true, invite_code: "CCCC1111", created_at: iso(now) },
+    supervisor: { id: id(), name: "مشرف المشروع", title: "مشرف المشروع", email: "sup@test.local", role: "supervisor", user_id: "u-sup", active: true, invite_code: "FFFF1111", created_at: iso(now) },
     viewer: { id: id(), name: "حساب العرض", email: "view@test.local", role: "viewer", user_id: "u-view", active: true, invite_code: "DDDD1111", created_at: iso(now) },
   };
   const db = {
-    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
+    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, oil_ml_per_device: 800, oil_gallon_ml: 5000, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
     associations: [{ id: A1, name: "جمعية عمارة المساجد بالشمال", district: "شمال الرياض", contact_name: "خالد العتيبي", phone: "0500000001", active: true }, { id: A2, name: "جمعية بيوت الله", active: true }, { id: A3, name: "جمعية مساجدنا", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
-    mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [], complaints: [], complaint_events: [], surveys: [], survey_questions: [], survey_responses: [],
+    mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [], complaints: [], complaint_events: [], surveys: [], survey_questions: [], survey_responses: [], oil_requests: [], oil_request_items: [], signatures: [],
   };
   let seq = 0;
   const M = (o) => { const m = { id: id(), code: "M-" + String(++seq).padStart(4, "0"), public_token: "T" + String(seq).padStart(7, "0"), kind: "جامع", stage: "selected", created_at: iso(now - seq * day), ...o }; db.mosques.push(m); return m; };
@@ -63,10 +64,28 @@
     if (act) db.reports.push({ id: id(), mosque_id: m.id, type: "installation", data: { date: iso(inst) }, author_role: "company", created_at: iso(inst) });
   }
   db.tasks.push({ id: id(), mosque_id: m7.id, kind: "task", title: "صيانة جهاز التعطير في المصلى", assignee: "company", priority: "urgent", status: "open", due_date: "2026-10-20", created_by: acc.admin.id, creator_role: "admin", created_at: iso(now - 4 * day) });
-  const me = acc[as] || acc.admin;
+  const meReal = acc[as] || acc.admin;
+  // مشرف المشروع = مدير النظام في كل شيء عدا المستودع (كما في الخادم)
+  const me = meReal.role === "supervisor" ? { ...meReal, role: "admin" } : meReal;
+  const realR = meReal.role;
   const loggedOut = as === "none"; // لمعاينة شاشة الدخول
   // شكاوى واقتراحات تجريبية
   const act = db.mosques.filter((m) => m.stage === "active");
+  // طلبات زيت تجريبية (طلب معتمد بتوقيع، وطلب بانتظار الاعتماد)
+  {
+    const cv = document.createElement("canvas"); cv.width = 360; cv.height = 120; const c = cv.getContext("2d");
+    c.strokeStyle = "#1d2a52"; c.lineWidth = 3; c.lineCap = "round"; c.beginPath(); c.moveTo(20, 80);
+    for (let x = 20; x < 330; x += 6) c.lineTo(x, 70 + Math.sin(x / 13) * 26 * Math.cos(x / 47) - (x > 200 ? (x - 200) / 5 : 0)); c.stroke();
+    c.beginPath(); c.moveTo(60, 100); c.quadraticCurveTo(180, 112, 320, 92); c.stroke();
+    const sig = cv.toDataURL("image/png"), co = acc.company, ad = acc.admin, per = 800, gal = 5000;
+    const mk = (ref, status, ms, ago, extra = {}) => { const rid = id(), n = ms.reduce((a, m) => a + (m.devices_count || 2), 0);
+      db.oil_requests.push({ id: rid, ref, status, requested_by: co.id, requester_name: co.name, requester_title: "مهندس التشغيل", ml_per_device: per, gallon_ml: gal, total_devices: n, total_ml: n * per,
+        gallons: Math.ceil(n * per / gal), created_at: iso(now - ago * day), updated_at: iso(now), ...extra });
+      ms.forEach((m) => db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: m.devices_count || 2, ml: (m.devices_count || 2) * per })); };
+    mk(1, "received", act.slice(0, 5), 33, { decided_by: ad.id, approver_name: ad.name, signature: sig, decided_at: iso(now - 32 * day), verify_code: "7C1E90A4B2", received_at: iso(now - 31 * day), received_by: "سالم — أمين المستودع" });
+    mk(2, "approved", act.slice(5, 11), 3, { decided_by: ad.id, approver_name: ad.name, signature: sig, decided_at: iso(now - 2 * day), verify_code: "415B1E5780", decision_note: "يُصرف من دفعة نوفمبر" });
+    mk(3, "pending", act.slice(11, 19), 0.2, { note: "تعبئة المساجد المستحقة هذا الأسبوع" });
+  }
   const CB = [["complaint", "الرائحة ضعيفة جدًا في مصلى النساء منذ أسبوع", "أبو محمد", "0551112233"], ["suggestion", "نقترح تغيير العطر إلى دهن العود في رمضان", "", ""],
     ["complaint", "الجهاز عند المدخل لا يعمل", "", "0559998877"], ["complaint", "الرائحة قوية أكثر من اللازم وقت صلاة الفجر", "سالم", ""], ["suggestion", "شكرًا لكم، نقترح إضافة جهاز في دورات المياه", "عبدالرحمن", "0541234567"]];
   const STS = ["new", "new", "assigned", "responded", "closed"];
@@ -99,7 +118,8 @@
   const VIS = {
     mosques: seeM, reports: (r) => seeMid(r.mosque_id), activity: (a) => seeMid(a.mosque_id), tasks: seeTask,
     attachments: (a) => me.role === "admin" || (a.mosque_id ? seeMid(a.mosque_id) : seeTask(db.tasks.find((t) => t.id === a.task_id) || {})),
-    notifications: (n) => n.account_id === me.id, accounts: (a) => me.role === "admin" || a.id === me.id,
+    notifications: (n) => n.account_id === me.id, accounts: (a) => realR === "admin" || (realR === "supervisor" && a.role !== "admin") || a.id === me.id,
+    oil_requests: () => ["admin", "company"].includes(realR), oil_request_items: () => ["admin", "company"].includes(realR), signatures: (x) => x.account_id === me.id,
     associations: (a) => me.role !== "association" || a.id === me.association_id,
     broadcasts: (b) => me.role === "admin" || b.created_by === me.id,
     complaints: (c) => me.role === "admin" || (me.role === "association" && c.association_id === me.association_id),
@@ -169,7 +189,7 @@
 
   const avg = (a) => a.length ? +(a.reduce((x, y) => x + y, 0) / a.length).toFixed(2) : null;
   const RPC = {
-    me: () => me,
+    me: () => meReal,
     touch_seen: () => null,
     claim_account: () => me,
     activate_account: () => null,
@@ -216,10 +236,40 @@
         M.filter((m) => m.stage === "approved").forEach((m) => out.push(T("install", "تركيب الأجهزة ورفع تقرير التركيب", m, m.planned_install_at ? new Date(m.planned_install_at).getTime() : at(m) + sla.install * day, "/mosque/" + m.id)));
         M.filter((m) => m.stage === "active" && m.next_refill_at && new Date(m.next_refill_at) <= now + 14 * day).forEach((m) => out.push(T("refill", "تعبئة العطر", m, new Date(m.next_refill_at).getTime(), "/mosque/" + m.id)));
       } else return [];
+      if (realR === "admin") db.oil_requests.filter((q) => q.status === "pending").forEach((q) => out.push({ k: "oil", title: "اعتماد طلب زيت عطري #" + q.ref, mosque: q.requester_name, note: `${q.total_devices} جهاز • ${q.gallons} جالون`, due: iso(new Date(q.created_at).getTime() + day), link: "/warehouse/" + q.id }));
+      if (realR === "company") db.oil_requests.filter((q) => q.status === "approved").forEach((q) => out.push({ k: "oil", title: "استلام الزيت من المستودع — طلب #" + q.ref, note: `${q.gallons} جالون • اطبع الورقة المعتمدة وسلّمها للمستودع`, due: iso(new Date(q.decided_at).getTime() + 3 * day), link: "/warehouse/" + q.id }));
       (db.tasks || []).filter((t) => !["done", "cancelled", "closed"].includes(t.status) && t.assignee === me.role && (me.role !== "association" || t.association_id === me.association_id))
         .forEach((t) => out.push(T("task", (t.kind === "request" ? "طلب: " : "مهمة: ") + t.title, M.find((m) => m.id === t.mosque_id),
           t.due_date ? new Date(t.due_date + "T20:00:00").getTime() : new Date(t.created_at).getTime() + 3 * day, "/tasks/" + t.id, { note: (t.details || "").slice(0, 90), priority: t.priority })));
       return out;
+    },
+    oil_request_create: ({ p_items, p_note }) => {
+      if (realR !== "company") throw "طلب الزيت من صلاحية الشركة المنفذة";
+      if (!p_items?.length) throw "اختر مسجدًا واحدًا على الأقل";
+      const st = db.settings[0], per = st.oil_ml_per_device || 800, gal = st.oil_gallon_ml || 5000;
+      const n = p_items.reduce((a, x) => a + +x.devices, 0), rid = id(), ref = db.oil_requests.length + 1;
+      db.oil_requests.push({ id: rid, ref, status: "pending", requested_by: me.id, requester_name: me.name, requester_title: me.title, ml_per_device: per, gallon_ml: gal, total_devices: n, total_ml: n * per,
+        gallons: Math.ceil(n * per / gal), note: p_note, created_at: iso(Date.now()), updated_at: iso(Date.now()) });
+      p_items.forEach((x) => { const m = db.mosques.find((y) => y.id === x.mosque_id); db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: +x.devices, ml: +x.devices * per }); });
+      db.accounts.filter((a) => a.role === "admin").forEach((a) => db.notifications.push({ id: id(), account_id: a.id, kind: "alert", title: `طلب زيت عطري #${ref} بانتظار اعتمادك`, body: me.name, link: "/warehouse/" + rid, created_at: iso(Date.now()) }));
+      return rid;
+    },
+    oil_request_decide: ({ p_id, p_approve, p_note, p_signature, p_save }) => {
+      if (realR !== "admin") throw "اعتماد طلبات المستودع من صلاحية مدير النظام فقط";
+      const q = db.oil_requests.find((x) => x.id === p_id); if (q.status !== "pending") throw "تم البت في هذا الطلب مسبقًا";
+      if (p_approve) {
+        const sig = p_signature || db.signatures.find((x) => x.account_id === me.id)?.image; if (!sig) throw "التوقيع الإلكتروني مطلوب للاعتماد";
+        if (p_save) { db.signatures = db.signatures.filter((x) => x.account_id !== me.id); db.signatures.push({ account_id: me.id, image: sig }); }
+        Object.assign(q, { status: "approved", signature: sig, verify_code: Math.random().toString(16).slice(2, 12).toUpperCase() });
+      } else { if (!p_note) throw "اكتب سبب الرفض"; q.status = "rejected"; }
+      Object.assign(q, { decided_by: me.id, approver_name: me.name, approver_title: me.title, decision_note: p_note, decided_at: iso(Date.now()) });
+      return null;
+    },
+    oil_request_update: ({ p_id, p_action, p_name }) => {
+      const q = db.oil_requests.find((x) => x.id === p_id);
+      if (p_action === "cancel") { if (realR !== "company" || q.status !== "pending") throw "لا يمكن إلغاء هذا الطلب"; q.status = "cancelled"; }
+      else { if (!["company", "admin"].includes(realR) || q.status !== "approved") throw "لا يمكن تأكيد الاستلام"; Object.assign(q, { status: "received", received_at: iso(Date.now()), received_by: p_name || me.name }); }
+      return null;
     },
     survey_results: ({ p_survey, p_days }) => {
       const since = Date.now() - p_days * day;

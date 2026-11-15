@@ -40,8 +40,9 @@ async function assocForm(a = null) {
 const siteUrl = () => location.origin + location.pathname.replace(/[^/]*$/, "");
 // أدلة الاستخدام حسب الصلاحية (docs/guide/) — بنفس مسار رابط الدليل في القائمة
 const guideBase = () => new URL(ASSETS.replace(/assets\/$/, "guide/"), location.href).href;
-const guideUrl = (role) => `${guideBase()}${role}.html`;
-const guidePdf = (role) => `${guideBase()}pdf/${role}.pdf`;
+const guideRole = (r) => r === "supervisor" ? "admin" : r;
+const guideUrl = (role) => `${guideBase()}${guideRole(role)}.html`;
+const guidePdf = (role) => `${guideBase()}pdf/${guideRole(role)}.pdf`;
 const GUIDE_TPL = "السلام عليكم {الاسم}،\n\nنرفق لكم دليل استخدام منصة «{المنصة}» الخاص بصلاحيتكم ({الصلاحية})، ويشرح خطوات عملكم في المنصة بالصور:\n{رابط_الدليل}\n\nنسخة PDF للتحميل والطباعة:\n{رابط_PDF}\n\nرابط المنصة: {رابط_المنصة}\n\nوجزاكم الله خيرًا.";
 const fillGuide = (tpl, a) => tpl.replaceAll("{الاسم}", a.name || "").replaceAll("{المنصة}", S.settings.platform_name || "طيب").replaceAll("{الصلاحية}", ROLES[a.role] || "")
   .replaceAll("{رابط_الدليل}", guideUrl(a.role)).replaceAll("{رابط_PDF}", guidePdf(a.role)).replaceAll("{رابط_المنصة}", siteUrl());
@@ -54,14 +55,14 @@ route("accounts", {
     const { data: list, error } = await sb.from("accounts").select("*").order("created_at");
     if (error) { v.innerHTML = `<div class="empty">${esc(errMsg(error))}</div>`; return; }
     let f = "";
-    v.innerHTML = `<div class="pagehead"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
+    v.innerHTML = `<div class="pagehead"><div class="seg" id="seg"><button data-f="" class="on">الكل ${list.length}</button>${Object.entries(ROLES).filter(([k]) => realRole() === "admin" || k !== "admin").map(([k, l]) => `<button data-f="${k}">${l} ${list.filter((a) => a.role === k).length}</button>`).join("")}</div>
       <button class="btn right" id="guides">${I.report} إرسال الأدلة</button><button class="btn primary" id="add">${I.plus} إنشاء حساب</button></div>
       <div class="card"><div class="tbl-wrap"><table class="tbl cards"><thead><tr><th>الاسم</th><th>الصلاحية</th><th>البريد</th><th>الجوال</th><th>الحالة</th><th>آخر دخول</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></div>
       <div class="hint" style="margin-top:12px">💡 بعد إنشاء الحساب أرسل للمستخدم رابط المنصة ورمز التفعيل (زر واتساب). يدخل المستخدم بريده والرمز ويختار كلمة مروره. لنسيان كلمة المرور استخدم «إعادة تعيين الدخول».</div>`;
     const draw = () => {
       $("#rows", v).innerHTML = list.filter((a) => !f || a.role === f).map((a) => `<tr>
         <td><div class="t-name">${esc(a.name)}</div><div class="small muted">${esc(a.title || "")}${a.role === "association" ? ` • ${esc(assocName(a.association_id))}` : ""}</div></td>
-        <td><span class="chip ${a.role === "admin" ? "gold" : a.role === "company" ? "info" : a.role === "viewer" ? "plain" : "ok"}">${ROLES[a.role]}</span></td>
+        <td><span class="chip ${a.role === "admin" ? "gold" : a.role === "supervisor" ? "warn" : a.role === "company" ? "info" : a.role === "viewer" ? "plain" : "ok"}">${ROLES[a.role]}</span></td>
         <td data-hide-sm class="small" dir="ltr" style="text-align:end">${esc(a.email)}</td><td data-hide-sm class="num small">${esc(displayPhone(a.phone) || "—")} ${contactBtns({ phone: a.phone, email: a.email, name: a.name })}</td>
         <td>${!a.active ? `<span class="chip bad">معطل</span>` : a.user_id ? `<span class="chip ok">مفعّل</span>` : `<span class="chip warn" title="رمز التفعيل">بانتظار التفعيل • <b class="num">${esc(a.invite_code)}</b></span>`}</td>
         <td data-hide-sm class="small muted">${a.last_seen_at ? ago(a.last_seen_at) : "—"}</td>
@@ -139,7 +140,7 @@ async function accountForm(a = null) {
   const body = document.createElement("div");
   body.innerHTML = `<form class="form" onsubmit="return false">${fld("name", "الاسم", { value: a?.name, req: true })}${fld("title", "المسمى", { value: a?.title, ph: "مثال: مشرف ميداني" })}
     ${fld("email", "البريد الإلكتروني (اسم الدخول)", { type: "email", value: a?.email, req: true, attrs: a?.user_id ? "readonly" : "" })}${fld("phone", "الجوال", { type: "tel", value: a?.phone, ph: "05xxxxxxxx" })}
-    ${fld("role", "الصلاحية", { value: a?.role || "association", opts: Object.entries(ROLES), attrs: a?.user_id === S.me.user_id ? "disabled" : "" })}
+    ${fld("role", "الصلاحية", { value: a?.role || "association", opts: Object.entries(ROLES).filter(([k]) => realRole() === "admin" || k !== "admin"), attrs: a?.user_id === S.me.user_id ? "disabled" : "" })}
     <div data-aw>${fld("association_id", "الجمعية", { value: a?.association_id || "", opts: [["", "— اختر —"], ...S.associations.filter((x) => x.active || x.id === a?.association_id).map((x) => [x.id, x.name])] })}</div>
     ${a ? fld("active", "الحالة", { value: a.active ? "1" : "0", opts: [["1", "نشط"], ["0", "معطل"]], attrs: a.user_id === S.me.user_id ? "disabled" : "" }) : ""}</form>
     <div class="wa-req" data-wareq>
@@ -148,7 +149,7 @@ async function accountForm(a = null) {
       <textarea class="input" data-watext rows="6"></textarea>
       <div class="row"><a class="btn wa-btn" data-wasend target="_blank" rel="noopener">${I.wa} إرسال عبر واتساب</a><span class="muted small" data-wahint></span></div>
     </div>
-    <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء • الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) • الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة • حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
+    <div class="hint" style="margin-top:10px"><b>الصلاحيات:</b> مدير النظام: كل شيء • مشرف المشروع: كل صلاحيات المدير عدا المستودع وحسابات المدير • الجمعية: مساجدها فقط (استكمال البيانات، التواصل، الزيارات، الرضا، التقرير الشهري) • الشركة: المساجد الجاهزة للدراسة والتركيب والتعبئة • حساب العرض: لوحة المؤشرات والمنجزات فقط.</div>`;
   const sync = () => { $("[data-aw]", body).hidden = $('[name="role"]', body).value !== "association"; };
   $('[name="role"]', body).onchange = () => { sync(); waSync(); }; sync();
   // طلب البيانات الناقصة: تُحدَّد الحقول الفارغة تلقائيًا ما لم يغيّرها المدير بنفسه، والنص قابل للتعديل
@@ -213,7 +214,9 @@ route("settings", {
       <div class="card"><div class="hd"><h3>التشغيل والتذكيرات</h3></div><div class="bd">
         <form class="form" id="f2" onsubmit="return false">${fld("refill_cycle_days", "دورة التعبئة الافتراضية (يوم)", { type: "number", value: s.refill_cycle_days })}
           ${fld("reminder_hours", "التذكير قبل موعد التعبئة (ساعة)", { type: "number", value: s.reminder_hours })}
-          ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}</form>
+          ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}
+          ${realRole() === "admin" ? `${fld("oil_ml_per_device", "المستودع: زيت تعبئة الجهاز (مل)", { type: "number", value: s.oil_ml_per_device ?? 800 })}
+          ${fld("oil_gallon_ml", "المستودع: سعة الجالون (مل)", { type: "number", value: s.oil_gallon_ml ?? 5000, hint: "الجالون ٥ كجم ≈ ٥٠٠٠ مل" })}` : ""}</form>
         <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
       <div class="card span2"><div class="hd"><h3>مهل «مهامي» (بالأيام)</h3></div><div class="bd">
         <div class="hint" style="margin-bottom:10px">المدة المتاحة لكل إجراء منذ وصول المسجد إلى مرحلته؛ بعدها تظهر المهمة «متأخرة» عند صاحبها ويُذكَّر بها في الملخص اليومي (7 صباحًا).</div>
@@ -226,7 +229,7 @@ route("settings", {
       </div><button class="btn primary" style="margin-top:16px" id="save">${I.check} حفظ الإعدادات</button>`;
     $("#save", v).onclick = async () => {
       const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
-      ["refill_cycle_days", "reminder_hours", "visit_every_days"].forEach((k) => d[k] = Math.max(1, +d[k] || 1));
+      ["refill_cycle_days", "reminder_hours", "visit_every_days", "oil_ml_per_device", "oil_gallon_ml"].forEach((k) => { if (k in d) d[k] = Math.max(1, Math.round(+d[k]) || 1); });
       const f3 = formData($("#f3", v));
       d.task_sla = Object.fromEntries(MT_SLA.map(([k]) => [k, Math.min(k === "weekly" ? 7 : 90, Math.max(k === "monthly" || k === "weekly" ? 1 : 0, Math.round(+f3["sla_" + k]) || MT_DEFAULT[k]))]));
       if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }

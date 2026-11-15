@@ -1153,3 +1153,68 @@ a.fi[href]:hover { background: var(--surface-2); }
   .mt-item > .grow { flex: 1 1 calc(100% - 56px); }
   .mt-due { width: 100%; justify-content: flex-start; padding-inline-start: 52px; }
 }
+
+/* ───── المستودع ───── */
+.oil-new { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.oil-sum { position: sticky; top: 84px; }
+.oil-list { max-height: calc(100vh - 260px); overflow-y: auto; }
+.oil-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.oil-row:last-child { border-bottom: 0; }
+.oil-row:hover { background: color-mix(in srgb, var(--gold-soft) 40%, transparent); }
+.oil-row.on { background: color-mix(in srgb, var(--gold-soft) 70%, transparent); }
+.oil-row > input { width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+.oil-row .grow { display: flex; flex-direction: column; min-width: 0; }
+.oil-row .t-bad { color: var(--bad); font-weight: 600; } .oil-row .t-warn { color: var(--warn); font-weight: 600; }
+.oil-dev { display: flex; align-items: center; gap: 6px; flex: none; }
+.oil-dev .input { width: 70px; text-align: center; padding: 6px; }
+.oil-dev .input:disabled { opacity: .45; }
+.oil-big { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 10px 0 14px; color: var(--brand); }
+.oil-big b { font-size: 54px; line-height: 1; font-weight: 700; }
+.oil-big span { font-size: 18px; color: var(--ink-2); }
+.oil-lines { display: flex; flex-direction: column; border-top: 1px solid var(--line); margin-bottom: 10px; }
+.oil-lines div { display: flex; justify-content: space-between; padding: 8px 2px; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.oil-lines span { color: var(--ink-3); }
+.oil-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.oil-step { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.oil-step i { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; background: var(--surface-2); color: var(--ink-3); }
+.oil-step i svg { width: 16px; height: 16px; }
+.oil-step div { display: flex; flex-direction: column; min-width: 0; }
+.oil-step span { font-size: 12.5px; color: var(--ink-3); }
+.oil-step.ok i { background: var(--ok); color: #fff; } .oil-step.ok { border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
+.oil-step.bad i { background: var(--bad); color: #fff; }
+.oil-kv { width: 100%; border-collapse: collapse; font-size: 14px; }
+.oil-kv th { text-align: start; color: var(--ink-3); font-weight: 500; padding: 7px 0; width: 120px; vertical-align: top; }
+.oil-kv td { padding: 7px 0; }
+.oil-kv tr + tr > * { border-top: 1px dashed var(--line); }
+.tbl tr.oil-tot td { background: var(--surface-2); }
+.oil-sig { margin-top: 10px; border: 1px dashed var(--line-2); border-radius: 12px; background: #fff; padding: 8px; display: grid; place-items: center; }
+.oil-sig img { max-height: 110px; max-width: 100%; }
+.oil-confirm { padding: 12px 14px; border-radius: 12px; background: var(--gold-soft); line-height: 1.8; }
+.sig-box { position: relative; height: 190px; border: 1.5px dashed var(--line-2); border-radius: 14px; background: #fff; overflow: hidden; }
+.sig-box canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+.sig-box::after { content: ""; position: absolute; inset-inline: 24px; bottom: 44px; border-bottom: 1px solid #d9d2c6; pointer-events: none; }
+.sig-ph { position: absolute; inset: 0; display: grid; place-items: center; color: #b3a99a; pointer-events: none; font-size: 15px; }
+.sig-box.has .sig-ph { display: none; }
+.sig-clr { position: absolute; top: 8px; inset-inline-end: 8px; }
+.sig-box.saved { display: grid; place-items: center; padding: 10px; }
+.sig-box.saved::after { display: none; }
+.sig-box.saved img { max-height: 160px; max-width: 100%; }
+@media (max-width: 860px) {
+  .oil-new { grid-template-columns: 1fr; }
+  .oil-sum { position: static; order: -1; }
+  .oil-list { max-height: none; }
+  .oil-steps { grid-template-columns: 1fr; }
+  .oil-row { padding: 10px 12px; }
+}
+/* ورقة إذن الصرف */
+.doc table.list tr.tot td { background: #f4efe4 !important; border-top: 1.5px solid #563331; }
+.doc .calc { font-size: 9.5pt; color: #5b4a44; margin: 8px 0 0; }
+.doc .sigs { display: grid; grid-template-columns: 1fr 1.25fr 1fr; gap: 10px; margin-top: 16px; break-inside: avoid; }
+.doc .sg { border: 1px solid #e3d9c8; border-radius: 10px; padding: 10px 12px; min-height: 120px; }
+.doc .sg.main { border: 1.5px solid #ceb26b; background: #fdfaf2; }
+.doc .sg-h { font-size: 8.5pt; color: #8a6d3b; font-weight: 700; margin-bottom: 6px; }
+.doc .sg-n { font-weight: 700; font-size: 11pt; }
+.doc .sg-t { font-size: 8.5pt; color: #6d5f58; }
+.doc .sg-img { display: block; max-height: 62px; max-width: 100%; margin: 4px 0; }
+.doc .sg-v { margin-top: 6px; font-size: 8.5pt; color: #563331; }
+.doc .sg-line { border-bottom: 1px dotted #b7a991; padding: 12px 0 2px; font-size: 8.5pt; color: #8a7c74; }

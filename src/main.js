@@ -9,6 +9,7 @@ const NAV = [
   { r: "complaints", l: "الشكاوى والاقتراحات", i: "chat", roles: ["admin", "association"], count: true },
   { r: "survey", l: "استبيان الرضا", i: "star", roles: ["admin", "association", "viewer"] },
   { r: "map", l: "خريطة المشروع", i: "map", roles: ["admin", "association", "company", "viewer"] },
+  { r: "warehouse", l: "المستودع", i: "box", roles: ["admin", "company"], real: true },
   { r: "achievements", l: "المنجزات", i: "sparkle", roles: ["admin", "association", "company", "viewer"] },
   { r: "notifications", l: "الإشعارات", i: "bell", roles: ["admin", "association", "company", "viewer"], badge: true },
   { r: "messages", l: "الرسائل الجماعية", i: "send", roles: ["admin", "association"], sec: "التواصل" },
@@ -26,12 +27,12 @@ let shellBound = false;
 function paintShell() {
   const app = $("#app");
   app.classList.remove("auth");
-  const items = NAV.filter((n) => n.roles.includes(role()));
+  const items = NAV.filter((n) => n.real ? n.roles.includes(realRole()) : n.roles.includes(role()));
   let lastSec = null;
   $(".side").innerHTML = `<div class="brand"><div class="logo">${logoHtml()}</div><div class="sub">${esc(S.settings.org_name || "")}</div></div>
     <nav class="nav">${items.map((n) => { const sec = n.sec && n.sec !== lastSec ? ((lastSec = n.sec), `<div class="sec">${n.sec}</div>`) : ""; return `${sec}<a href="#/${n.r}" data-r="${n.r}" data-l="${n.l}">${I[n.i]}<span>${n.l}</span>${n.badge || n.count ? `<span class="badge" hidden></span>` : ""}</a>`; }).join("")}
       <a href="${ASSETS.replace(/assets\/$/, "guide/")}${role()}.html" target="_blank" rel="noopener" class="nav-guide" data-l="دليل الاستخدام">${I.report}<span>دليل الاستخدام</span></a></nav>
-    <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[role()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
+    <div class="foot"><div class="me"><b>${esc(S.me.name)}</b><span class="role">${ROLES[realRole()]}${role() === "association" ? ` — ${esc(assocName(S.me.association_id))}` : ""}</span>
       <div class="row"><button id="theme" title="تبديل المظهر">${isDark() ? I.sun : I.moon}<span>${isDark() ? "فاتح" : "داكن"}</span></button><button id="logout" title="تسجيل الخروج">${I.logout}<span>خروج</span></button></div></div>
       <div class="by"><img src="${foundationLogo(true)}" alt="مؤسسة أبناء علي الماجد"></div></div>`;
   $(".topbar").innerHTML = `<button class="iconbtn menu-btn" id="menu" aria-label="القائمة">${I.menu}</button><div class="tb-logo">${logoHtml(true)}</div>
