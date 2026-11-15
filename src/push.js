@@ -18,6 +18,8 @@ function swReg() {
   if (isMockEnv() || !("serviceWorker" in navigator)) return Promise.resolve(null);
   return swRegP ||= navigator.serviceWorker.register("sw.js").catch(() => null);
 }
+// التسجيل مبكرًا ليكون التطبيق قابلًا للتثبيت من شاشة الدخول
+if (!isMockEnv()) window.addEventListener("load", () => swReg());
 // رسائل عامل الخدمة: فتح صفحة الإشعار، أو تحديث القائمة عند وصول إشعار
 if ("serviceWorker" in navigator && !isMockEnv()) {
   navigator.serviceWorker.addEventListener("message", (e) => {
