@@ -14,7 +14,7 @@
     viewer: { id: id(), name: "حساب العرض", email: "view@test.local", role: "viewer", user_id: "u-view", active: true, invite_code: "DDDD1111", created_at: iso(now) },
   };
   const db = {
-    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, oil_ml_per_device: 800, oil_gallon_ml: 5000, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
+    settings: [{ id: 1, platform_name: "طيب", org_name: "مشروع تعطير مساجد الرياض", company_name: "الشركة المنفذة", refill_cycle_days: 30, reminder_hours: 72, visit_every_days: 7, oil_ml_per_device: 800, oil_ml_af5000: 800, oil_ml_af2000: 500, oil_gallon_ml: 5000, font_files: { regular: "./fonts/Brando-Arabic-Regular.otf", semibold: "./fonts/Brando-Arabic-SemiBold.otf", bold: "./fonts/Brando-Arabic-Bold.otf" } }],
     associations: [{ id: A1, name: "جمعية عمارة المساجد بالشمال", district: "شمال الرياض", contact_name: "خالد العتيبي", phone: "0500000001", active: true }, { id: A2, name: "جمعية بيوت الله", active: true }, { id: A3, name: "جمعية مساجدنا", active: true }],
     accounts: Object.values(acc).concat([{ id: id(), name: "حساب بانتظار التفعيل", email: "new@test.local", role: "association", association_id: A2, active: true, invite_code: "EEEE2222", phone: "0500000099", created_at: iso(now) }]),
     mosques: [], reports: [], tasks: [], task_comments: [], attachments: [], notifications: [], activity: [], broadcasts: [], complaints: [], complaint_events: [], surveys: [], survey_questions: [], survey_responses: [], oil_requests: [], oil_request_items: [], signatures: [],
@@ -28,11 +28,11 @@
   M({ name: "جامع الرحمة", district: "العليا", association_id: A1, stage: "feasible", ...full });
   const m5 = M({ name: "جامع الفاروق", district: "الملقا", association_id: A2, stage: "study_done", ...full });
   M({ name: "جامع السلام", district: "العليا", association_id: A1, stage: "approved", ...full });
-  const m7 = M({ name: "جامع التقوى", district: "حي النرجس", association_id: A1, stage: "active", ...full, devices_count: 4, fragrance: "عود ملكي", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
-  const m8 = M({ name: "جامع البر", district: "حي الروضة", association_id: A2, stage: "active", ...full, devices_count: 2, fragrance: "عود ملكي", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
+  const m7 = M({ name: "جامع التقوى", district: "حي النرجس", association_id: A1, stage: "active", ...full, devices_count: 4, devices_af5000: 3, devices_af2000: 1, fragrance: "عود ملكي", installed_at: iso(now - 40 * day), last_refill_at: iso(now - 28 * day), next_refill_at: iso(now + 40 * 36e5), last_visit_at: iso(now - 9 * day), satisfaction_avg: 4.5 });
+  const m8 = M({ name: "جامع البر", district: "حي الروضة", association_id: A2, stage: "active", ...full, devices_count: 2, devices_af5000: 1, devices_af2000: 1, fragrance: "عود ملكي", installed_at: iso(now - 70 * day), last_refill_at: iso(now - 33 * day), next_refill_at: iso(now - 3 * day), last_visit_at: iso(now - 2 * day), satisfaction_avg: 3.8 });
   db.reports.push(
-    { id: id(), mosque_id: m5.id, type: "needs_study", data: { date: "2026-10-01", devices: "3", fragrance: "عود ملكي", placement: "المصلى الرئيسي" }, summary: "3 أجهزة", author_role: "company", created_at: iso(now - 5 * day) },
-    { id: id(), mosque_id: m7.id, type: "installation", data: { date: iso(now - 40 * day), devices: "4", fragrance: "عود ملكي" }, summary: "تركيب 4 أجهزة", author_role: "company", created_at: iso(now - 40 * day) },
+    { id: id(), mosque_id: m5.id, type: "needs_study", data: { date: "2026-10-01", af5000: 2, af2000: 1, devices: 3, fragrance: "عود ملكي", placement: "المصلى الرئيسي" }, summary: "3 أجهزة (2× 5000 + 1× 2000)", author_role: "company", created_at: iso(now - 5 * day) },
+    { id: id(), mosque_id: m7.id, type: "installation", data: { date: iso(now - 40 * day), af5000: 3, af2000: 1, devices: 4, fragrance: "عود ملكي" }, summary: "تركيب 4 أجهزة (3× 5000 + 1× 2000)", author_role: "company", created_at: iso(now - 40 * day) },
     { id: id(), mosque_id: m7.id, type: "visit", data: { date: iso(now - 9 * day), status: "ok", scent: "مناسب", cleanliness: 4 }, summary: "الأجهزة سليمة", author_role: "association", created_at: iso(now - 9 * day) },
     { id: id(), mosque_id: m7.id, type: "satisfaction", data: { date: "2026-10-10", overall: 5, scent: 5, intensity: 4, respondent: "الإمام" }, summary: "الرضا العام 5/5", author_role: "association", created_at: iso(now - 12 * day) },
     { id: id(), mosque_id: m8.id, type: "refill", data: { date: iso(now - 33 * day), quantity: "500" }, summary: "تعبئة", author_role: "company", created_at: iso(now - 33 * day) },
@@ -50,7 +50,7 @@
     const st = STG[Math.floor(rnd() * STG.length)], act = st === "active";
     const inst = now - (20 + rnd() * 70) * day;
     const m = M({ name: NAMES[i] || "جامع " + (i + 9), district: DIST[Math.floor(rnd() * DIST.length)], association_id: st === "selected" ? null : [A1, A2, A3][Math.floor(rnd() * 3)], stage: st, ...(st !== "assigned" ? full : {}),
-      ...(act ? { devices_count: 2 + Math.floor(rnd() * 4), fragrance: "عود ملكي", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
+      ...(act ? { ...((a, b) => ({ devices_af5000: a, devices_af2000: b, devices_count: a + b }))(1 + Math.floor(rnd() * 3), Math.floor(rnd() * 3)), fragrance: "عود ملكي", installed_at: iso(inst), last_refill_at: iso(now - rnd() * 30 * day), next_refill_at: iso(now + (rnd() * 20 - 4) * day), last_visit_at: iso(now - rnd() * 12 * day) } : {}) });
     m.created_at = iso(inst - (10 + rnd() * 30) * day);
     if (RG[m.district] && rnd() > .1) m.region = RG[m.district];
     const ll = LL[m.district]; if (ll && rnd() > .3) m.map_url = `https://www.google.com/maps?q=${(ll[0] + (rnd() - .5) * .02).toFixed(5)},${(ll[1] + (rnd() - .5) * .02).toFixed(5)}`;
@@ -78,10 +78,11 @@
     for (let x = 20; x < 330; x += 6) c.lineTo(x, 70 + Math.sin(x / 13) * 26 * Math.cos(x / 47) - (x > 200 ? (x - 200) / 5 : 0)); c.stroke();
     c.beginPath(); c.moveTo(60, 100); c.quadraticCurveTo(180, 112, 320, 92); c.stroke();
     const sig = cv.toDataURL("image/png"), co = acc.company, ad = acc.admin, per = 800, gal = 5000;
-    const mk = (ref, status, ms, ago, extra = {}) => { const rid = id(), n = ms.reduce((a, m) => a + (m.devices_count || 2), 0);
-      db.oil_requests.push({ id: rid, ref, status, requested_by: co.id, requester_name: co.name, requester_title: "مهندس التشغيل", ml_per_device: per, gallon_ml: gal, total_devices: n, total_ml: n * per,
-        gallons: Math.ceil(n * per / gal), created_at: iso(now - ago * day), updated_at: iso(now), ...extra });
-      ms.forEach((m) => db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: m.devices_count || 2, ml: (m.devices_count || 2) * per })); };
+    const pb = 500, A = (m) => m.devices_af5000 || 0, B = (m) => m.devices_af2000 || 0;
+    const mk = (ref, status, ms, ago, extra = {}) => { const rid = id(), na = ms.reduce((a, m) => a + A(m), 0), nb = ms.reduce((a, m) => a + B(m), 0), tot = na * per + nb * pb;
+      db.oil_requests.push({ id: rid, ref, status, requested_by: co.id, requester_name: co.name, requester_title: "مهندس التشغيل", ml_per_device: per, ml_af5000: per, ml_af2000: pb, gallon_ml: gal,
+        total_devices: na + nb, total_af5000: na, total_af2000: nb, total_ml: tot, gallons: Math.ceil(tot / gal), created_at: iso(now - ago * day), updated_at: iso(now), ...extra });
+      ms.forEach((m) => db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: A(m) + B(m), devices_af5000: A(m), devices_af2000: B(m), ml: A(m) * per + B(m) * pb })); };
     mk(1, "received", act.slice(0, 5), 33, { decided_by: ad.id, approver_name: ad.name, signature: sig, decided_at: iso(now - 32 * day), verify_code: "7C1E90A4B2", received_at: iso(now - 31 * day), received_by: "سالم — أمين المستودع" });
     mk(2, "approved", act.slice(5, 11), 3, { decided_by: ad.id, approver_name: ad.name, signature: sig, decided_at: iso(now - 2 * day), verify_code: "415B1E5780", decision_note: "يُصرف من دفعة نوفمبر" });
     mk(3, "pending", act.slice(11, 19), 0.2, { note: "تعبئة المساجد المستحقة هذا الأسبوع" });
@@ -247,11 +248,12 @@
     oil_request_create: ({ p_items, p_note }) => {
       if (realR !== "company") throw "طلب الزيت من صلاحية الشركة المنفذة";
       if (!p_items?.length) throw "اختر مسجدًا واحدًا على الأقل";
-      const st = db.settings[0], per = st.oil_ml_per_device || 800, gal = st.oil_gallon_ml || 5000;
-      const n = p_items.reduce((a, x) => a + +x.devices, 0), rid = id(), ref = db.oil_requests.length + 1;
-      db.oil_requests.push({ id: rid, ref, status: "pending", requested_by: me.id, requester_name: me.name, requester_title: me.title, ml_per_device: per, gallon_ml: gal, total_devices: n, total_ml: n * per,
-        gallons: Math.ceil(n * per / gal), note: p_note, created_at: iso(Date.now()), updated_at: iso(Date.now()) });
-      p_items.forEach((x) => { const m = db.mosques.find((y) => y.id === x.mosque_id); db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: +x.devices, ml: +x.devices * per }); });
+      const st = db.settings[0], pa = st.oil_ml_af5000 || 800, pb = st.oil_ml_af2000 || 500, gal = st.oil_gallon_ml || 5000;
+      if (p_items.some((x) => !(+x.af5000 + +x.af2000) || +x.af5000 > 100 || +x.af2000 > 100)) throw "حدد عدد الأجهزة لكل مسجد (١ إلى ١٠٠ من كل نوع)";
+      const na = p_items.reduce((a, x) => a + +x.af5000, 0), nb = p_items.reduce((a, x) => a + +x.af2000, 0), tot = na * pa + nb * pb, rid = id(), ref = db.oil_requests.length + 1;
+      db.oil_requests.push({ id: rid, ref, status: "pending", requested_by: me.id, requester_name: me.name, requester_title: me.title, ml_per_device: pa, ml_af5000: pa, ml_af2000: pb, gallon_ml: gal,
+        total_devices: na + nb, total_af5000: na, total_af2000: nb, total_ml: tot, gallons: Math.ceil(tot / gal), note: p_note, created_at: iso(Date.now()), updated_at: iso(Date.now()) });
+      p_items.forEach((x) => { const m = db.mosques.find((y) => y.id === x.mosque_id); db.oil_request_items.push({ id: id(), request_id: rid, mosque_id: m.id, mosque_code: m.code, mosque_name: m.name, district: m.district, devices: +x.af5000 + +x.af2000, devices_af5000: +x.af5000, devices_af2000: +x.af2000, ml: x.af5000 * pa + x.af2000 * pb }); });
       db.accounts.filter((a) => a.role === "admin").forEach((a) => db.notifications.push({ id: id(), account_id: a.id, kind: "alert", title: `طلب زيت عطري #${ref} بانتظار اعتمادك`, body: me.name, link: "/warehouse/" + rid, created_at: iso(Date.now()) }));
       return rid;
     },
@@ -296,11 +298,12 @@
       const m = db.mosques.find((x) => x.id === p_mosque); if (!m || !seeM(m) || me.role === "viewer") throw "غير مصرح";
       const need = { feasibility: [["association", "admin"], ["data_done", "not_feasible"]], needs_study: [["company", "admin"], ["feasible"]], installation: [["company", "admin"], ["approved"]], visit: [["association", "admin"], ["active"]], satisfaction: [["association", "admin"], ["active"]], monthly: [["association", "admin"], ["active"]], refill: [["company", "admin"], ["active"]] }[p_type];
       if (need && !need[0].includes(me.role)) throw "ليس من مهامك"; if (need && !need[1].includes(m.stage)) throw "المسجد ليس في المرحلة المناسبة";
+      if (["needs_study", "installation"].includes(p_type)) { const a = +p_data.af5000 || 0, b = +p_data.af2000 || 0; if (!(a + b)) throw "حدد عدد الأجهزة من نوع واحد على الأقل"; Object.assign(p_data, { af5000: a, af2000: b, devices: a + b }); }
       const r = { id: id(), mosque_id: m.id, type: p_type, data: p_data, summary: p_summary, author_id: me.id, author_role: me.role, created_at: iso(Date.now()) }; db.reports.push(r);
       const cyc = (m.refill_cycle_days || 30) * day, d = p_data.date ? new Date(p_data.date).getTime() : Date.now();
       if (p_type === "feasibility") m.stage = p_data.result === "yes" ? "feasible" : "not_feasible";
       if (p_type === "needs_study") m.stage = "study_done";
-      if (p_type === "installation") Object.assign(m, { stage: "active", installed_at: iso(d), last_refill_at: iso(d), next_refill_at: iso(d + cyc), devices_count: +p_data.devices, fragrance: p_data.fragrance });
+      if (p_type === "installation") Object.assign(m, { stage: "active", installed_at: iso(d), last_refill_at: iso(d), next_refill_at: iso(d + cyc), devices_count: +p_data.devices, devices_af5000: p_data.af5000, devices_af2000: p_data.af2000, fragrance: p_data.fragrance });
       if (p_type === "refill") Object.assign(m, { last_refill_at: iso(d), next_refill_at: iso(d + cyc) });
       if (p_type === "visit") m.last_visit_at = iso(d);
       if (p_type === "satisfaction") m.satisfaction_avg = avg(db.reports.filter((x) => x.mosque_id === m.id && x.type === "satisfaction").map((x) => +x.data.overall));

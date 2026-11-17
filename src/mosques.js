@@ -213,7 +213,7 @@ const mosqueRow = (m) => ({
   "الرمز": m.code, "اسم المسجد": m.name, "النوع": m.kind, "الحي": m.district || "", "الجهة": regionName(m.region), "العنوان": m.address || "", "رابط الموقع": m.map_url || "",
   "الجمعية المشرفة": m.association_id ? assocName(m.association_id) : "", "المرحلة": STAGES[m.stage]?.l || m.stage,
   "اسم الإمام": m.imam_name || "", "جوال الإمام": displayPhone(m.imam_phone), "اسم المؤذن": m.muezzin_name || "", "جوال المؤذن": displayPhone(m.muezzin_phone),
-  "اسم الخادم": m.servant_name || "", "جوال الخادم": displayPhone(m.servant_phone), "عدد الأجهزة": m.devices_count ?? "", "العطر": m.fragrance || "",
+  "اسم الخادم": m.servant_name || "", "جوال الخادم": displayPhone(m.servant_phone), "عدد الأجهزة": m.devices_count ?? "", "AF 5000 Pro": m.devices_count ? devSplit(m).af5000 : "", "AF 2000 Pro": m.devices_count ? devSplit(m).af2000 : "", "العطر": m.fragrance || "",
   "تاريخ التركيب": m.installed_at ? isoDay(m.installed_at) : "", "آخر تعبئة": m.last_refill_at ? isoDay(m.last_refill_at) : "",
   "التعبئة القادمة": m.next_refill_at ? isoDay(m.next_refill_at) : "", "آخر زيارة": m.last_visit_at ? isoDay(m.last_visit_at) : "",
   "متوسط الرضا": m.satisfaction_avg ?? "", "ملاحظات": m.notes || "",
@@ -462,7 +462,7 @@ route("mosque", {
               <div class="bd"><div class="people">${[["الإمام", m.imam_name, m.imam_phone, "فضيلة الشيخ"], ["المؤذن", m.muezzin_name, m.muezzin_phone, "الأخ"], ["خادم المسجد", m.servant_name, m.servant_phone, "الأخ"]]
                 .map(([l, n, p, g]) => `<div class="person"><div class="r">${l}</div><div class="n">${esc(n || "—")}</div><div class="row"><span class="p num">${esc(displayPhone(p) || "لا يوجد رقم")}</span><span class="right">${contactBtns({ phone: p, name: n, text: greet(g, n) })}</span></div></div>`).join("")}</div></div></div>
             <div class="card"><div class="hd"><h3>بيانات التشغيل</h3></div><div class="bd"><div class="kv">
-              ${[["عدد الأجهزة", m.devices_count ?? "—"], ["العطر", m.fragrance || "—"], ["تاريخ التركيب", fmtDate(m.installed_at)], ["موعد التركيب المخطط", m.planned_install_at ? fmtDate(m.planned_install_at) : "—"],
+              ${[["عدد الأجهزة", String(devText(m))], ["العطر", m.fragrance || "—"], ["تاريخ التركيب", fmtDate(m.installed_at)], ["موعد التركيب المخطط", m.planned_install_at ? fmtDate(m.planned_install_at) : "—"],
                  ["آخر تعبئة", fmtDateTime(m.last_refill_at)], ["التعبئة القادمة", m.next_refill_at ? `${fmtDateTime(m.next_refill_at)} ${refillChip(m)}` : "—"],
                  ["دورة التعبئة", `${m.refill_cycle_days || S.settings.refill_cycle_days || 30} يوم`], ["آخر زيارة", fmtDate(m.last_visit_at)], ["متوسط الرضا", stars(m.satisfaction_avg)],
                  ["العنوان", esc(m.address || "—")]].map(([k2, v2]) => `<div><div class="k">${k2}</div><div class="v">${typeof v2 === "string" && v2.includes("<") ? v2 : esc(v2)}</div></div>`).join("")}</div>
@@ -646,7 +646,7 @@ async function deleteMosques(ids) {
 function printMosque(m, reports) {
   const rows = [["الرمز", m.code], ["النوع", m.kind], ["الحي", m.district], ["الجهة", regionName(m.region)], ["العنوان", m.address], ["الجمعية المشرفة", assocName(m.association_id)], ["المرحلة", STAGES[m.stage]?.l],
     ["الإمام", `${m.imam_name || "—"} — ${displayPhone(m.imam_phone) || ""}`], ["المؤذن", `${m.muezzin_name || "—"} — ${displayPhone(m.muezzin_phone) || ""}`], ["خادم المسجد", `${m.servant_name || "—"} — ${displayPhone(m.servant_phone) || ""}`],
-    ["عدد الأجهزة", m.devices_count], ["العطر", m.fragrance], ["تاريخ التركيب", fmtDate(m.installed_at)], ["آخر تعبئة", fmtDate(m.last_refill_at)], ["التعبئة القادمة", fmtDate(m.next_refill_at)],
+    ["عدد الأجهزة", devText(m)], ["العطر", m.fragrance], ["تاريخ التركيب", fmtDate(m.installed_at)], ["آخر تعبئة", fmtDate(m.last_refill_at)], ["التعبئة القادمة", fmtDate(m.next_refill_at)],
     ["آخر زيارة", fmtDate(m.last_visit_at)], ["متوسط الرضا", m.satisfaction_avg ? `${m.satisfaction_avg} / 5` : "—"]];
   printDoc("ملف مسجد", `<h2>${esc(m.name)}</h2><table>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${esc(v ?? "—")}</td></tr>`).join("")}</table>
     <h2>سجل التقارير</h2><table><tr><th style="width:auto">التاريخ</th><th style="width:auto">التقرير</th><th style="width:auto">الملخص</th></tr>

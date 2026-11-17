@@ -1,4 +1,17 @@
 // ───────────────────────── التقارير ─────────────────────────
+// حقول عدد الأجهزة من كل نوع؛ في التركيب تُعبّأ من دراسة الاحتياج للتأكيد
+function devFields(word, study) {
+  return DEV_TYPES.map((t, i) => fld(t.k, `عدد أجهزة ${t.l} ${word}`, { type: "number", value: study ? (+study[i] || 0) : "", attrs: 'min="0" max="100" inputmode="numeric"',
+    hint: study ? `حسب دراسة الاحتياج: ${fmtNum(+study[i] || 0)} — عدّله إن اختلف المركّب فعليًا` : `سعة التعبئة ${fmtNum(devMl(t.k))} مل`, ph: "0" }));
+}
+const devNums = (d) => DEV_TYPES.map((t) => Math.round(+d[t.k]) || 0);
+function devValidate(d) {
+  const [a, b] = devNums(d);
+  if (a < 0 || b < 0 || a > 100 || b > 100) return "عدد الأجهزة من كل نوع بين ٠ و١٠٠";
+  if (a + b < 1) return "حدد عدد الأجهزة من نوع واحد على الأقل";
+  d.af5000 = a; d.af2000 = b; d.devices = a + b;
+}
+const devSum = (d) => { const [a, b] = devNums(d); return `${fmtNum(a + b)} أجهزة` + ((a || b) ? ` (${[[a, "5000"], [b, "2000"]].filter(([n]) => n).map(([n, l]) => `${n}× ${l}`).join(" + ")})` : ""); };
 const SCENT = ["قوي", "مناسب", "ضعيف", "منعدم"];
 const REPORT_TYPES = {
   feasibility: { l: "تقرير التواصل مع الإمام", step: 4, icon: I.phone, by: "الجمعية",
@@ -16,29 +29,28 @@ const REPORT_TYPES = {
   needs_study: { l: "تقرير دراسة الاحتياج", step: 5, icon: I.study, by: "الشركة المنفذة",
     fields: () => [
       fld("date", "تاريخ الزيارة", { type: "date", value: isoDay(), req: true }),
-      fld("devices", "عدد الأجهزة المقترحة", { type: "number", req: true, attrs: 'min="1"' }),
-      fld("device_type", "نوع الجهاز", { ph: "مثال: جهاز تعطير مركزي / جداري" }),
+      ...devFields("المقترحة"),
       fld("area", "المساحة التقريبية (م²)", { type: "number" }),
       fld("power", "توفر نقاط الكهرباء", { opts: ["متوفرة", "تحتاج تمديد", "غير متوفرة"] }),
       fld("fragrance", "العطر المقترح", { ph: "مثال: عود، مسك، ورد طائفي" }),
       fld("placement", "مواقع التركيب المقترحة", { type: "textarea", full: true, ph: "المصلى الرئيسي، مصلى النساء، المدخل، دورات المياه…" }),
       fld("notes", "ملاحظات فنية", { type: "textarea", full: true }),
     ],
-    summary: (d) => `${d.devices || "?"} أجهزة${d.fragrance ? ` — ${d.fragrance}` : ""}`,
-    labels: { date: "تاريخ الزيارة", devices: "عدد الأجهزة", device_type: "نوع الجهاز", area: "المساحة م²", power: "الكهرباء", fragrance: "العطر المقترح", placement: "مواقع التركيب", notes: "ملاحظات" } },
+    validate: devValidate, summary: (d) => `${devSum(d)}${d.fragrance ? ` — ${d.fragrance}` : ""}`,
+    labels: { date: "تاريخ الزيارة", af5000: "AF 5000 Pro", af2000: "AF 2000 Pro", devices: "إجمالي الأجهزة", device_type: "نوع الجهاز", area: "المساحة م²", power: "الكهرباء", fragrance: "العطر المقترح", placement: "مواقع التركيب", notes: "ملاحظات" } },
   decision: { l: "قرار مدير النظام", step: 6, icon: I.check, by: "مدير النظام", fields: () => [],
     labels: { approved: "القرار", note: "ملاحظة" }, show: { approved: (v) => v ? "اعتماد التركيب" : "إعادة الدراسة" } },
   installation: { l: "تقرير التركيب", step: 7, icon: I.install, by: "الشركة المنفذة",
-    fields: (m) => [
+    fields: (m, ctx) => [
       fld("date", "تاريخ التركيب", { type: "date", value: isoDay(), req: true }),
-      fld("devices", "عدد الأجهزة المركبة", { type: "number", req: true, value: m?.devices_count || "", attrs: 'min="1"' }),
+      ...devFields("المركّبة", ctx.study),
       fld("fragrance", "العطر المستخدم", { req: true, value: m?.fragrance || "" }),
       fld("cycle", "دورة التعبئة (يوم)", { type: "number", value: m?.refill_cycle_days || S.settings.refill_cycle_days || 30, hint: "يُحسب موعد التعبئة التالية تلقائيًا" }),
       fld("serials", "الأرقام التسلسلية للأجهزة", { type: "textarea", full: true }),
       fld("notes", "ملاحظات التركيب", { type: "textarea", full: true }),
     ],
-    summary: (d) => `تركيب ${d.devices} أجهزة — ${d.fragrance}`,
-    labels: { date: "تاريخ التركيب", devices: "عدد الأجهزة", fragrance: "العطر", cycle: "دورة التعبئة", serials: "الأرقام التسلسلية", notes: "ملاحظات" } },
+    validate: devValidate, summary: (d) => `تركيب ${devSum(d)} — ${d.fragrance}`,
+    labels: { date: "تاريخ التركيب", af5000: "AF 5000 Pro", af2000: "AF 2000 Pro", devices: "إجمالي الأجهزة", fragrance: "العطر", cycle: "دورة التعبئة", serials: "الأرقام التسلسلية", notes: "ملاحظات" } },
   visit: { l: "تقرير الزيارة الأسبوعية", step: 8, icon: I.visit, by: "الجمعية",
     fields: (m) => [
       fld("date", "تاريخ الزيارة", { type: "date", value: isoDay(), req: true }),
@@ -127,6 +139,11 @@ function printReport(r, m) {
 async function openReportForm(m, type, ctx = {}) {
   const T = REPORT_TYPES[type];
   if (type === "monthly" && !ctx.month) Object.assign(ctx, await monthlyContext(m, monthKey()));
+  if (type === "installation" && !ctx.study) {
+    const { data } = await sb.from("reports").select("data").eq("mosque_id", m.id).eq("type", "needs_study").order("created_at", { ascending: false }).limit(1);
+    const sd = data?.[0]?.data;
+    if (sd) ctx.study = sd.af5000 != null || sd.af2000 != null ? [+sd.af5000 || 0, +sd.af2000 || 0] : [+sd.devices || 0, 0];
+  }
   const body = document.createElement("div");
   body.innerHTML = `<div class="row" style="margin-bottom:14px">${stageChip(m.stage)}<b>${esc(m.name)}</b><span class="muted small">${esc(m.code)}</span></div>
     <form class="form" onsubmit="return false">${T.fields(m, ctx).join("")}</form>

@@ -215,7 +215,7 @@ route("settings", {
         <form class="form" id="f2" onsubmit="return false">${fld("refill_cycle_days", "دورة التعبئة الافتراضية (يوم)", { type: "number", value: s.refill_cycle_days })}
           ${fld("reminder_hours", "التذكير قبل موعد التعبئة (ساعة)", { type: "number", value: s.reminder_hours })}
           ${fld("visit_every_days", "تكرار الزيارة الدورية (يوم)", { type: "number", value: s.visit_every_days })}
-          ${realRole() === "admin" ? `${fld("oil_ml_per_device", "المستودع: زيت تعبئة الجهاز (مل)", { type: "number", value: s.oil_ml_per_device ?? 800 })}
+          ${realRole() === "admin" ? `${DEV_TYPES.map((t) => fld("oil_ml_" + t.k, `المستودع: تعبئة جهاز ${t.l} (مل)`, { type: "number", value: s["oil_ml_" + t.k] ?? t.def })).join("")}
           ${fld("oil_gallon_ml", "المستودع: سعة الجالون (مل)", { type: "number", value: s.oil_gallon_ml ?? 5000, hint: "الجالون ٥ كجم ≈ ٥٠٠٠ مل" })}` : ""}</form>
         <div class="hint" style="margin-top:10px">يفحص الخادم المواعيد كل ساعة ويرسل: تذكير التعبئة للشركة والمدير، تنبيه التأخر، تذكير الزيارة الأسبوعية والتقرير الشهري للجمعية.</div></div></div>
       <div class="card span2"><div class="hd"><h3>مهل «مهامي» (بالأيام)</h3></div><div class="bd">
@@ -229,7 +229,7 @@ route("settings", {
       </div><button class="btn primary" style="margin-top:16px" id="save">${I.check} حفظ الإعدادات</button>`;
     $("#save", v).onclick = async () => {
       const d = { ...formData($("#f1", v)), ...formData($("#f2", v)) };
-      ["refill_cycle_days", "reminder_hours", "visit_every_days", "oil_ml_per_device", "oil_gallon_ml"].forEach((k) => { if (k in d) d[k] = Math.max(1, Math.round(+d[k]) || 1); });
+      ["refill_cycle_days", "reminder_hours", "visit_every_days", "oil_ml_af5000", "oil_ml_af2000", "oil_gallon_ml"].forEach((k) => { if (k in d) d[k] = Math.max(1, Math.round(+d[k]) || 1); });
       const f3 = formData($("#f3", v));
       d.task_sla = Object.fromEntries(MT_SLA.map(([k]) => [k, Math.min(k === "weekly" ? 7 : 90, Math.max(k === "monthly" || k === "weekly" ? 1 : 0, Math.round(+f3["sla_" + k]) || MT_DEFAULT[k]))]));
       if (await run(sb.from("settings").update({ ...d, updated_at: new Date().toISOString() }).eq("id", 1), "تم حفظ الإعدادات")) { await loadSettings(); paintShell(); }

@@ -128,6 +128,16 @@ const logoHtml = (badge = false) => S.logoUrl ? `<img src="${esc(S.logoUrl)}" al
 const foundationLogo = (white = false) => `${ASSETS}foundation-${white ? "white" : "primary"}.png`;
 
 // ───── الأدوار والمراحل ─────
+// أنواع أجهزة التعطير وسعة تعبئة كل جهاز (تُعدّل من الإعدادات)
+const DEV_TYPES = [{ k: "af5000", l: "AF 5000 Pro", def: 800 }, { k: "af2000", l: "AF 2000 Pro", def: 500 }];
+const devMl = (k) => +S.settings["oil_ml_" + k] || DEV_TYPES.find((t) => t.k === k).def;
+// أعداد كل نوع في المسجد (السجلات القديمة بلا تفصيل تُحسب على AF 5000 Pro)
+const devSplit = (m) => ({ af5000: m?.devices_af5000 ?? (m?.devices_af2000 == null ? +m?.devices_count || 0 : 0), af2000: +m?.devices_af2000 || 0 });
+function devText(m) {
+  const d = devSplit(m), n = d.af5000 + d.af2000;
+  if (!n) return m?.devices_count ?? "—";
+  return `${n} (${DEV_TYPES.filter((t) => d[t.k]).map((t) => `${d[t.k]} × ${t.l}`).join(" + ")})`;
+}
 const ROLES = { admin: "مدير النظام", supervisor: "مشرف المشروع", association: "جمعية مشرفة", company: "الشركة المنفذة", viewer: "حساب عرض" };
 const STAGES = {
   selected: { l: "مختار — بانتظار الإسناد", s: "بانتظار الإسناد", c: "plain", who: "مدير النظام" },
