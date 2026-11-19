@@ -149,6 +149,7 @@ const STAGES = {
   approved: { l: "معتمد — بانتظار التركيب", s: "بانتظار التركيب", c: "gold", who: "الشركة" },
   active: { l: "مُركّب — قيد التشغيل", s: "قيد التشغيل", c: "ok", who: "الجمعية والشركة" },
   suspended: { l: "موقوف", s: "موقوف", c: "bad", who: "—" },
+  cancelled: { l: "ملغى بعد الدراسة", s: "ملغى", c: "bad", who: "—" },
 };
 // جهات الرياض
 const REGIONS = { north: "شمال", south: "جنوب", east: "شرق", west: "غرب", center: "وسط" };

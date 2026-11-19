@@ -39,7 +39,7 @@ const REPORT_TYPES = {
     validate: devValidate, summary: (d) => `${devSum(d)}${d.fragrance ? ` — ${d.fragrance}` : ""}`,
     labels: { date: "تاريخ الزيارة", af5000: "AF 5000 Pro", af2000: "AF 2000 Pro", devices: "إجمالي الأجهزة", device_type: "نوع الجهاز", area: "المساحة م²", power: "الكهرباء", fragrance: "العطر المقترح", placement: "مواقع التركيب", notes: "ملاحظات" } },
   decision: { l: "قرار مدير النظام", step: 6, icon: I.check, by: "مدير النظام", fields: () => [],
-    labels: { approved: "القرار", note: "ملاحظة" }, show: { approved: (v) => v ? "اعتماد التركيب" : "إعادة الدراسة" } },
+    labels: { approved: "القرار", note: "ملاحظة / السبب" }, show: { approved: (v, d) => d.cancelled ? "إلغاء المسجد" : v ? "اعتماد التركيب" : "إعادة الدراسة" } },
   installation: { l: "تقرير التركيب", step: 7, icon: I.install, by: "الشركة المنفذة",
     fields: (m, ctx) => [
       fld("date", "تاريخ التركيب", { type: "date", value: isoDay(), req: true }),
@@ -111,7 +111,7 @@ function reportDetails(r) {
   const T = REPORT_TYPES[r.type] || { labels: {} };
   const d = r.data || {};
   const rows = Object.entries(T.labels || {}).filter(([k]) => d[k] !== undefined && d[k] !== "" && d[k] !== null)
-    .map(([k, l]) => [l, T.show?.[k] ? T.show[k](d[k]) : (k === "date" ? fmtDate(d[k]) : d[k])]);
+    .map(([k, l]) => [l, T.show?.[k] ? T.show[k](d[k], d) : (k === "date" ? fmtDate(d[k]) : d[k])]);
   return rows;
 }
 function reportCard(r, atts = [], authors = {}) {
@@ -120,7 +120,7 @@ function reportCard(r, atts = [], authors = {}) {
   return `<div class="tl-item" data-report="${r.id}"><div class="ti">${T.icon}</div><div class="tb">
     <div class="th"><b>${esc(T.l)}</b>${T.step ? `<span class="chip plain">الخطوة ${T.step}</span>` : ""}
       ${r.type === "visit" && r.data?.status === "issue" ? `<span class="chip bad">ملاحظة فنية</span>` : ""}
-      ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : "warn"}">${r.data?.approved ? "معتمد" : "أعيدت الدراسة"}</span>` : ""}
+      ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : r.data?.cancelled ? "bad" : "warn"}">${r.data?.approved ? "معتمد" : r.data?.cancelled ? "أُلغي المسجد" : "أعيدت الدراسة"}</span>` : ""}
       <span class="muted small right">${esc(authors[r.author_id] || ROLES[r.author_role] || "")} • ${fmtDateTime(r.created_at)}</span>
       <button class="btn ghost sm no-print" data-print-report="${r.id}" title="طباعة">${I.print}</button></div>
     ${rows.length ? `<dl>${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd style="white-space:pre-wrap">${esc(v)}</dd></div>`).join("")}</dl>` : r.summary ? `<div class="small">${esc(r.summary)}</div>` : ""}

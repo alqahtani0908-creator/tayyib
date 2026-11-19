@@ -138,7 +138,7 @@ route("dashboard", {
               <div class="ft"><i style="width:${f.n ? Math.max(w, 2) : 0}%;background:${P.ordinal[i]}"></i></div>
               <div class="fv"><b>${fmtNum(f.n)}</b><span class="muted">${i ? fmtPct(conv) : "الأساس"}</span></div></div>`;
           }).join("")}</div>
-          <div class="hint" style="margin-top:10px">النسبة = التحويل من المرحلة السابقة${A.not_feasible ? ` • ${fmtNum(A.not_feasible)} مسجد غير قابل للتطبيق` : ""}</div></div>
+          <div class="hint" style="margin-top:10px">النسبة = التحويل من المرحلة السابقة${A.not_feasible ? ` • ${fmtNum(A.not_feasible)} مسجد غير قابل للتطبيق` : ""}${d.stages?.cancelled ? ` • ${fmtNum(d.stages.cancelled)} ملغى بعد الدراسة` : ""}</div></div>
           <div class="tblview" hidden>${miniTable(["المرحلة", "عدد المساجد", "التحويل"], funnel.map((f, i) => [FUNNEL[i], fmtNum(f.n), i ? fmtPct(pct(f.n, funnel[i - 1].n)) : "—"]))}</div>
         </section>
 

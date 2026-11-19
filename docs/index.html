@@ -1430,6 +1430,7 @@ const STAGES = {
   approved: { l: "معتمد — بانتظار التركيب", s: "بانتظار التركيب", c: "gold", who: "الشركة" },
   active: { l: "مُركّب — قيد التشغيل", s: "قيد التشغيل", c: "ok", who: "الجمعية والشركة" },
   suspended: { l: "موقوف", s: "موقوف", c: "bad", who: "—" },
+  cancelled: { l: "ملغى بعد الدراسة", s: "ملغى", c: "bad", who: "—" },
 };
 // جهات الرياض
 const REGIONS = { north: "شمال", south: "جنوب", east: "شرق", west: "غرب", center: "وسط" };
@@ -1909,7 +1910,7 @@ const REPORT_TYPES = {
     validate: devValidate, summary: (d) => `${devSum(d)}${d.fragrance ? ` — ${d.fragrance}` : ""}`,
     labels: { date: "تاريخ الزيارة", af5000: "AF 5000 Pro", af2000: "AF 2000 Pro", devices: "إجمالي الأجهزة", device_type: "نوع الجهاز", area: "المساحة م²", power: "الكهرباء", fragrance: "العطر المقترح", placement: "مواقع التركيب", notes: "ملاحظات" } },
   decision: { l: "قرار مدير النظام", step: 6, icon: I.check, by: "مدير النظام", fields: () => [],
-    labels: { approved: "القرار", note: "ملاحظة" }, show: { approved: (v) => v ? "اعتماد التركيب" : "إعادة الدراسة" } },
+    labels: { approved: "القرار", note: "ملاحظة / السبب" }, show: { approved: (v, d) => d.cancelled ? "إلغاء المسجد" : v ? "اعتماد التركيب" : "إعادة الدراسة" } },
   installation: { l: "تقرير التركيب", step: 7, icon: I.install, by: "الشركة المنفذة",
     fields: (m, ctx) => [
       fld("date", "تاريخ التركيب", { type: "date", value: isoDay(), req: true }),
@@ -1981,7 +1982,7 @@ function reportDetails(r) {
   const T = REPORT_TYPES[r.type] || { labels: {} };
   const d = r.data || {};
   const rows = Object.entries(T.labels || {}).filter(([k]) => d[k] !== undefined && d[k] !== "" && d[k] !== null)
-    .map(([k, l]) => [l, T.show?.[k] ? T.show[k](d[k]) : (k === "date" ? fmtDate(d[k]) : d[k])]);
+    .map(([k, l]) => [l, T.show?.[k] ? T.show[k](d[k], d) : (k === "date" ? fmtDate(d[k]) : d[k])]);
   return rows;
 }
 function reportCard(r, atts = [], authors = {}) {
@@ -1990,7 +1991,7 @@ function reportCard(r, atts = [], authors = {}) {
   return `<div class="tl-item" data-report="${r.id}"><div class="ti">${T.icon}</div><div class="tb">
     <div class="th"><b>${esc(T.l)}</b>${T.step ? `<span class="chip plain">الخطوة ${T.step}</span>` : ""}
       ${r.type === "visit" && r.data?.status === "issue" ? `<span class="chip bad">ملاحظة فنية</span>` : ""}
-      ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : "warn"}">${r.data?.approved ? "معتمد" : "أعيدت الدراسة"}</span>` : ""}
+      ${r.type === "decision" ? `<span class="chip ${r.data?.approved ? "ok" : r.data?.cancelled ? "bad" : "warn"}">${r.data?.approved ? "معتمد" : r.data?.cancelled ? "أُلغي المسجد" : "أعيدت الدراسة"}</span>` : ""}
       <span class="muted small right">${esc(authors[r.author_id] || ROLES[r.author_role] || "")} • ${fmtDateTime(r.created_at)}</span>
       <button class="btn ghost sm no-print" data-print-report="${r.id}" title="طباعة">${I.print}</button></div>
     ${rows.length ? `<dl>${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd style="white-space:pre-wrap">${esc(v)}</dd></div>`).join("")}</dl>` : r.summary ? `<div class="small">${esc(r.summary)}</div>` : ""}
@@ -2197,7 +2198,7 @@ route("dashboard", {
               <div class="ft"><i style="width:${f.n ? Math.max(w, 2) : 0}%;background:${P.ordinal[i]}"></i></div>
               <div class="fv"><b>${fmtNum(f.n)}</b><span class="muted">${i ? fmtPct(conv) : "الأساس"}</span></div></div>`;
           }).join("")}</div>
-          <div class="hint" style="margin-top:10px">النسبة = التحويل من المرحلة السابقة${A.not_feasible ? ` • ${fmtNum(A.not_feasible)} مسجد غير قابل للتطبيق` : ""}</div></div>
+          <div class="hint" style="margin-top:10px">النسبة = التحويل من المرحلة السابقة${A.not_feasible ? ` • ${fmtNum(A.not_feasible)} مسجد غير قابل للتطبيق` : ""}${d.stages?.cancelled ? ` • ${fmtNum(d.stages.cancelled)} ملغى بعد الدراسة` : ""}</div></div>
           <div class="tblview" hidden>${miniTable(["المرحلة", "عدد المساجد", "التحويل"], funnel.map((f, i) => [FUNNEL[i], fmtNum(f.n), i ? fmtPct(pct(f.n, funnel[i - 1].n)) : "—"]))}</div>
         </section>
 
@@ -2513,7 +2514,7 @@ const MAP_STATUS = [
   { k: "study", l: "الدراسة والاعتماد", st: ["feasible", "study_done"], c: "#d4893b" },
   { k: "install", l: "بانتظار التركيب", st: ["approved"], c: "#8d6cc4" },
   { k: "active", l: "قيد التشغيل", st: ["active"], c: "#2f9e6a" },
-  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended"], c: "#c4544a" },
+  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended", "cancelled"], c: "#c4544a" },
 ];
 const statusOf = (stage) => MAP_STATUS.find((s) => s.st.includes(stage)) || MAP_STATUS[0];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
@@ -3212,7 +3213,7 @@ const WORKFLOW = [
   [7, "التركيب ورفع التقرير", "الشركة المنفذة"], [8, "الزيارات الأسبوعية — تقارير", "الجمعية"], [9, "قياس الرضا عن الرائحة — تقرير", "الجمعية"],
   [10, "التقرير الشهري لأداء التعطير", "الجمعية"], [11, "التعبئة الشهرية مع تذكير قبل ٧٢ ساعة", "الشركة المنفذة"], [12, "رفع التقرير بعد التعبئة", "الشركة المنفذة"],
 ];
-const STAGE_STEP = { selected: 1, assigned: 3, data_done: 4, not_feasible: 4, feasible: 5, study_done: 6, approved: 7, active: 8, suspended: 8 };
+const STAGE_STEP = { selected: 1, assigned: 3, data_done: 4, not_feasible: 4, feasible: 5, study_done: 6, approved: 7, active: 8, suspended: 8, cancelled: 6 };
 
 route("mosque", {
   title: "بيانات المسجد",
@@ -3260,6 +3261,8 @@ route("mosque", {
       ${act ? `<div class="action-card" style="margin-top:14px"><div class="ic">${act.waiting ? I.clock : I.sparkle}</div>
         <div class="grow"><h4>${act.waiting ? "بانتظار: " : "الإجراء التالي: "}${esc(act.title)}</h4><p>${esc(act.waiting ? `هذه الخطوة من مهام ${STAGES[m.stage].who}` : act.desc)}</p></div>
         ${!act.waiting ? `<button class="btn primary" data-act="${act.action}">${act.action === "decide" ? "مراجعة واعتماد" : act.action === "assign" ? "إسناد الآن" : act.action === "complete" ? (missingData(m).length ? "استكمال البيانات" : "اعتماد اكتمال البيانات") : "رفع التقرير"}</button>` : ""}</div>` : ""}
+      ${m.stage === "cancelled" ? (() => { const dc = (reports || []).find((x) => x.type === "decision" && x.data?.cancelled); return `<div class="action-card" style="margin-top:14px;border-color:color-mix(in srgb,var(--bad) 35%,var(--line))"><div class="ic" style="color:var(--bad)">${I.alert}</div>
+        <div class="grow"><h4>أُلغي المسجد بعد دراسة الاحتياج</h4><p>${dc?.data?.note ? `السبب: ${esc(dc.data.note)} • ` : ""}${dc ? fmtDate(dc.created_at) : ""}${r === "admin" ? " — يمكن إعادته من «إجراءات»" : ""}</p></div></div>`; })() : ""}
       ${ops.length ? `<div class="action-card" style="margin-top:14px"><div class="ic">${I.drop}</div><div class="grow"><h4>المسجد قيد التشغيل</h4>
         <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) • آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
         <div class="btn-row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
@@ -3355,12 +3358,20 @@ async function decideDialog(m, reports, attBy) {
   const study = reports.find((r) => r.type === "needs_study");
   const body = document.createElement("div");
   body.innerHTML = `${study ? `<div class="tl">${reportCard(study, attBy[study.id])}</div>` : `<div class="empty">لا يوجد تقرير دراسة</div>`}
-    <div class="field" style="margin-top:14px"><label>ملاحظة القرار (تصل للشركة والجمعية)</label><textarea class="input" name="note"></textarea></div>`;
+    <div class="field" style="margin-top:14px"><label>ملاحظة القرار (تصل للشركة والجمعية)</label><textarea class="input" name="note"></textarea>
+      <div class="hint">«إلغاء المسجد» يوقف مساره نهائيًا (لا تركيب) ويتطلب كتابة السبب هنا؛ ويمكن إعادته لاحقًا من «إجراءات المدير».</div></div>`;
   hydrateFiles(body);
-  const res = await modal({ title: `اعتماد التركيب — ${m.name}`, body, wide: true, actions: [
-    { label: `${I.check} اعتماد التركيب`, cls: "primary", value: "yes" }, { label: "إعادة الدراسة للشركة", cls: "danger", value: "no" }, { label: "إلغاء" }] });
+  const res = await modal({ title: `قرار التركيب — ${m.name}`, body, wide: true, actions: [
+    { label: `${I.check} اعتماد التركيب`, cls: "primary", value: "yes" }, { label: "إعادة الدراسة للشركة", value: "no" },
+    { label: "إلغاء المسجد", cls: "danger", onClick: (mb) => { if (!$('[name="note"]', mb).value.trim()) { toast("اكتب سبب الإلغاء في ملاحظة القرار", "err"); $('[name="note"]', mb).focus(); return false; } return "cancel"; } },
+    { label: "رجوع" }] });
   if (!res) return;
   const note = $('[name="note"]', body).value.trim() || null;
+  if (res === "cancel") {
+    if (!await confirmBox(`إلغاء «${m.name}» بعد دراسة الاحتياج؟ لن يُركّب، وتُشعر الشركة والجمعية بالسبب.`, "إلغاء المسجد", "danger")) return;
+    if (await run(sb.rpc("cancel_mosque", { p_mosque: m.id, p_reason: note }), "أُلغي المسجد وأُشعرت الشركة والجمعية")) { await refreshMosque(m.id); render(); }
+    return;
+  }
   if (await run(sb.rpc("decide_study", { p_mosque: m.id, p_approve: res === "yes", p_note: note }), res === "yes" ? "تم اعتماد التركيب وإشعار الشركة" : "أعيدت الدراسة للشركة")) { await refreshMosque(m.id); render(); }
 }
 async function adminStageDialog(m) {

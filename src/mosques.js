@@ -391,7 +391,7 @@ const WORKFLOW = [
   [7, "التركيب ورفع التقرير", "الشركة المنفذة"], [8, "الزيارات الأسبوعية — تقارير", "الجمعية"], [9, "قياس الرضا عن الرائحة — تقرير", "الجمعية"],
   [10, "التقرير الشهري لأداء التعطير", "الجمعية"], [11, "التعبئة الشهرية مع تذكير قبل ٧٢ ساعة", "الشركة المنفذة"], [12, "رفع التقرير بعد التعبئة", "الشركة المنفذة"],
 ];
-const STAGE_STEP = { selected: 1, assigned: 3, data_done: 4, not_feasible: 4, feasible: 5, study_done: 6, approved: 7, active: 8, suspended: 8 };
+const STAGE_STEP = { selected: 1, assigned: 3, data_done: 4, not_feasible: 4, feasible: 5, study_done: 6, approved: 7, active: 8, suspended: 8, cancelled: 6 };
 
 route("mosque", {
   title: "بيانات المسجد",
@@ -439,6 +439,8 @@ route("mosque", {
       ${act ? `<div class="action-card" style="margin-top:14px"><div class="ic">${act.waiting ? I.clock : I.sparkle}</div>
         <div class="grow"><h4>${act.waiting ? "بانتظار: " : "الإجراء التالي: "}${esc(act.title)}</h4><p>${esc(act.waiting ? `هذه الخطوة من مهام ${STAGES[m.stage].who}` : act.desc)}</p></div>
         ${!act.waiting ? `<button class="btn primary" data-act="${act.action}">${act.action === "decide" ? "مراجعة واعتماد" : act.action === "assign" ? "إسناد الآن" : act.action === "complete" ? (missingData(m).length ? "استكمال البيانات" : "اعتماد اكتمال البيانات") : "رفع التقرير"}</button>` : ""}</div>` : ""}
+      ${m.stage === "cancelled" ? (() => { const dc = (reports || []).find((x) => x.type === "decision" && x.data?.cancelled); return `<div class="action-card" style="margin-top:14px;border-color:color-mix(in srgb,var(--bad) 35%,var(--line))"><div class="ic" style="color:var(--bad)">${I.alert}</div>
+        <div class="grow"><h4>أُلغي المسجد بعد دراسة الاحتياج</h4><p>${dc?.data?.note ? `السبب: ${esc(dc.data.note)} • ` : ""}${dc ? fmtDate(dc.created_at) : ""}${r === "admin" ? " — يمكن إعادته من «إجراءات»" : ""}</p></div></div>`; })() : ""}
       ${ops.length ? `<div class="action-card" style="margin-top:14px"><div class="ic">${I.drop}</div><div class="grow"><h4>المسجد قيد التشغيل</h4>
         <p>التعبئة القادمة: <b>${fmtDateTime(m.next_refill_at)}</b> (${untilText(m.next_refill_at)}) • آخر زيارة: <b>${m.last_visit_at ? fmtDate(m.last_visit_at) : "لا توجد"}</b></p></div>
         <div class="btn-row">${ops.map(([k, l, ic]) => `<button class="btn ${k === "refill" ? "gold" : ""}" data-op="${k}">${ic} ${l}</button>`).join("")}</div></div>` : ""}
@@ -534,12 +536,20 @@ async function decideDialog(m, reports, attBy) {
   const study = reports.find((r) => r.type === "needs_study");
   const body = document.createElement("div");
   body.innerHTML = `${study ? `<div class="tl">${reportCard(study, attBy[study.id])}</div>` : `<div class="empty">لا يوجد تقرير دراسة</div>`}
-    <div class="field" style="margin-top:14px"><label>ملاحظة القرار (تصل للشركة والجمعية)</label><textarea class="input" name="note"></textarea></div>`;
+    <div class="field" style="margin-top:14px"><label>ملاحظة القرار (تصل للشركة والجمعية)</label><textarea class="input" name="note"></textarea>
+      <div class="hint">«إلغاء المسجد» يوقف مساره نهائيًا (لا تركيب) ويتطلب كتابة السبب هنا؛ ويمكن إعادته لاحقًا من «إجراءات المدير».</div></div>`;
   hydrateFiles(body);
-  const res = await modal({ title: `اعتماد التركيب — ${m.name}`, body, wide: true, actions: [
-    { label: `${I.check} اعتماد التركيب`, cls: "primary", value: "yes" }, { label: "إعادة الدراسة للشركة", cls: "danger", value: "no" }, { label: "إلغاء" }] });
+  const res = await modal({ title: `قرار التركيب — ${m.name}`, body, wide: true, actions: [
+    { label: `${I.check} اعتماد التركيب`, cls: "primary", value: "yes" }, { label: "إعادة الدراسة للشركة", value: "no" },
+    { label: "إلغاء المسجد", cls: "danger", onClick: (mb) => { if (!$('[name="note"]', mb).value.trim()) { toast("اكتب سبب الإلغاء في ملاحظة القرار", "err"); $('[name="note"]', mb).focus(); return false; } return "cancel"; } },
+    { label: "رجوع" }] });
   if (!res) return;
   const note = $('[name="note"]', body).value.trim() || null;
+  if (res === "cancel") {
+    if (!await confirmBox(`إلغاء «${m.name}» بعد دراسة الاحتياج؟ لن يُركّب، وتُشعر الشركة والجمعية بالسبب.`, "إلغاء المسجد", "danger")) return;
+    if (await run(sb.rpc("cancel_mosque", { p_mosque: m.id, p_reason: note }), "أُلغي المسجد وأُشعرت الشركة والجمعية")) { await refreshMosque(m.id); render(); }
+    return;
+  }
   if (await run(sb.rpc("decide_study", { p_mosque: m.id, p_approve: res === "yes", p_note: note }), res === "yes" ? "تم اعتماد التركيب وإشعار الشركة" : "أعيدت الدراسة للشركة")) { await refreshMosque(m.id); render(); }
 }
 async function adminStageDialog(m) {

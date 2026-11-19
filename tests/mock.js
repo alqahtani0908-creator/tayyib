@@ -245,6 +245,12 @@
       return out;
     },
     push_test: () => { db.notifications.push({ id: id(), account_id: me.id, kind: "info", title: "تم تفعيل إشعارات الجوال ✓", body: "ستصلك تنبيهات منصة طيب على هذا الجهاز حتى والتطبيق مغلق.", link: "/my", created_at: iso(Date.now()) }); return null; },
+    cancel_mosque: ({ p_mosque, p_reason }) => {
+      const m = db.mosques.find((x) => x.id === p_mosque); if (me.role !== "admin") throw "الإلغاء من صلاحية مدير النظام";
+      if (!String(p_reason || "").trim()) throw "اكتب سبب الإلغاء"; if (m.stage !== "study_done") throw "الإلغاء متاح بعد رفع دراسة الاحتياج وقبل الاعتماد";
+      db.reports.push({ id: id(), mosque_id: m.id, type: "decision", data: { approved: false, cancelled: true, note: p_reason }, summary: "إلغاء المسجد — " + p_reason, author_id: me.id, author_role: "admin", created_at: iso(Date.now()) });
+      m.stage = "cancelled"; return null;
+    },
     oil_request_create: ({ p_items, p_note }) => {
       if (realR !== "company") throw "طلب الزيت من صلاحية الشركة المنفذة";
       if (!p_items?.length) throw "اختر مسجدًا واحدًا على الأقل";

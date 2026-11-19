@@ -46,7 +46,7 @@ const MAP_STATUS = [
   { k: "study", l: "الدراسة والاعتماد", st: ["feasible", "study_done"], c: "#d4893b" },
   { k: "install", l: "بانتظار التركيب", st: ["approved"], c: "#8d6cc4" },
   { k: "active", l: "قيد التشغيل", st: ["active"], c: "#2f9e6a" },
-  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended"], c: "#c4544a" },
+  { k: "stop", l: "متوقف", st: ["not_feasible", "suspended", "cancelled"], c: "#c4544a" },
 ];
 const statusOf = (stage) => MAP_STATUS.find((s) => s.st.includes(stage)) || MAP_STATUS[0];
 const PROGRESS = new Set(["assigned", "data_done", "feasible", "study_done", "approved"]);
